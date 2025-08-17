@@ -1,0 +1,38 @@
+{
+  "name": "miraikakaku-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev:frontend & npm run dev:api",
+    "dev:frontend": "npm run dev -w @miraikakaku/frontend",
+    "dev:api": "npm run dev -w @miraikakaku/api",
+    "dev:batch": "npm run dev -w @miraikakaku/batch",
+    "dev:unified": "./scripts/dev-unified.sh",
+    "build": "npm run build -ws",
+    "build:shared": "npm run build -w @miraikakaku/shared",
+    "build:all": "npm run build:shared && npm run build",
+    "test": "npm run test -ws",
+    "lint": "npm run lint -ws",
+    "docker:dev": "docker-compose up -d",
+    "docker:logs": "docker-compose logs -f",
+    "docker:down": "docker-compose down",
+    "env:init": "./scripts/env-manager.sh init",
+    "env:validate": "./scripts/env-manager.sh validate",
+    "deploy:prod": "./scripts/deploy-production.sh",
+    "health": "npm run health -ws",
+    "db:migrate": "npm run db:migrate -w @miraikakaku/api"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

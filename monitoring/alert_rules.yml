@@ -1,0 +1,102 @@
+groups:
+  - name: miraikakaku.rules
+    rules:
+      # API健全性アラート
+      - alert: APIDown
+        expr: up{job="miraikakaku-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Miraikakaku API is down"
+          description: "The Miraikakaku API has been down for more than 1 minute."
+
+      # API応答時間アラート
+      - alert: APIHighLatency
+        expr: http_request_duration_seconds{quantile="0.95",job="miraikakaku-api"} > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API latency detected"
+          description: "95th percentile latency is above 2 seconds for more than 5 minutes."
+
+      # データベース接続アラート
+      - alert: DatabaseConnectionHigh
+        expr: mysql_global_status_threads_connected / mysql_global_variables_max_connections > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connection usage"
+          description: "Database connection usage is above 80%."
+
+      # ML推論エラー率アラート
+      - alert: MLInferenceErrorRateHigh
+        expr: (rate(ml_inference_errors_total[5m]) / rate(ml_inference_requests_total[5m])) > 0.1
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High ML inference error rate"
+          description: "ML inference error rate is above 10% for more than 3 minutes."
+
+      # メモリ使用率アラート
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% for more than 5 minutes."
+
+      # ディスク使用率アラート
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_free_bytes{fstype!="tmpfs"}) / node_filesystem_size_bytes{fstype!="tmpfs"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage detected"
+          description: "Disk usage is above 85% for more than 5 minutes."
+
+      # Redis接続アラート
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been down for more than 1 minute."
+
+      # フロントエンド健全性
+      - alert: FrontendDown
+        expr: up{job="miraikakaku-frontend"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Frontend application is down"
+          description: "The frontend application has been down for more than 2 minutes."
+
+      # バッチ処理失敗
+      - alert: BatchJobFailure
+        expr: increase(batch_job_failures_total[1h]) > 3
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Multiple batch job failures"
+          description: "More than 3 batch job failures in the last hour."
+
+      # 予測信頼度低下
+      - alert: LowPredictionConfidence
+        expr: avg_over_time(prediction_confidence[1h]) < 0.6
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low prediction confidence"
+          description: "Average prediction confidence has been below 60% for more than 30 minutes."

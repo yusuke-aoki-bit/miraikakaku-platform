@@ -1,0 +1,45 @@
+{
+  "name": "miraikakaku",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "dev:unified": "./scripts/dev-unified.sh",
+    "env:init": "./scripts/env-manager.sh init",
+    "env:validate": "./scripts/env-manager.sh validate"
+  },
+  "dependencies": {
+    "next": "15.1.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "typescript": "^5.7.2",
+    "chart.js": "^4.4.7",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "framer-motion": "^11.13.5",
+    "swr": "^2.2.5",
+    "zustand": "^5.0.2",
+    "zod": "^3.24.1",
+    "plotly.js": "^2.35.2",
+    "react-plotly.js": "^2.6.0",
+    "recharts": "^2.13.3",
+    "lucide-react": "^0.460.0",
+    "bcryptjs": "^2.4.3",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/plotly.js": "^2.35.0",
+    "date-fns": "^3.6.0"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "^15.1.0",
+    "@types/bcryptjs": "^2.4.6",
+    "eslint": "^8",
+    "eslint-config-next": "15.1.0",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1"
+  }
+}

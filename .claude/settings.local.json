@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(gcloud config set:*)",
+      "Bash(gcloud projects describe:*)",
+      "Bash(gcloud services enable:*)",
+      "Bash(gcloud iam service-accounts create:*)",
+      "Bash(gcloud projects add-iam-policy-binding:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
