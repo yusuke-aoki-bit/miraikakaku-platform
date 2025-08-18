@@ -17,6 +17,7 @@ import {
   Bar
 } from 'recharts';
 import { Calendar, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 interface AdvancedStockChartProps {
   symbol: string;
@@ -48,6 +49,7 @@ interface TechnicalIndicators {
     middle: number;
     lower: number;
   };
+  volatility_1m?: number;
 }
 
 export default function AdvancedStockChart({ symbol }: AdvancedStockChartProps) {
@@ -103,16 +105,16 @@ export default function AdvancedStockChart({ symbol }: AdvancedStockChartProps) 
       }));
 
       // 移動平均を計算
-      const withMA = chartPoints.map((point, index) => {
+      const withMA = chartPoints.map((point: any, index: number) => {
         const sma5Data = chartPoints.slice(Math.max(0, index - 4), index + 1);
         const sma20Data = chartPoints.slice(Math.max(0, index - 19), index + 1);
         
         return {
           ...point,
           sma_5: sma5Data.length >= 5 ? 
-            sma5Data.reduce((sum, p) => sum + p.close, 0) / sma5Data.length : undefined,
+            sma5Data.reduce((sum: number, p: any) => sum + p.close, 0) / sma5Data.length : undefined,
           sma_20: sma20Data.length >= 20 ? 
-            sma20Data.reduce((sum, p) => sum + p.close, 0) / sma20Data.length : undefined,
+            sma20Data.reduce((sum: number, p: any) => sum + p.close, 0) / sma20Data.length : undefined,
         };
       });
 
@@ -166,11 +168,12 @@ export default function AdvancedStockChart({ symbol }: AdvancedStockChartProps) 
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
-        <div className="text-center">
-          <Activity className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <div className="text-gray-600">高度チャートを読み込み中...</div>
-        </div>
+      <div className="flex items-center justify-center h-96 youtube-card">
+        <LoadingSpinner 
+          type="ai" 
+          size="lg" 
+          message="高度チャートとAI分析を読み込み中..."
+        />
       </div>
     );
   }

@@ -22,7 +22,21 @@
       "Bash(npm install:*)",
       "Bash(curl:*)",
       "Bash(rm:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(PORT=3000 npm run dev)",
+      "Bash(sudo fuser:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "WebSearch",
+      "WebFetch(domain:www.jpx.co.jp)",
+      "Bash(mv:*)",
+      "WebFetch(domain:etfdb.com)",
+      "Bash(grep:*)",
+      "WebFetch(domain:jpx-jquants.com)",
+      "WebFetch(domain:topforeignstocks.com)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

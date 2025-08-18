@@ -1,3 +1,47 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  * {
+    border-color: theme('colors.gray.800');
+  }
+  
+  body {
+    @apply bg-black text-white antialiased;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-900;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-600 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+}
+
+@layer components {
+  .youtube-glass {
+    @apply bg-black/80 backdrop-blur-md border border-gray-800/50;
+  }
+  
+  .youtube-card {
+    @apply bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800/50 hover:border-red-500/30 transition-all;
+  }
+  
+  .youtube-button {
+    @apply bg-red-600 hover:bg-red-700 text-white rounded-full font-medium transition-all hover:scale-105;
+  }
+  
+  .youtube-search {
+    @apply bg-gray-900/50 border border-gray-700 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 backdrop-blur-sm;
+  }
+}

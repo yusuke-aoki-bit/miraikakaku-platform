@@ -6,6 +6,7 @@ import { Maximize2, Download, Settings } from 'lucide-react';
 
 // Plotlyを動的インポート（SSRを避けるため）
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
+import LoadingSpinner from '../common/LoadingSpinner';
 
 interface InteractiveChartProps {
   symbol: string;
@@ -149,17 +150,17 @@ export default function InteractiveChart({ symbol, height = 600 }: InteractiveCh
     xaxis: {
       title: '日付',
       rangeslider: { visible: false },
-      type: 'date',
+      type: 'date' as const,
     },
     yaxis: {
       title: '価格 ($)',
       domain: [0.3, 1],
-      side: 'left',
+      side: 'left' as const,
     },
     yaxis2: {
       title: '出来高',
       domain: [0, 0.25],
-      side: 'right',
+      side: 'right' as const,
     },
     plot_bgcolor: theme === 'dark' ? '#1f2937' : '#ffffff',
     paper_bgcolor: theme === 'dark' ? '#111827' : '#ffffff',
@@ -178,10 +179,10 @@ export default function InteractiveChart({ symbol, height = 600 }: InteractiveCh
 
   const config = {
     displayModeBar: true,
-    modeBarButtonsToRemove: ['pan2d', 'lasso2d'],
+    modeBarButtonsToRemove: ['pan2d', 'lasso2d'] as any[],
     responsive: true,
     toImageButtonOptions: {
-      format: 'png',
+      format: 'png' as const,
       filename: `${symbol}_chart`,
       height: 800,
       width: 1200,
@@ -191,14 +192,12 @@ export default function InteractiveChart({ symbol, height = 600 }: InteractiveCh
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
-        <div className="text-center">
-          <div className="animate-pulse">
-            <div className="h-4 bg-gray-300 rounded w-48 mb-4"></div>
-            <div className="h-32 bg-gray-300 rounded"></div>
-          </div>
-          <div className="text-gray-600 mt-4">インタラクティブチャートを読み込み中...</div>
-        </div>
+      <div className="flex items-center justify-center h-96 youtube-card">
+        <LoadingSpinner 
+          type="chart" 
+          size="lg" 
+          message="インタラクティブチャートを読み込み中..."
+        />
       </div>
     );
   }

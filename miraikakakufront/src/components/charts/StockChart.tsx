@@ -12,8 +12,10 @@ import {
   Tooltip,
   Legend,
   TimeScale,
+  Filler,
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 ChartJS.register(
   CategoryScale,
@@ -23,7 +25,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  TimeScale
+  TimeScale,
+  Filler
 );
 
 interface StockChartProps {
@@ -39,20 +42,41 @@ interface PriceData {
   volume?: number;
 }
 
+interface PredictionData {
+  date: string;
+  predicted_price: number;
+  confidence: number;
+  upper_bound: number;
+  lower_bound: number;
+}
+
+interface HistoricalPredictionData {
+  date: string;
+  predicted_price: number;
+  actual_price: number;
+  accuracy: number;
+  confidence: number;
+}
+
 export default function StockChart({ symbol }: StockChartProps) {
   const [priceData, setPriceData] = useState<PriceData[]>([]);
+  const [predictionData, setPredictionData] = useState<PredictionData[]>([]);
+  const [historicalPredictions, setHistoricalPredictions] = useState<HistoricalPredictionData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
     if (symbol) {
       fetchPriceData(symbol);
+      fetchPredictionData(symbol);
+      fetchHistoricalPredictions(symbol);
     }
   }, [symbol]);
 
   const fetchPriceData = async (stockSymbol: string) => {
     setLoading(true);
     setError('');
+    
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/${stockSymbol}/price?days=30`
@@ -62,24 +86,7 @@ export default function StockChart({ symbol }: StockChartProps) {
         const data = await response.json();
         setPriceData(data);
       } else {
-        // フォールバック用のモックデータ
-        const mockData: PriceData[] = Array.from({ length: 30 }, (_, i) => {
-          const basePrice = 150;
-          const volatility = 0.02;
-          const trend = -0.001 * i;
-          const randomChange = (Math.random() - 0.5) * volatility;
-          const price = basePrice * (1 + trend + randomChange);
-          
-          return {
-            date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            close_price: price,
-            open_price: price * (1 + (Math.random() - 0.5) * 0.01),
-            high_price: price * (1 + Math.random() * 0.02),
-            low_price: price * (1 - Math.random() * 0.02),
-            volume: Math.floor(Math.random() * 10000000 + 1000000)
-          };
-        });
-        setPriceData(mockData);
+        throw new Error(`API Error: ${response.status}`);
       }
     } catch (error) {
       console.error('価格データ取得エラー:', error);
@@ -89,16 +96,116 @@ export default function StockChart({ symbol }: StockChartProps) {
     }
   };
 
+  const fetchPredictionData = async (stockSymbol: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/${stockSymbol}/predictions?days=7`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setPredictionData(data);
+      }
+    } catch (error) {
+      console.error('予測データ取得エラー:', error);
+    }
+  };
+
+  const fetchHistoricalPredictions = async (stockSymbol: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/${stockSymbol}/historical-predictions?days=30`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setHistoricalPredictions(data);
+      }
+    } catch (error) {
+      console.error('過去予測データ取得エラー:', error);
+    }
+  };
+
+  const allDates = [
+    ...priceData.map(d => d.date), 
+    ...predictionData.map(d => d.date),
+    ...historicalPredictions.map(d => d.date)
+  ];
+  const uniqueDates = [...new Set(allDates)].sort();
+
   const chartData = {
-    labels: priceData.map(d => d.date),
+    labels: uniqueDates,
     datasets: [
       {
-        label: `${symbol} 終値`,
-        data: priceData.map(d => d.close_price),
+        label: `${symbol} 実測値`,
+        data: uniqueDates.map(date => {
+          const pricePoint = priceData.find(d => d.date === date);
+          return pricePoint ? pricePoint.close_price : null;
+        }),
         borderColor: 'rgb(59, 130, 246)',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         tension: 0.1,
-        fill: true,
+        fill: false,
+        pointRadius: 3,
+      },
+      {
+        label: `${symbol} AI予測`,
+        data: uniqueDates.map(date => {
+          const predPoint = predictionData.find(d => d.date === date);
+          return predPoint ? predPoint.predicted_price : null;
+        }),
+        borderColor: 'rgb(255, 99, 71)',
+        backgroundColor: 'rgba(255, 99, 71, 0.1)',
+        tension: 0.1,
+        fill: false,
+        borderDash: [5, 5],
+        pointRadius: 3,
+      },
+      {
+        label: `${symbol} 予測上限`,
+        data: uniqueDates.map(date => {
+          const predPoint = predictionData.find(d => d.date === date);
+          return predPoint ? predPoint.upper_bound : null;
+        }),
+        borderColor: 'rgba(255, 99, 71, 0.3)',
+        backgroundColor: 'rgba(255, 99, 71, 0.05)',
+        tension: 0.1,
+        fill: '+1',
+        pointRadius: 0,
+        borderWidth: 1,
+      },
+      {
+        label: `${symbol} 予測下限`,
+        data: uniqueDates.map(date => {
+          const predPoint = predictionData.find(d => d.date === date);
+          return predPoint ? predPoint.lower_bound : null;
+        }),
+        borderColor: 'rgba(255, 99, 71, 0.3)',
+        backgroundColor: 'rgba(255, 99, 71, 0.05)',
+        tension: 0.1,
+        fill: false,
+        pointRadius: 0,
+        borderWidth: 1,
+      },
+      {
+        label: `${symbol} 過去予測`,
+        data: uniqueDates.map(date => {
+          const histPred = historicalPredictions.find(d => d.date === date);
+          return histPred ? histPred.predicted_price : null;
+        }),
+        borderColor: 'rgb(147, 51, 234)',
+        backgroundColor: 'rgba(147, 51, 234, 0.1)',
+        tension: 0.1,
+        fill: false,
+        borderDash: [3, 3],
+        pointRadius: 2,
+        pointBackgroundColor: function(context: any) {
+          const date = uniqueDates[context.dataIndex];
+          const histPred = historicalPredictions.find(d => d.date === date);
+          if (histPred && histPred.accuracy > 0.8) return 'rgb(34, 197, 94)';
+          if (histPred && histPred.accuracy > 0.6) return 'rgb(234, 179, 8)';
+          return 'rgb(239, 68, 68)';
+        },
       },
     ],
   };
@@ -157,11 +264,12 @@ export default function StockChart({ symbol }: StockChartProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <div className="text-gray-600">チャートを読み込み中...</div>
-        </div>
+      <div className="flex items-center justify-center h-96 youtube-card">
+        <LoadingSpinner 
+          type="chart" 
+          size="lg" 
+          message="株価チャートを読み込み中..."
+        />
       </div>
     );
   }
@@ -178,7 +286,7 @@ export default function StockChart({ symbol }: StockChartProps) {
   }
 
   return (
-    <div className="w-full h-96 p-4 bg-white rounded-lg">
+    <div className="w-full h-96 p-4 youtube-card">
       <Line data={chartData} options={options} />
     </div>
   );

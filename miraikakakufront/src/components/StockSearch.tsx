@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
+import LoadingSpinner from './common/LoadingSpinner';
 
 interface Stock {
   symbol: string;
@@ -27,27 +28,17 @@ export default function StockSearch({ onSymbolSelect }: StockSearchProps) {
     }
 
     setLoading(true);
+    
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/search?query=${encodeURIComponent(searchQuery)}&limit=10`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/search?query=${encodeURIComponent(searchQuery)}`
       );
       
       if (response.ok) {
         const data = await response.json();
         setStocks(data);
       } else {
-        // フォールバック用のモックデータ
-        const mockStocks: Stock[] = [
-          { symbol: 'AAPL', company_name: 'Apple Inc.', exchange: 'NASDAQ', sector: 'Technology' },
-          { symbol: 'GOOGL', company_name: 'Alphabet Inc.', exchange: 'NASDAQ', sector: 'Technology' },
-          { symbol: 'MSFT', company_name: 'Microsoft Corporation', exchange: 'NASDAQ', sector: 'Technology' },
-          { symbol: 'TSLA', company_name: 'Tesla Inc.', exchange: 'NASDAQ', sector: 'Automotive' },
-          { symbol: 'AMZN', company_name: 'Amazon.com Inc.', exchange: 'NASDAQ', sector: 'E-commerce' },
-        ].filter(stock => 
-          stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          stock.company_name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        setStocks(mockStocks);
+        throw new Error(`API Error: ${response.status}`);
       }
     } catch (error) {
       console.error('株式検索エラー:', error);
@@ -80,21 +71,21 @@ export default function StockSearch({ onSymbolSelect }: StockSearchProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="株式シンボルまたは会社名で検索（例: AAPL, Apple）..."
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          className="youtube-search w-full pl-10 pr-4 py-3"
         />
       </div>
 
       {/* 検索結果 */}
       {stocks.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 z-10 mt-1 youtube-card max-h-60 overflow-y-auto">
           {stocks.map((stock) => (
             <button
               key={stock.symbol}
               onClick={() => handleStockSelect(stock.symbol)}
-              className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors duration-150"
+              className="w-full px-4 py-3 text-left hover:bg-gray-800/50 border-b border-gray-700/50 last:border-b-0 transition-all duration-150 group"
             >
-              <div className="font-semibold text-gray-900">{stock.symbol}</div>
-              <div className="text-sm text-gray-600 truncate">{stock.company_name}</div>
+              <div className="font-semibold text-white group-hover:text-red-400 transition-colors">{stock.symbol}</div>
+              <div className="text-sm text-gray-300 truncate">{stock.company_name}</div>
               <div className="text-xs text-gray-500">
                 {stock.exchange} {stock.sector && `• ${stock.sector}`}
               </div>
@@ -105,11 +96,12 @@ export default function StockSearch({ onSymbolSelect }: StockSearchProps) {
 
       {/* ローディング */}
       {loading && (
-        <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
-          <div className="text-center text-gray-600 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-            検索中...
-          </div>
+        <div className="absolute top-full left-0 right-0 z-10 mt-1 youtube-card p-4">
+          <LoadingSpinner 
+            type="chart" 
+            size="sm" 
+            message="株式データを検索中..."
+          />
         </div>
       )}
     </div>

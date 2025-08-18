@@ -19,6 +19,7 @@
     "@types/plotly.js": "^2.35.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.21",
     "bcryptjs": "^2.4.3",
     "chart.js": "^4.4.7",
     "chartjs-adapter-date-fns": "^3.0.0",
@@ -41,6 +42,7 @@
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.1.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/react-plotly.js": "^2.6.3",
     "eslint": "^8",
     "eslint-config-next": "15.1.0",
     "postcss": "^8",
