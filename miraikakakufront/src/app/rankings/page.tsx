@@ -7,39 +7,26 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 interface GrowthRanking {
   symbol: string;
   company_name: string;
-  growth_potential: number;
-  mae_score: number;
-  accuracy_score: number;
   current_price: number;
-  predicted_price_7d: number;
+  predicted_price: number;
+  growth_potential: number;
   confidence: number;
 }
 
 interface AccuracyRanking {
   symbol: string;
   company_name: string;
-  mae_score: number;
   accuracy_score: number;
-  predictions_count: number;
-  avg_confidence: number;
+  prediction_count: number;
 }
 
 interface CompositeRanking {
   symbol: string;
   company_name: string;
-  growth_potential: number;
-  accuracy_score: number;
-  mae_score: number;
-  confidence: number;
   composite_score: number;
-  risk_adjusted_score: number;
-  current_price: number;
-  predicted_price_7d: number;
-  score_breakdown: {
-    growth_component: number;
-    accuracy_component: number;
-    confidence_multiplier: number;
-  };
+  accuracy_score: number;
+  growth_potential: number;
+  prediction_count: number;
 }
 
 export default function RankingsPage() {
@@ -64,17 +51,17 @@ export default function RankingsPage() {
 
       if (growthRes.ok) {
         const growthData = await growthRes.json();
-        setGrowthRankings(growthData);
+        setGrowthRankings(Array.isArray(growthData) ? growthData : []);
       }
 
       if (accuracyRes.ok) {
         const accuracyData = await accuracyRes.json();
-        setAccuracyRankings(accuracyData);
+        setAccuracyRankings(Array.isArray(accuracyData) ? accuracyData : []);
       }
 
       if (compositeRes.ok) {
         const compositeData = await compositeRes.json();
-        setCompositeRankings(compositeData);
+        setCompositeRankings(Array.isArray(compositeData) ? compositeData : []);
       }
     } catch (error) {
       console.error('ランキングデータ取得エラー:', error);
@@ -142,25 +129,25 @@ export default function RankingsPage() {
             7日間上昇予測ランキング
           </h2>
           <div className="space-y-3">
-            {growthRankings.map((stock, index) => (
+            {growthRankings.filter(stock => stock && stock.symbol).map((stock, index) => (
               <div key={stock.symbol} className="flex items-center justify-between p-4 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-all">
                 <div className="flex items-center space-x-4">
                   {getRankIcon(index)}
                   <div>
-                    <h3 className="text-white font-semibold">{stock.symbol}</h3>
-                    <p className="text-gray-400 text-sm">{stock.company_name}</p>
+                    <h3 className="text-white font-semibold">{stock.symbol || 'N/A'}</h3>
+                    <p className="text-gray-400 text-sm">{stock.company_name || 'N/A'}</p>
                   </div>
                 </div>
                 
                 <div className="text-right">
                   <div className="text-green-400 font-bold text-lg">
-                    +{stock.growth_potential}%
+                    +{(stock.growth_potential || 0).toFixed(2)}%
                   </div>
                   <div className="text-gray-400 text-sm">
-                    ${stock.current_price} → ${stock.predicted_price_7d}
+                    ${(stock.current_price || 0).toFixed(2)} → ${(stock.predicted_price || 0).toFixed(2)}
                   </div>
                   <div className="text-gray-500 text-xs">
-                    精度: {(stock.accuracy_score * 100).toFixed(1)}% | 信頼度: {(stock.confidence * 100).toFixed(0)}%
+                    信頼度: {((stock.confidence || 0) * 100).toFixed(0)}%
                   </div>
                 </div>
               </div>
@@ -181,33 +168,25 @@ export default function RankingsPage() {
             </p>
           </div>
           <div className="space-y-3">
-            {compositeRankings.map((stock, index) => (
+            {compositeRankings.filter(stock => stock && stock.symbol).map((stock, index) => (
               <div key={stock.symbol} className="flex items-center justify-between p-4 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-all">
                 <div className="flex items-center space-x-4">
                   {getRankIcon(index)}
                   <div>
-                    <h3 className="text-white font-semibold">{stock.symbol}</h3>
-                    <p className="text-gray-400 text-sm">{stock.company_name}</p>
+                    <h3 className="text-white font-semibold">{stock.symbol || 'N/A'}</h3>
+                    <p className="text-gray-400 text-sm">{stock.company_name || 'N/A'}</p>
                   </div>
                 </div>
                 
                 <div className="text-right">
                   <div className="text-yellow-400 font-bold text-lg">
-                    {(stock.risk_adjusted_score * 100).toFixed(1)}点
+                    {(stock.composite_score || 0).toFixed(1)}点
                   </div>
                   <div className="text-gray-400 text-sm">
-                    成長: +{stock.growth_potential}% | 精度: {(stock.accuracy_score * 100).toFixed(1)}%
+                    成長: +{(stock.growth_potential || 0).toFixed(2)}% | 精度: {(stock.accuracy_score || 0).toFixed(1)}%
                   </div>
                   <div className="text-gray-500 text-xs">
-                    基本スコア: {(stock.composite_score * 100).toFixed(1)} | 信頼度: {(stock.confidence * 100).toFixed(0)}%
-                  </div>
-                  <div className="flex space-x-2 mt-1">
-                    <span className="px-2 py-1 bg-green-600/20 text-green-400 text-xs rounded">
-                      成長: {(stock.score_breakdown.growth_component * 100).toFixed(1)}
-                    </span>
-                    <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded">
-                      精度: {(stock.score_breakdown.accuracy_component * 100).toFixed(1)}
-                    </span>
+                    予測数: {stock.prediction_count || 0}
                   </div>
                 </div>
               </div>
@@ -223,25 +202,22 @@ export default function RankingsPage() {
             AI予測精度ランキング (MAE基準)
           </h2>
           <div className="space-y-3">
-            {accuracyRankings.map((stock, index) => (
+            {accuracyRankings.filter(stock => stock && stock.symbol).map((stock, index) => (
               <div key={stock.symbol} className="flex items-center justify-between p-4 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-all">
                 <div className="flex items-center space-x-4">
                   {getRankIcon(index)}
                   <div>
-                    <h3 className="text-white font-semibold">{stock.symbol}</h3>
-                    <p className="text-gray-400 text-sm">{stock.company_name}</p>
+                    <h3 className="text-white font-semibold">{stock.symbol || 'N/A'}</h3>
+                    <p className="text-gray-400 text-sm">{stock.company_name || 'N/A'}</p>
                   </div>
                 </div>
                 
                 <div className="text-right">
                   <div className="text-blue-400 font-bold text-lg">
-                    {(stock.accuracy_score * 100).toFixed(1)}%
-                  </div>
-                  <div className="text-gray-400 text-sm">
-                    MAE: {(stock.mae_score * 100).toFixed(1)}%
+                    {(stock.accuracy_score || 0).toFixed(1)}%
                   </div>
                   <div className="text-gray-500 text-xs">
-                    予測数: {stock.predictions_count} | 平均信頼度: {(stock.avg_confidence * 100).toFixed(0)}%
+                    予測数: {stock.prediction_count || 0}
                   </div>
                 </div>
               </div>

@@ -36,7 +36,14 @@
       "Bash(grep:*)",
       "WebFetch(domain:jpx-jquants.com)",
       "WebFetch(domain:topforeignstocks.com)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(cat:*)",
+      "Bash(lsof:*)",
+      "Bash(PORT=8001 python3 main.py)",
+      "Bash(for page in \"realtime\" \"rankings\" \"analysis\" \"dashboard\" \"watchlist\" \"history\" \"predictions\" \"tools\" \"management\")",
+      "Bash(do echo -n \"$page: \")",
+      "Bash(done)",
+      "Bash(npx playwright test:*)"
     ],
     "deny": [],
     "ask": []

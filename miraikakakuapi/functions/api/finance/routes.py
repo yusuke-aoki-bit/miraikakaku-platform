@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from database.database import get_db
 from database.models import StockMaster, StockPriceHistory, StockPredictions
 from api.models.finance_models import StockPriceResponse, StockPredictionResponse, StockSearchResponse
-from services.finance.finance_service import FinanceService
+from services.finance_service import FinanceService
 from typing import List, Optional
 from datetime import datetime, timedelta
 
@@ -96,6 +96,55 @@ async def get_stock_predictions(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"予測データ取得エラー: {str(e)}")
 
+@router.get("/stocks/{symbol}/historical-predictions")
+async def get_historical_predictions(
+    symbol: str,
+    days: int = Query(30, ge=1, le=365, description="取得日数"),
+    db: Session = Depends(get_db)
+):
+    """過去の予測データと実績の比較"""
+    try:
+        end_date = datetime.utcnow()
+        start_date = end_date - timedelta(days=days)
+        
+        # 過去の予測データ（実際の日付が過ぎたもの）を取得
+        predictions = db.query(StockPredictions).filter(
+            StockPredictions.symbol == symbol.upper(),
+            StockPredictions.target_date >= start_date,
+            StockPredictions.target_date <= end_date
+        ).order_by(StockPredictions.target_date.desc()).all()
+        
+        # 実際の株価データも取得して精度を計算
+        actual_prices = db.query(StockPriceHistory).filter(
+            StockPriceHistory.symbol == symbol.upper(),
+            StockPriceHistory.date >= start_date,
+            StockPriceHistory.date <= end_date
+        ).all()
+        
+        # 日付別の実際の価格をマップ化
+        actual_price_map = {price.date: float(price.close_price) for price in actual_prices}
+        
+        result = []
+        for pred in predictions:
+            target_date = pred.target_date.date() if hasattr(pred.target_date, 'date') else pred.target_date
+            actual_price = actual_price_map.get(target_date)
+            
+            if actual_price:
+                predicted_price = float(pred.predicted_price)
+                accuracy = max(0, 1 - abs(predicted_price - actual_price) / actual_price)
+                
+                result.append({
+                    "date": target_date.isoformat(),
+                    "predicted_price": predicted_price,
+                    "actual_price": actual_price,
+                    "accuracy": accuracy,
+                    "confidence": float(pred.confidence_score) if pred.confidence_score else 0.5
+                })
+        
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"過去予測データ取得エラー: {str(e)}")
+
 @router.post("/stocks/{symbol}/predict")
 async def create_prediction(
     symbol: str,
@@ -108,3 +157,143 @@ async def create_prediction(
         return {"message": "予測生成完了", "prediction_id": result.id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"予測生成エラー: {str(e)}")
+
+@router.get("/rankings/accuracy")
+async def get_accuracy_rankings(
+    limit: int = Query(10, ge=1, le=50, description="結果数制限"),
+    db: Session = Depends(get_db)
+):
+    """予測精度ランキング"""
+    try:
+        # 各銘柄の予測精度を計算
+        stocks = db.query(StockMaster).filter(StockMaster.is_active == True).limit(50).all()
+        rankings = []
+        
+        for stock in stocks:
+            # 過去30日の予測精度を計算
+            end_date = datetime.utcnow()
+            start_date = end_date - timedelta(days=30)
+            
+            predictions = db.query(StockPredictions).filter(
+                StockPredictions.symbol == stock.symbol,
+                StockPredictions.target_date >= start_date,
+                StockPredictions.target_date <= end_date
+            ).all()
+            
+            if predictions:
+                total_accuracy = sum(float(p.confidence_score) for p in predictions if p.confidence_score)
+                avg_accuracy = total_accuracy / len(predictions) if predictions else 0
+                
+                rankings.append({
+                    "symbol": stock.symbol,
+                    "company_name": stock.company_name,
+                    "accuracy_score": round(avg_accuracy * 100, 2),
+                    "prediction_count": len(predictions)
+                })
+        
+        # 精度でソート
+        rankings.sort(key=lambda x: x["accuracy_score"], reverse=True)
+        return rankings[:limit]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"精度ランキング取得エラー: {str(e)}")
+
+@router.get("/rankings/growth-potential")
+async def get_growth_potential_rankings(
+    limit: int = Query(10, ge=1, le=50, description="結果数制限"),
+    db: Session = Depends(get_db)
+):
+    """成長ポテンシャルランキング"""
+    try:
+        stocks = db.query(StockMaster).filter(StockMaster.is_active == True).limit(50).all()
+        rankings = []
+        
+        for stock in stocks:
+            # 最新の予測価格と現在価格を比較
+            latest_prediction = db.query(StockPredictions).filter(
+                StockPredictions.symbol == stock.symbol,
+                StockPredictions.target_date >= datetime.utcnow()
+            ).order_by(StockPredictions.target_date.asc()).first()
+            
+            current_price = db.query(StockPriceHistory).filter(
+                StockPriceHistory.symbol == stock.symbol
+            ).order_by(StockPriceHistory.date.desc()).first()
+            
+            if latest_prediction and current_price:
+                predicted_price = float(latest_prediction.predicted_price)
+                current_price_val = float(current_price.close_price)
+                growth_potential = ((predicted_price - current_price_val) / current_price_val) * 100
+                
+                rankings.append({
+                    "symbol": stock.symbol,
+                    "company_name": stock.company_name,
+                    "current_price": current_price_val,
+                    "predicted_price": predicted_price,
+                    "growth_potential": round(growth_potential, 2),
+                    "confidence": float(latest_prediction.confidence_score) if latest_prediction.confidence_score else 0.5
+                })
+        
+        # 成長ポテンシャルでソート
+        rankings.sort(key=lambda x: x["growth_potential"], reverse=True)
+        return rankings[:limit]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"成長ポテンシャルランキング取得エラー: {str(e)}")
+
+@router.get("/rankings/composite")
+async def get_composite_rankings(
+    limit: int = Query(10, ge=1, le=50, description="結果数制限"),
+    db: Session = Depends(get_db)
+):
+    """総合ランキング（精度と成長ポテンシャルの組み合わせ）"""
+    try:
+        stocks = db.query(StockMaster).filter(StockMaster.is_active == True).limit(50).all()
+        rankings = []
+        
+        for stock in stocks:
+            # 予測精度を計算
+            end_date = datetime.utcnow()
+            start_date = end_date - timedelta(days=30)
+            
+            predictions = db.query(StockPredictions).filter(
+                StockPredictions.symbol == stock.symbol,
+                StockPredictions.target_date >= start_date,
+                StockPredictions.target_date <= end_date
+            ).all()
+            
+            accuracy_score = 0
+            if predictions:
+                total_accuracy = sum(float(p.confidence_score) for p in predictions if p.confidence_score)
+                accuracy_score = total_accuracy / len(predictions)
+            
+            # 成長ポテンシャル計算
+            latest_prediction = db.query(StockPredictions).filter(
+                StockPredictions.symbol == stock.symbol,
+                StockPredictions.target_date >= datetime.utcnow()
+            ).order_by(StockPredictions.target_date.asc()).first()
+            
+            current_price = db.query(StockPriceHistory).filter(
+                StockPriceHistory.symbol == stock.symbol
+            ).order_by(StockPriceHistory.date.desc()).first()
+            
+            growth_potential = 0
+            if latest_prediction and current_price:
+                predicted_price = float(latest_prediction.predicted_price)
+                current_price_val = float(current_price.close_price)
+                growth_potential = ((predicted_price - current_price_val) / current_price_val)
+            
+            # 総合スコア計算（精度 50%、成長ポテンシャル 50%）
+            composite_score = (accuracy_score * 0.5) + (max(0, growth_potential) * 0.5)
+            
+            rankings.append({
+                "symbol": stock.symbol,
+                "company_name": stock.company_name,
+                "composite_score": round(composite_score * 100, 2),
+                "accuracy_score": round(accuracy_score * 100, 2),
+                "growth_potential": round(growth_potential * 100, 2) if growth_potential else 0,
+                "prediction_count": len(predictions)
+            })
+        
+        # 総合スコアでソート
+        rankings.sort(key=lambda x: x["composite_score"], reverse=True)
+        return rankings[:limit]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"総合ランキング取得エラー: {str(e)}")

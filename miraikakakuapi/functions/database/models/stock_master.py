@@ -1,9 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Numeric
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
-
-Base = declarative_base()
+from .base import Base
 
 class StockMaster(Base):
     __tablename__ = "stock_master"

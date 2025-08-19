@@ -26,10 +26,19 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/api/auth/login",
             "/api/auth/register"
         }
+        
+        # 認証不要のパスパターン（公開データ）
+        self.public_path_patterns = [
+            "/api/finance/stocks/",  # 株価データは公開
+            "/api/finance/markets/", # 市場データは公開
+            "/api/finance/rankings/", # ランキングデータは公開
+        ]
 
     async def dispatch(self, request: Request, call_next):
         # 公開エンドポイントは認証をスキップ
-        if request.url.path in self.public_endpoints or request.url.path.startswith("/static"):
+        if (request.url.path in self.public_endpoints or 
+            request.url.path.startswith("/static") or
+            any(request.url.path.startswith(pattern) for pattern in self.public_path_patterns)):
             return await call_next(request)
 
         # Authorizationヘッダーをチェック

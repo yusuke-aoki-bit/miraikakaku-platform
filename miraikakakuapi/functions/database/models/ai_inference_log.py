@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text, Numeric, Boolean
-from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
-
-Base = declarative_base()
+from .base import Base
 
 class AIInferenceLog(Base):
     __tablename__ = "ai_inference_log"

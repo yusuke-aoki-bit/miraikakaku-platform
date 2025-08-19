@@ -29,7 +29,7 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
 
   const connect = () => {
     try {
-      const wsUrl = url.startsWith('ws') ? url : `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'}${url}`;
+      const wsUrl = url.startsWith('ws') ? url : `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8001'}${url}`;
       ws.current = new WebSocket(wsUrl);
 
       ws.current.onopen = () => {

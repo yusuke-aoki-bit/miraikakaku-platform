@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
     "dev:unified": "./scripts/dev-unified.sh",
     "env:init": "./scripts/env-manager.sh init",
     "env:validate": "./scripts/env-manager.sh validate"
@@ -19,6 +23,7 @@
     "@types/plotly.js": "^2.35.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.21",
     "bcryptjs": "^2.4.3",
     "chart.js": "^4.4.7",
@@ -36,15 +41,18 @@
     "recharts": "^2.13.3",
     "swr": "^2.2.5",
     "typescript": "^5.7.2",
+    "uuid": "^11.1.0",
     "zod": "^3.24.1",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.1.0",
+    "@playwright/test": "^1.54.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/react-plotly.js": "^2.6.3",
     "eslint": "^8",
     "eslint-config-next": "15.1.0",
+    "playwright": "^1.54.2",
     "postcss": "^8",
     "tailwindcss": "^3.4.1"
   }

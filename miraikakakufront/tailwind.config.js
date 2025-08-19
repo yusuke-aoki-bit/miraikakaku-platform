@@ -8,29 +8,33 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'youtube-red': {
-          500: '#FF0000',
-          600: '#CC0000',
-          700: '#B30000',
-        },
-        'youtube-dark': {
-          50: '#0F0F0F',
-          100: '#1A1A1A',
-          200: '#272727',
-          300: '#3F3F3F',
-          400: '#606060',
-          500: '#909090',
-        },
-        'gradient-pink': {
-          500: '#FF1744',
-          600: '#E91E63',
-        }
+        'brand-primary': '#DC2626', // A vibrant red for primary actions and branding
+        'brand-secondary': '#EC4899', // A complementary pink for accents
+        'brand-accent': '#8B5CF6', // A purple for highlights or interactive elements
+        'dark-bg': '#0A0A0A', // Main background color
+        'dark-card': '#1A1A1A', // Background for cards and sections
+        'dark-border': '#3F3F3F', // Border color for elements
+        'text-light': '#E5E7EB', // Light text color for dark backgrounds
+        'text-medium': '#9CA3AF', // Medium gray text for secondary info
+        'text-dark': '#6B7280', // Dark gray text for tertiary info
+      },
+      spacing: {
+        'layout-gap': '24px', // Consistent spacing for sections and cards
+        'section-py': '48px', // Vertical padding for main sections
+        'section-px': '32px', // Horizontal padding for main sections
+      },
+      borderRadius: {
+        'card-lg': '16px', // Large border radius for cards
+        'card-md': '12px', // Medium border radius
+        'card-sm': '8px', // Small border radius
+      },
+      boxShadow: {
+        'glass-light': '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)',
+        'glass-dark': '0 10px 15px rgba(0, 0, 0, 0.2), 0 4px 6px rgba(0, 0, 0, 0.1)',
       },
       backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-        'youtube-gradient': 'linear-gradient(135deg, #FF0000 0%, #FF1744 50%, #E91E63 100%)',
-        'dark-gradient': 'linear-gradient(135deg, #0F0F0F 0%, #1A1A1A 50%, #272727 100%)',
+        'gradient-brand': 'linear-gradient(135deg, var(--tw-colors-brand-primary) 0%, var(--tw-colors-brand-secondary) 100%)',
+        'gradient-dark': 'linear-gradient(135deg, var(--tw-colors-dark-bg) 0%, var(--tw-colors-dark-card) 100%)',
       },
       backdropBlur: {
         'xs': '2px',

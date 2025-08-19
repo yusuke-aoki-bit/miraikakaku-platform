@@ -44,7 +44,8 @@ jobs:
     - name: Build application
       run: npm run build
       env:
-        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8001
+        NEXT_PUBLIC_DATAFEED_URL: http://localhost:8000
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -178,6 +179,15 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
+    - name: Build and push Data Feed image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./miraikakakudatafeed
+        push: true
+        tags: gcr.io/${{ secrets.GCP_PROJECT_ID }}/miraikakaku-datafeed:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
     - name: Build and push Batch image
       uses: docker/build-push-action@v5
       with:
@@ -204,6 +214,7 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
 
     - name: Deploy API to Cloud Run
+      id: deploy-api
       run: |
         gcloud run deploy miraikakaku-api \
           --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/miraikakaku-api:${{ github.sha }} \
@@ -213,7 +224,23 @@ jobs:
           --memory 2Gi \
           --cpu 2 \
           --max-instances 10 \
-          --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }},VERTEX_AI_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}"
+          --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }},VERTEX_AI_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" \
+          --format="value(status.url)" > api_url.txt
+        echo "api_url=$(cat api_url.txt)" >> $GITHUB_OUTPUT
+
+    - name: Deploy Data Feed Service
+      id: deploy-datafeed
+      run: |
+        gcloud run deploy miraikakaku-datafeed \
+          --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/miraikakaku-datafeed:${{ github.sha }} \
+          --platform managed \
+          --region us-central1 \
+          --allow-unauthenticated \
+          --memory 1Gi \
+          --cpu 1 \
+          --max-instances 3 \
+          --format="value(status.url)" > datafeed_url.txt
+        echo "datafeed_url=$(cat datafeed_url.txt)" >> $GITHUB_OUTPUT
 
     - name: Deploy Frontend to Cloud Run
       run: |
@@ -225,7 +252,7 @@ jobs:
           --memory 1Gi \
           --cpu 1 \
           --max-instances 5 \
-          --set-env-vars="NEXT_PUBLIC_API_URL=https://miraikakaku-api-xxxxx-uc.a.run.app"
+          --set-env-vars="NEXT_PUBLIC_API_URL=${{ steps.deploy-api.outputs.api_url }},NEXT_PUBLIC_DATAFEED_URL=${{ steps.deploy-datafeed.outputs.datafeed_url }}"
 
     - name: Deploy Batch to Cloud Functions
       run: |

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
-import LoadingSpinner from './common/LoadingSpinner';
+import SkeletonLoader from './common/SkeletonLoader'; // Import SkeletonLoader
 
 interface Stock {
   symbol: string;
@@ -63,30 +63,31 @@ export default function StockSearch({ onSymbolSelect }: StockSearchProps) {
   };
 
   return (
-    <div className="relative w-full max-w-lg mx-auto">
+    <div className="relative w-full max-w-lg mx-auto" data-testid="stock-search">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-medium w-5 h-5" />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="株式シンボルまたは会社名で検索（例: AAPL, Apple）..."
-          className="youtube-search w-full pl-10 pr-4 py-3"
+          className="bg-dark-card border border-dark-border rounded-md w-full pl-10 pr-4 py-3 text-text-light focus:outline-none focus:ring-2 focus:ring-brand-primary"
+          data-testid="stock-search-input"
         />
       </div>
 
       {/* 検索結果 */}
       {stocks.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-10 mt-1 youtube-card max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-dark-card rounded-md max-h-60 overflow-y-auto shadow-lg border border-dark-border" data-testid="search-suggestions">
           {stocks.map((stock) => (
             <button
               key={stock.symbol}
               onClick={() => handleStockSelect(stock.symbol)}
-              className="w-full px-4 py-3 text-left hover:bg-gray-800/50 border-b border-gray-700/50 last:border-b-0 transition-all duration-150 group"
+              className="w-full px-4 py-3 text-left hover:bg-dark-border transition-all duration-150 group"
             >
-              <div className="font-semibold text-white group-hover:text-red-400 transition-colors">{stock.symbol}</div>
-              <div className="text-sm text-gray-300 truncate">{stock.company_name}</div>
-              <div className="text-xs text-gray-500">
+              <div className="font-semibold text-text-light group-hover:text-brand-primary transition-colors">{stock.symbol}</div>
+              <div className="text-sm text-text-medium truncate">{stock.company_name}</div>
+              <div className="text-xs text-text-dark">
                 {stock.exchange} {stock.sector && `• ${stock.sector}`}
               </div>
             </button>
@@ -94,14 +95,15 @@ export default function StockSearch({ onSymbolSelect }: StockSearchProps) {
         </div>
       )}
 
-      {/* ローディング */}
+      {/* ローディングスケルトン */}
       {loading && (
-        <div className="absolute top-full left-0 right-0 z-10 mt-1 youtube-card p-4">
-          <LoadingSpinner 
-            type="chart" 
-            size="sm" 
-            message="株式データを検索中..."
-          />
+        <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-dark-card rounded-md p-4 shadow-lg border border-dark-border">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="mb-3 last:mb-0">
+              <SkeletonLoader width="80%" height="18px" className="mb-1" />
+              <SkeletonLoader width="60%" height="14px" />
+            </div>
+          ))}
         </div>
       )}
     </div>

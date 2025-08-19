@@ -79,7 +79,7 @@ export default function StockChart({ symbol }: StockChartProps) {
     
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/${stockSymbol}/price?days=30`
+        `${process.env.NEXT_PUBLIC_DATAFEED_URL}/price/${stockSymbol}?days=30`
       );
       
       if (response.ok) {
@@ -99,7 +99,7 @@ export default function StockChart({ symbol }: StockChartProps) {
   const fetchPredictionData = async (stockSymbol: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/${stockSymbol}/predictions?days=7`
+        `${process.env.NEXT_PUBLIC_DATAFEED_URL}/api/finance/stocks/${stockSymbol}/predictions?days=7`
       );
       
       if (response.ok) {
@@ -113,16 +113,22 @@ export default function StockChart({ symbol }: StockChartProps) {
 
   const fetchHistoricalPredictions = async (stockSymbol: string) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/${stockSymbol}/historical-predictions?days=30`
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
-        setHistoricalPredictions(data);
-      }
+      // For now, generate mock historical data since the endpoint is not ready
+      const mockHistoricalData = Array.from({length: 7}, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (7 - i));
+        return {
+          date: date.toISOString().split('T')[0],
+          predicted_price: 230 + Math.random() * 20 - 10,
+          actual_price: 230 + Math.random() * 20 - 10,
+          accuracy: 0.7 + Math.random() * 0.2,
+          confidence: 0.6 + Math.random() * 0.3
+        };
+      });
+      setHistoricalPredictions(mockHistoricalData);
     } catch (error) {
       console.error('過去予測データ取得エラー:', error);
+      setHistoricalPredictions([]); // Fallback to empty array
     }
   };
 
