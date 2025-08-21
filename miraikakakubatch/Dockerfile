@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libssl-dev \
     cron \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Python依存関係をインストール
@@ -26,12 +27,12 @@ USER batchuser
 # ログディレクトリ作成
 RUN mkdir -p /app/logs
 
-# バッチ処理用のポートを公開（メトリクス用）
-EXPOSE 8001
+# HTTPサーバー用のポートを公開
+EXPOSE 8080
 
-# ヘルスチェック（軽量チェック）
+# ヘルスチェック
 HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
-    CMD python -c "import sys; sys.exit(0)"
+    CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
 # バッチ処理メイン実行
 CMD ["python", "main.py"]

@@ -19,12 +19,12 @@ async def search_stocks(
     try:
         stocks = db.query(StockMaster).filter(
             (StockMaster.symbol.contains(query.upper())) |
-            (StockMaster.company_name.contains(query))
+            (StockMaster.name.contains(query))
         ).filter(StockMaster.is_active == True).limit(limit).all()
         
         return [StockSearchResponse(
             symbol=stock.symbol,
-            company_name=stock.company_name,
+            company_name=stock.name,
             exchange=stock.exchange,
             sector=stock.sector,
             industry=stock.industry
@@ -68,7 +68,7 @@ async def get_stock_price(
 @router.get("/stocks/{symbol}/predictions", response_model=List[StockPredictionResponse])
 async def get_stock_predictions(
     symbol: str,
-    model_name: Optional[str] = Query(None, description="モデル名フィルター"),
+    model_type: Optional[str] = Query(None, description="モデルタイプフィルター"),
     days: int = Query(7, ge=1, le=30, description="予測期間"),
     db: Session = Depends(get_db)
 ):
@@ -76,22 +76,22 @@ async def get_stock_predictions(
     try:
         query_filter = db.query(StockPredictions).filter(
             StockPredictions.symbol == symbol.upper(),
-            StockPredictions.target_date >= datetime.utcnow()
+            StockPredictions.is_active == True
         )
         
-        if model_name:
-            query_filter = query_filter.filter(StockPredictions.model_name == model_name)
+        if model_type:
+            query_filter = query_filter.filter(StockPredictions.model_type == model_type)
         
-        predictions = query_filter.order_by(StockPredictions.target_date.asc()).limit(days).all()
+        predictions = query_filter.order_by(StockPredictions.prediction_date.desc()).limit(days).all()
         
         return [StockPredictionResponse(
             symbol=pred.symbol,
             prediction_date=pred.prediction_date,
-            target_date=pred.target_date,
             predicted_price=float(pred.predicted_price),
             confidence_score=float(pred.confidence_score) if pred.confidence_score else None,
-            model_name=pred.model_name,
-            prediction_type=pred.prediction_type
+            model_type=pred.model_type,
+            prediction_horizon=pred.prediction_horizon,
+            is_active=pred.is_active
         ) for pred in predictions]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"予測データ取得エラー: {str(e)}")
@@ -107,12 +107,12 @@ async def get_historical_predictions(
         end_date = datetime.utcnow()
         start_date = end_date - timedelta(days=days)
         
-        # 過去の予測データ（実際の日付が過ぎたもの）を取得
+        # 過去の予測データを取得
         predictions = db.query(StockPredictions).filter(
             StockPredictions.symbol == symbol.upper(),
-            StockPredictions.target_date >= start_date,
-            StockPredictions.target_date <= end_date
-        ).order_by(StockPredictions.target_date.desc()).all()
+            StockPredictions.prediction_date >= start_date,
+            StockPredictions.prediction_date <= end_date
+        ).order_by(StockPredictions.prediction_date.desc()).all()
         
         # 実際の株価データも取得して精度を計算
         actual_prices = db.query(StockPriceHistory).filter(
@@ -126,15 +126,15 @@ async def get_historical_predictions(
         
         result = []
         for pred in predictions:
-            target_date = pred.target_date.date() if hasattr(pred.target_date, 'date') else pred.target_date
-            actual_price = actual_price_map.get(target_date)
+            prediction_date = pred.prediction_date.date() if hasattr(pred.prediction_date, 'date') else pred.prediction_date
+            actual_price = actual_price_map.get(prediction_date)
             
             if actual_price:
                 predicted_price = float(pred.predicted_price)
                 accuracy = max(0, 1 - abs(predicted_price - actual_price) / actual_price)
                 
                 result.append({
-                    "date": target_date.isoformat(),
+                    "date": prediction_date.isoformat(),
                     "predicted_price": predicted_price,
                     "actual_price": actual_price,
                     "accuracy": accuracy,
@@ -176,8 +176,9 @@ async def get_accuracy_rankings(
             
             predictions = db.query(StockPredictions).filter(
                 StockPredictions.symbol == stock.symbol,
-                StockPredictions.target_date >= start_date,
-                StockPredictions.target_date <= end_date
+                StockPredictions.prediction_date >= start_date,
+                StockPredictions.prediction_date <= end_date,
+                StockPredictions.is_active == True
             ).all()
             
             if predictions:
@@ -186,7 +187,7 @@ async def get_accuracy_rankings(
                 
                 rankings.append({
                     "symbol": stock.symbol,
-                    "company_name": stock.company_name,
+                    "company_name": stock.name,
                     "accuracy_score": round(avg_accuracy * 100, 2),
                     "prediction_count": len(predictions)
                 })
@@ -211,8 +212,8 @@ async def get_growth_potential_rankings(
             # 最新の予測価格と現在価格を比較
             latest_prediction = db.query(StockPredictions).filter(
                 StockPredictions.symbol == stock.symbol,
-                StockPredictions.target_date >= datetime.utcnow()
-            ).order_by(StockPredictions.target_date.asc()).first()
+                StockPredictions.is_active == True
+            ).order_by(StockPredictions.prediction_date.desc()).first()
             
             current_price = db.query(StockPriceHistory).filter(
                 StockPriceHistory.symbol == stock.symbol
@@ -225,7 +226,7 @@ async def get_growth_potential_rankings(
                 
                 rankings.append({
                     "symbol": stock.symbol,
-                    "company_name": stock.company_name,
+                    "company_name": stock.name,
                     "current_price": current_price_val,
                     "predicted_price": predicted_price,
                     "growth_potential": round(growth_potential, 2),
@@ -255,8 +256,9 @@ async def get_composite_rankings(
             
             predictions = db.query(StockPredictions).filter(
                 StockPredictions.symbol == stock.symbol,
-                StockPredictions.target_date >= start_date,
-                StockPredictions.target_date <= end_date
+                StockPredictions.prediction_date >= start_date,
+                StockPredictions.prediction_date <= end_date,
+                StockPredictions.is_active == True
             ).all()
             
             accuracy_score = 0
@@ -267,8 +269,8 @@ async def get_composite_rankings(
             # 成長ポテンシャル計算
             latest_prediction = db.query(StockPredictions).filter(
                 StockPredictions.symbol == stock.symbol,
-                StockPredictions.target_date >= datetime.utcnow()
-            ).order_by(StockPredictions.target_date.asc()).first()
+                StockPredictions.is_active == True
+            ).order_by(StockPredictions.prediction_date.desc()).first()
             
             current_price = db.query(StockPriceHistory).filter(
                 StockPriceHistory.symbol == stock.symbol
@@ -285,7 +287,7 @@ async def get_composite_rankings(
             
             rankings.append({
                 "symbol": stock.symbol,
-                "company_name": stock.company_name,
+                "company_name": stock.name,
                 "composite_score": round(composite_score * 100, 2),
                 "accuracy_score": round(accuracy_score * 100, 2),
                 "growth_potential": round(growth_potential * 100, 2) if growth_potential else 0,

@@ -22,11 +22,11 @@ class StockPriceResponse(BaseModel):
 class StockPredictionResponse(BaseModel):
     symbol: str
     prediction_date: datetime
-    target_date: datetime
     predicted_price: float
     confidence_score: Optional[float] = None
-    model_name: str
-    prediction_type: str
+    model_type: str
+    prediction_horizon: int
+    is_active: bool
 
 class StockPredictionRequest(BaseModel):
     symbol: str

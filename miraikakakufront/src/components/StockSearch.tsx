@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
-import SkeletonLoader from './common/SkeletonLoader'; // Import SkeletonLoader
+import { SEARCH_CONFIG, UI_CONFIG } from '@/config/constants';
+import SkeletonLoader from './common/SkeletonLoader';
 
 interface Stock {
   symbol: string;
@@ -22,7 +23,7 @@ export default function StockSearch({ onSymbolSelect }: StockSearchProps) {
   const [loading, setLoading] = useState(false);
 
   const searchStocks = async (searchQuery: string) => {
-    if (searchQuery.length < 2) {
+    if (searchQuery.length < SEARCH_CONFIG.MIN_QUERY_LENGTH) {
       setStocks([]);
       return;
     }
@@ -51,7 +52,7 @@ export default function StockSearch({ onSymbolSelect }: StockSearchProps) {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       searchStocks(query);
-    }, 300);
+    }, SEARCH_CONFIG.DEBOUNCE_DELAY);
 
     return () => clearTimeout(timeoutId);
   }, [query]);
@@ -98,7 +99,7 @@ export default function StockSearch({ onSymbolSelect }: StockSearchProps) {
       {/* ローディングスケルトン */}
       {loading && (
         <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-dark-card rounded-md p-4 shadow-lg border border-dark-border">
-          {[...Array(3)].map((_, i) => (
+          {[...Array(UI_CONFIG.SKELETON_ITEMS)].map((_, i) => (
             <div key={i} className="mb-3 last:mb-0">
               <SkeletonLoader width="80%" height="18px" className="mb-1" />
               <SkeletonLoader width="60%" height="14px" />

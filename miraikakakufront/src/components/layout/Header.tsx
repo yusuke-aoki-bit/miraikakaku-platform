@@ -2,7 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Bell, Settings, User, Menu, X } from 'lucide-react';
+import { Search, Bell, Settings, User, Menu, X, Accessibility } from 'lucide-react';
+import UserModeToggle from '@/components/common/UserModeToggle';
+// import AccessibilitySettings from '@/components/accessibility/AccessibilitySettings';
+// import { useAccessibilityContext } from '@/components/accessibility/AccessibilityProvider';
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -13,6 +16,8 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  // const [showA11ySettings, setShowA11ySettings] = useState(false);
+  // const { announce } = useAccessibilityContext();
 
   const handleSearch = async (query: string) => {
     if (query.length < 2) {
@@ -53,7 +58,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
         >
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <Link href="/" className="text-xl md:text-2xl font-bold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent whitespace-nowrap">
+        <Link href="/" className="text-xl md:text-2xl font-bold bg-gradient-to-r from-base-blue-500 to-base-blue-400 bg-clip-text text-transparent whitespace-nowrap">
           Miraikakaku
         </Link>
       </div>
@@ -96,13 +101,43 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 
       {/* Right Section */}
       <div className="flex items-center space-x-2 md:space-x-4 w-1/4 justify-end">
-        <button className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-800/50 transition-all">
+        <UserModeToggle size="sm" showLabels={false} className="mr-2" />
+        <button 
+          onClick={() => {
+            // Open notifications panel
+            console.log('Open notifications');
+          }}
+          className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-800/50 transition-all"
+          aria-label="通知"
+        >
           <Bell size={20} />
         </button>
-        <Link href="/settings" className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-800/50 transition-all">
+        <button
+          onClick={() => {
+            // Open accessibility settings
+            console.log('Open accessibility settings');
+          }}
+          className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-800/50 transition-all"
+          aria-label="アクセシビリティ設定"
+          title="アクセシビリティ設定 (Alt + A)"
+        >
+          <Accessibility size={20} />
+        </button>
+        <Link 
+          href="/settings" 
+          className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-800/50 transition-all"
+          aria-label="設定"
+        >
           <Settings size={20} />
         </Link>
-        <button className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-800/50 transition-all">
+        <button 
+          onClick={() => {
+            // Open user menu
+            console.log('Open user menu');
+          }}
+          className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-800/50 transition-all"
+          aria-label="ユーザーメニュー"
+        >
           <User size={20} />
         </button>
       </div>

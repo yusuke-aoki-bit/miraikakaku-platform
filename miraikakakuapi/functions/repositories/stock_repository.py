@@ -21,7 +21,7 @@ class StockRepository:
         """株式検索"""
         return self.db.query(StockMaster).filter(
             (StockMaster.symbol.contains(query.upper())) |
-            (StockMaster.company_name.contains(query))
+            (StockMaster.name.contains(query))
         ).filter(StockMaster.is_active == True).limit(limit).all()
 
     def get_all_active_stocks(self) -> List[StockMaster]:
@@ -95,24 +95,25 @@ class StockRepository:
     def get_predictions(
         self,
         symbol: str,
-        model_name: Optional[str] = None,
-        prediction_type: Optional[str] = None,
+        model_type: Optional[str] = None,
+        prediction_horizon: Optional[int] = None,
         start_date: Optional[datetime] = None,
         limit: Optional[int] = None
     ) -> List[StockPredictions]:
         """予測データを取得"""
         query = self.db.query(StockPredictions).filter(
-            StockPredictions.symbol == symbol.upper()
+            StockPredictions.symbol == symbol.upper(),
+            StockPredictions.is_active == True
         )
         
-        if model_name:
-            query = query.filter(StockPredictions.model_name == model_name)
-        if prediction_type:
-            query = query.filter(StockPredictions.prediction_type == prediction_type)
+        if model_type:
+            query = query.filter(StockPredictions.model_type == model_type)
+        if prediction_horizon:
+            query = query.filter(StockPredictions.prediction_horizon == prediction_horizon)
         if start_date:
-            query = query.filter(StockPredictions.target_date >= start_date)
+            query = query.filter(StockPredictions.prediction_date >= start_date)
             
-        query = query.order_by(StockPredictions.target_date.asc())
+        query = query.order_by(StockPredictions.prediction_date.desc())
         
         if limit:
             query = query.limit(limit)
@@ -139,32 +140,34 @@ class StockRepository:
         ).first()
         
         if prediction:
-            prediction.actual_price = actual_price
-            prediction.accuracy_score = accuracy_score
-            prediction.is_validated = True
+            # Cloud SQLの実際のスキーマに合わせてコメントアウト
+            # prediction.actual_price = actual_price
+            # prediction.accuracy_score = accuracy_score
+            # prediction.is_validated = True
+            prediction.is_accurate = accuracy_score > 0.7  # is_accurateフィールドを使用
             self.db.commit()
             self.db.refresh(prediction)
             
         return prediction
 
     # 統計・集計メソッド
-    def get_model_performance_stats(self, model_name: str) -> dict:
+    def get_model_performance_stats(self, model_type: str) -> dict:
         """モデルの性能統計を取得"""
-        validated_predictions = self.db.query(StockPredictions).filter(
-            StockPredictions.model_name == model_name,
-            StockPredictions.is_validated == True,
-            StockPredictions.accuracy_score.isnot(None)
+        active_predictions = self.db.query(StockPredictions).filter(
+            StockPredictions.model_type == model_type,
+            StockPredictions.is_active == True,
+            StockPredictions.confidence_score.isnot(None)
         ).all()
         
-        if not validated_predictions:
-            return {"error": "検証済み予測データがありません"}
+        if not active_predictions:
+            return {"error": "アクティブな予測データがありません"}
         
-        accuracy_scores = [p.accuracy_score for p in validated_predictions if p.accuracy_score]
+        confidence_scores = [p.confidence_score for p in active_predictions if p.confidence_score]
         
         return {
-            "model_name": model_name,
-            "total_predictions": len(validated_predictions),
-            "avg_accuracy": sum(accuracy_scores) / len(accuracy_scores) if accuracy_scores else 0,
-            "min_accuracy": min(accuracy_scores) if accuracy_scores else 0,
-            "max_accuracy": max(accuracy_scores) if accuracy_scores else 0,
+            "model_type": model_type,
+            "total_predictions": len(active_predictions),
+            "avg_confidence": sum(confidence_scores) / len(confidence_scores) if confidence_scores else 0,
+            "min_confidence": min(confidence_scores) if confidence_scores else 0,
+            "max_confidence": max(confidence_scores) if confidence_scores else 0,
         }

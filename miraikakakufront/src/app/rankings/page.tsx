@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, TrendingUp, Target, Medal } from 'lucide-react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import InvestmentRecommendation from '@/components/investment/InvestmentRecommendation';
 
 interface GrowthRanking {
   symbol: string;
@@ -71,10 +72,10 @@ export default function RankingsPage() {
   };
 
   const getRankIcon = (index: number) => {
-    if (index === 0) return <Medal className="w-5 h-5 text-yellow-400" />;
-    if (index === 1) return <Medal className="w-5 h-5 text-gray-300" />;
-    if (index === 2) return <Medal className="w-5 h-5 text-orange-400" />;
-    return <span className="w-5 h-5 flex items-center justify-center text-gray-400 font-bold text-sm">{index + 1}</span>;
+    if (index === 0) return <Medal className="w-5 h-5 text-icon-green" />;
+    if (index === 1) return <Medal className="w-5 h-5 text-base-gray-400" />;
+    if (index === 2) return <Medal className="w-5 h-5 text-icon-red" />;
+    return <span className="w-5 h-5 flex items-center justify-center text-base-gray-400 font-bold text-sm">{index + 1}</span>;
   };
 
   if (loading) {
@@ -86,67 +87,72 @@ export default function RankingsPage() {
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-white mb-6 flex items-center">
-        <Trophy className="w-6 h-6 mr-2 text-yellow-400" />
-        銘柄ランキング
-      </h1>
+    <div className="page-container">
+      <div className="page-content">
+        <div className="page-header">
+          <h1 className="page-title flex items-center">
+            <Trophy className="w-6 h-6 mr-2 text-icon-green" />
+            銘柄ランキング
+          </h1>
+        </div>
 
-      <div className="flex space-x-4 mb-6 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('composite')}
-          className={`youtube-button px-6 py-2 whitespace-nowrap ${
-            activeTab === 'composite' ? 'bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
-          }`}
-        >
-          <Trophy className="w-4 h-4 mr-2" />
-          統合ランキング
-        </button>
-        <button
-          onClick={() => setActiveTab('growth')}
-          className={`youtube-button px-6 py-2 whitespace-nowrap ${
-            activeTab === 'growth' ? 'bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
-          }`}
-        >
-          <TrendingUp className="w-4 h-4 mr-2" />
-          上昇予測ランキング
-        </button>
-        <button
-          onClick={() => setActiveTab('accuracy')}
-          className={`youtube-button px-6 py-2 whitespace-nowrap ${
-            activeTab === 'accuracy' ? 'bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
-          }`}
-        >
-          <Target className="w-4 h-4 mr-2" />
-          予測精度ランキング
-        </button>
-      </div>
+        <div className="flex space-x-4 mb-6 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('composite')}
+            className={`${activeTab === 'composite' ? 'btn-primary' : 'btn-secondary'} px-6 py-2 whitespace-nowrap`}
+          >
+            <Trophy className="w-4 h-4 mr-2" />
+            統合ランキング
+          </button>
+          <button
+            onClick={() => setActiveTab('growth')}
+            className={`${activeTab === 'growth' ? 'btn-primary' : 'btn-secondary'} px-6 py-2 whitespace-nowrap`}
+          >
+            <TrendingUp className="w-4 h-4 mr-2" />
+            上昇予測ランキング
+          </button>
+          <button
+            onClick={() => setActiveTab('accuracy')}
+            className={`${activeTab === 'accuracy' ? 'btn-primary' : 'btn-secondary'} px-6 py-2 whitespace-nowrap`}
+          >
+            <Target className="w-4 h-4 mr-2" />
+            予測精度ランキング
+          </button>
+        </div>
 
-      {activeTab === 'growth' && (
-        <div className="youtube-card p-6">
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <TrendingUp className="w-5 h-5 mr-2 text-green-400" />
+        {activeTab === 'growth' && (
+          <div className="card-primary card-content">
+            <h2 className="card-title mb-4 flex items-center">
+            <TrendingUp className="w-5 h-5 mr-2 text-icon-green" />
             7日間上昇予測ランキング
           </h2>
           <div className="space-y-3">
             {growthRankings.filter(stock => stock && stock.symbol).map((stock, index) => (
-              <div key={stock.symbol} className="flex items-center justify-between p-4 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-all">
+              <div key={stock.symbol} className="stock-card grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="flex items-center space-x-4">
                   {getRankIcon(index)}
                   <div>
-                    <h3 className="text-white font-semibold">{stock.symbol || 'N/A'}</h3>
-                    <p className="text-gray-400 text-sm">{stock.company_name || 'N/A'}</p>
+                    <h3 className="stock-symbol">{stock.symbol || 'N/A'}</h3>
+                    <p className="stock-name">{stock.company_name || 'N/A'}</p>
                   </div>
                 </div>
                 
-                <div className="text-right">
-                  <div className="text-green-400 font-bold text-lg">
+                <div className="flex items-center justify-center">
+                  <InvestmentRecommendation 
+                    symbol={stock.symbol} 
+                    currentPrice={stock.current_price || 100}
+                    showDetailed={false}
+                  />
+                </div>
+                
+                <div className="text-right flex flex-col justify-center">
+                  <div className="text-icon-green font-bold text-lg">
                     +{(stock.growth_potential || 0).toFixed(2)}%
                   </div>
-                  <div className="text-gray-400 text-sm">
+                  <div className="text-base-gray-400 text-sm">
                     ${(stock.current_price || 0).toFixed(2)} → ${(stock.predicted_price || 0).toFixed(2)}
                   </div>
-                  <div className="text-gray-500 text-xs">
+                  <div className="text-base-gray-500 text-xs">
                     信頼度: {((stock.confidence || 0) * 100).toFixed(0)}%
                   </div>
                 </div>
@@ -158,34 +164,34 @@ export default function RankingsPage() {
 
       {activeTab === 'composite' && (
         <div className="youtube-card p-6">
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <Trophy className="w-5 h-5 mr-2 text-yellow-400" />
+          <h2 className="text-lg font-semibold text-text-white mb-4 flex items-center">
+            <Trophy className="w-5 h-5 mr-2 text-icon-green" />
             統合指標ランキング (成長予測×予測精度)
           </h2>
-          <div className="mb-4 p-3 bg-blue-600/20 border border-blue-500/30 rounded-lg">
-            <p className="text-blue-300 text-sm">
+          <div className="mb-4 p-3 bg-base-blue-600/20 border border-base-blue-500/30 rounded-lg">
+            <p className="text-base-blue-400 text-sm">
               <strong>統合スコア計算式:</strong> (成長ポテンシャル 40% + 予測精度 60%) × 信頼度調整
             </p>
           </div>
           <div className="space-y-3">
             {compositeRankings.filter(stock => stock && stock.symbol).map((stock, index) => (
-              <div key={stock.symbol} className="flex items-center justify-between p-4 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-all">
+              <div key={stock.symbol} className="flex items-center justify-between p-4 rounded-lg bg-base-gray-800/30 hover:bg-base-gray-800/50 transition-all">
                 <div className="flex items-center space-x-4">
                   {getRankIcon(index)}
                   <div>
-                    <h3 className="text-white font-semibold">{stock.symbol || 'N/A'}</h3>
-                    <p className="text-gray-400 text-sm">{stock.company_name || 'N/A'}</p>
+                    <h3 className="stock-symbol">{stock.symbol || 'N/A'}</h3>
+                    <p className="stock-name">{stock.company_name || 'N/A'}</p>
                   </div>
                 </div>
                 
                 <div className="text-right">
-                  <div className="text-yellow-400 font-bold text-lg">
+                  <div className="text-icon-green font-bold text-lg">
                     {(stock.composite_score || 0).toFixed(1)}点
                   </div>
-                  <div className="text-gray-400 text-sm">
+                  <div className="text-base-gray-400 text-sm">
                     成長: +{(stock.growth_potential || 0).toFixed(2)}% | 精度: {(stock.accuracy_score || 0).toFixed(1)}%
                   </div>
-                  <div className="text-gray-500 text-xs">
+                  <div className="text-base-gray-500 text-xs">
                     予測数: {stock.prediction_count || 0}
                   </div>
                 </div>
@@ -197,26 +203,26 @@ export default function RankingsPage() {
 
       {activeTab === 'accuracy' && (
         <div className="youtube-card p-6">
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <Target className="w-5 h-5 mr-2 text-blue-400" />
+          <h2 className="text-lg font-semibold text-text-white mb-4 flex items-center">
+            <Target className="w-5 h-5 mr-2 text-base-blue-500" />
             AI予測精度ランキング (MAE基準)
           </h2>
           <div className="space-y-3">
             {accuracyRankings.filter(stock => stock && stock.symbol).map((stock, index) => (
-              <div key={stock.symbol} className="flex items-center justify-between p-4 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-all">
+              <div key={stock.symbol} className="flex items-center justify-between p-4 rounded-lg bg-base-gray-800/30 hover:bg-base-gray-800/50 transition-all">
                 <div className="flex items-center space-x-4">
                   {getRankIcon(index)}
                   <div>
-                    <h3 className="text-white font-semibold">{stock.symbol || 'N/A'}</h3>
-                    <p className="text-gray-400 text-sm">{stock.company_name || 'N/A'}</p>
+                    <h3 className="stock-symbol">{stock.symbol || 'N/A'}</h3>
+                    <p className="stock-name">{stock.company_name || 'N/A'}</p>
                   </div>
                 </div>
                 
                 <div className="text-right">
-                  <div className="text-blue-400 font-bold text-lg">
+                  <div className="text-base-blue-500 font-bold text-lg">
                     {(stock.accuracy_score || 0).toFixed(1)}%
                   </div>
-                  <div className="text-gray-500 text-xs">
+                  <div className="text-base-gray-500 text-xs">
                     予測数: {stock.prediction_count || 0}
                   </div>
                 </div>
@@ -224,7 +230,8 @@ export default function RankingsPage() {
             ))}
           </div>
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

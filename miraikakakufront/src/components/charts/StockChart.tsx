@@ -31,6 +31,7 @@ ChartJS.register(
 
 interface StockChartProps {
   symbol: string;
+  timeframe?: string;
 }
 
 interface PriceData {
@@ -148,8 +149,8 @@ export default function StockChart({ symbol }: StockChartProps) {
           const pricePoint = priceData.find(d => d.date === date);
           return pricePoint ? pricePoint.close_price : null;
         }),
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderColor: '#2196f3',
+        backgroundColor: 'rgba(33, 150, 243, 0.1)',
         tension: 0.1,
         fill: false,
         pointRadius: 3,
@@ -160,8 +161,8 @@ export default function StockChart({ symbol }: StockChartProps) {
           const predPoint = predictionData.find(d => d.date === date);
           return predPoint ? predPoint.predicted_price : null;
         }),
-        borderColor: 'rgb(255, 99, 71)',
-        backgroundColor: 'rgba(255, 99, 71, 0.1)',
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
         tension: 0.1,
         fill: false,
         borderDash: [5, 5],
@@ -173,8 +174,8 @@ export default function StockChart({ symbol }: StockChartProps) {
           const predPoint = predictionData.find(d => d.date === date);
           return predPoint ? predPoint.upper_bound : null;
         }),
-        borderColor: 'rgba(255, 99, 71, 0.3)',
-        backgroundColor: 'rgba(255, 99, 71, 0.05)',
+        borderColor: 'rgba(239, 68, 68, 0.3)',
+        backgroundColor: 'rgba(239, 68, 68, 0.05)',
         tension: 0.1,
         fill: '+1',
         pointRadius: 0,
@@ -186,8 +187,8 @@ export default function StockChart({ symbol }: StockChartProps) {
           const predPoint = predictionData.find(d => d.date === date);
           return predPoint ? predPoint.lower_bound : null;
         }),
-        borderColor: 'rgba(255, 99, 71, 0.3)',
-        backgroundColor: 'rgba(255, 99, 71, 0.05)',
+        borderColor: 'rgba(239, 68, 68, 0.3)',
+        backgroundColor: 'rgba(239, 68, 68, 0.05)',
         tension: 0.1,
         fill: false,
         pointRadius: 0,
@@ -199,8 +200,8 @@ export default function StockChart({ symbol }: StockChartProps) {
           const histPred = historicalPredictions.find(d => d.date === date);
           return histPred ? histPred.predicted_price : null;
         }),
-        borderColor: 'rgb(147, 51, 234)',
-        backgroundColor: 'rgba(147, 51, 234, 0.1)',
+        borderColor: '#42a5f5',
+        backgroundColor: 'rgba(66, 165, 245, 0.1)',
         tension: 0.1,
         fill: false,
         borderDash: [3, 3],
@@ -208,9 +209,9 @@ export default function StockChart({ symbol }: StockChartProps) {
         pointBackgroundColor: function(context: any) {
           const date = uniqueDates[context.dataIndex];
           const histPred = historicalPredictions.find(d => d.date === date);
-          if (histPred && histPred.accuracy > 0.8) return 'rgb(34, 197, 94)';
-          if (histPred && histPred.accuracy > 0.6) return 'rgb(234, 179, 8)';
-          return 'rgb(239, 68, 68)';
+          if (histPred && histPred.accuracy > 0.8) return '#10b981';
+          if (histPred && histPred.accuracy > 0.6) return '#2196f3';
+          return '#ef4444';
         },
       },
     ],
@@ -282,8 +283,8 @@ export default function StockChart({ symbol }: StockChartProps) {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-96 bg-red-50 rounded-lg">
-        <div className="text-center text-red-600">
+      <div className="flex items-center justify-center h-96 bg-icon-red/10 rounded-lg">
+        <div className="text-center text-icon-red">
           <div className="text-lg font-semibold mb-2">エラー</div>
           <div>{error}</div>
         </div>

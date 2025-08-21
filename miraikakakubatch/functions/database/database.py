@@ -1,29 +1,20 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+# 共通のデータベース設定を使用
+import sys
 import os
-from dotenv import load_dotenv
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../shared'))
 
-load_dotenv()
+from config.database import get_db, init_database, SessionLocal, db_config
+from sqlalchemy.orm import Session
 
-DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://user:password@localhost:3306/miraikakaku")
-
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    echo=os.getenv("LOG_LEVEL") == "DEBUG"
-)
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base = declarative_base()
+# 既存コードとの互換性のため
+engine = db_config.get_engine()
 
 def get_db_session() -> Session:
     """データベースセッションを取得"""
     return SessionLocal()
 
-def init_database():
-    """データベースを初期化"""
+def init_database_batch():
+    """バッチ固有のデータベース初期化"""
     from .models import stock_master, stock_price_history, stock_predictions, ai_inference_log
+    from shared.models.base import Base
     Base.metadata.create_all(bind=engine)

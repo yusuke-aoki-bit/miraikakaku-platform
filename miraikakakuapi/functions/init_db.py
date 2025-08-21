@@ -158,13 +158,14 @@ def create_sample_data():
                     
                     prediction = StockPredictions(
                         symbol=symbol,
-                        prediction_date=datetime.now(),
-                        target_date=prediction_date,
+                        prediction_date=prediction_date,
+                        created_at=datetime.now(),
                         predicted_price=round(predicted_price, 2),
                         confidence_score=round(confidence, 4),
-                        prediction_type="daily",
-                        model_name="sample_model_v1.0",
-                        model_version="1.0.0"
+                        model_type="sample_model_v1.0",
+                        model_version="1.0.0",
+                        prediction_horizon=i,
+                        is_active=True
                     )
                     db.add(prediction)
                 

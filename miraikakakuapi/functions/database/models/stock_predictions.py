@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Numeric, ForeignKey, Text, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Text, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .base import Base
@@ -9,17 +9,17 @@ class StockPredictions(Base):
     id = Column(Integer, primary_key=True, index=True)
     symbol = Column(String(20), ForeignKey("stock_master.symbol"), nullable=False, index=True)
     prediction_date = Column(DateTime, nullable=False, index=True)
-    target_date = Column(DateTime, nullable=False)
-    predicted_price = Column(Numeric(12, 4), nullable=False)
-    confidence_score = Column(Numeric(5, 4))
-    prediction_type = Column(String(50), nullable=False)  # 'daily', 'weekly', 'monthly'
-    model_name = Column(String(100), nullable=False)
-    model_version = Column(String(50))
-    features_used = Column(Text)  # JSON形式で使用した特徴量を保存
-    actual_price = Column(Numeric(12, 4))  # 実際の価格（後で更新）
-    accuracy_score = Column(Numeric(5, 4))  # 精度スコア
-    is_validated = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False)
+    predicted_price = Column(Float, nullable=False)
+    predicted_change = Column(Float)
+    predicted_change_percent = Column(Float)
+    confidence_score = Column(Float)
+    model_type = Column(String(50), nullable=False)  # Cloud SQLではmodel_type
+    model_version = Column(String(20))
+    prediction_horizon = Column(Integer, nullable=False)
+    is_active = Column(Boolean, nullable=False)
+    is_accurate = Column(Boolean)
+    notes = Column(Text)
     
     # リレーションシップ
     stock = relationship("StockMaster", back_populates="predictions")
