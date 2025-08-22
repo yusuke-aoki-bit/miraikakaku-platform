@@ -7,7 +7,7 @@ import HeroSection from '@/components/home/HeroSection';
 import MarketOverview from '@/components/home/MarketOverview';
 import AIInsights from '@/components/home/AIInsights';
 import AdvancedStockSearch from '@/components/search/AdvancedStockSearch';
-import { Bell, BookOpen, TrendingUp, Users } from 'lucide-react';
+
 import Link from 'next/link';
 
 export default function Home() {
@@ -84,9 +84,9 @@ export default function Home() {
                   category="セクター"
                 />
               </div>
-              <button className="w-full mt-4 btn-ghost btn-sm text-primary">
+              <Link href="/news" className="block w-full mt-4 btn-ghost btn-sm text-primary text-center">
                 すべてのニュースを見る →
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -110,7 +110,7 @@ function NewsItem({ time, title, category }: NewsItemProps) {
   };
 
   return (
-    <div className="group cursor-pointer hover:bg-neutral-800/20 p-2 rounded-lg transition-colors">
+    <Link href="/news/1" className="block group hover:bg-neutral-800/20 p-2 rounded-lg transition-colors">
       <div className="flex items-start space-x-3">
         <span className="text-neutral-400 text-xs mt-1 whitespace-nowrap">{time}</span>
         <div className="flex-1">
@@ -122,6 +122,6 @@ function NewsItem({ time, title, category }: NewsItemProps) {
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

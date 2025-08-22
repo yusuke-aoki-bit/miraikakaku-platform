@@ -99,9 +99,8 @@ def init_database():
     """データベース初期化（テーブル作成）"""
     from database.models import (
         StockMaster, 
-        StockPrices, 
+        StockPriceHistory, 
         StockPredictions,
-        BatchLogs,
         AIInferenceLog
     )
     

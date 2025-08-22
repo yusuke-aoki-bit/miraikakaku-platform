@@ -28,7 +28,9 @@ import {
   Download,
   Upload,
   RefreshCw,
-  HelpCircle
+  HelpCircle,
+  DollarSign,
+  Globe
 } from 'lucide-react';
 
 interface NavigationStore {
@@ -129,6 +131,24 @@ export const useNavigationStore = create<NavigationStore>()(
                 icon: Brain,
                 category: 'secondary',
                 userLevel: ['intermediate', 'advanced']
+              },
+              {
+                id: 'volume',
+                label: '出来高分析',
+                href: '/volume',
+                icon: BarChart3,
+                category: 'secondary',
+                userLevel: ['intermediate', 'advanced'],
+                description: '出来高の実測値・過去予測・未来予測'
+              },
+              {
+                id: 'currency',
+                label: '為替予測',
+                href: '/currency',
+                icon: DollarSign,
+                category: 'secondary',
+                userLevel: ['intermediate', 'advanced'],
+                description: '主要通貨ペアのAI予測'
               }
             ]
           },

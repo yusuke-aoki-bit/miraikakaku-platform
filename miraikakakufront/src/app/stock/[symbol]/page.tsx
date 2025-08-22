@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Star, TrendingUp, TrendingDown, Activity, DollarSign, Calendar, Info } from 'lucide-react';
 import Link from 'next/link';
-import EnhancedStockChart from '@/components/charts/EnhancedStockChart';
+import TripleChart from '@/components/charts/TripleChart';
 import InvestmentRecommendation from '@/components/investment/InvestmentRecommendation';
 
 interface StockData {
@@ -46,7 +46,6 @@ export default function StockDetailPage() {
   });
 
   const [isInWatchlist, setIsInWatchlist] = useState(false);
-  const [timeframe, setTimeframe] = useState('1D');
 
   // Check if stock is in watchlist
   useEffect(() => {
@@ -77,8 +76,6 @@ export default function StockDetailPage() {
     setIsInWatchlist(!isInWatchlist);
   };
 
-  const timeframes = ['1D', '1W', '1M', '3M', '1Y', 'ALL'];
-
   return (
     <div className="min-h-full bg-black p-6">
       <div className="max-w-7xl mx-auto">
@@ -88,6 +85,7 @@ export default function StockDetailPage() {
             <Link 
               href="/"
               className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              aria-label="戻る"
             >
               <ArrowLeft className="w-5 h-5 text-gray-400" />
             </Link>
@@ -101,6 +99,7 @@ export default function StockDetailPage() {
                       ? 'bg-yellow-500/20 text-yellow-400' 
                       : 'bg-gray-800 text-gray-400 hover:text-yellow-400'
                   }`}
+                  aria-label={isInWatchlist ? 'ウォッチリストから削除' : 'ウォッチリストに追加'}
                 >
                   <Star className={`w-5 h-5 ${isInWatchlist ? 'fill-current' : ''}`} />
                 </button>
@@ -117,9 +116,9 @@ export default function StockDetailPage() {
               stockData.change > 0 ? 'text-green-400' : 'text-red-400'
             }`}>
               {stockData.change > 0 ? (
-                <TrendingUp className="w-5 h-5" />
+                <><TrendingUp className="w-5 h-5" /><span className="sr-only">上昇</span></>
               ) : (
-                <TrendingDown className="w-5 h-5" />
+                <><TrendingDown className="w-5 h-5" /><span className="sr-only">下落</span></>
               )}
               <span className="font-medium">
                 {stockData.change > 0 ? '+' : ''}{stockData.change} ({stockData.changePercent > 0 ? '+' : ''}{stockData.changePercent}%)
@@ -133,27 +132,7 @@ export default function StockDetailPage() {
           {/* Chart Section */}
           <div className="lg:col-span-2">
             <div className="bg-gray-900/50 rounded-2xl border border-gray-800/50 p-6">
-              {/* Timeframe Selector */}
-              <div className="flex space-x-2 mb-6">
-                {timeframes.map((tf) => (
-                  <button
-                    key={tf}
-                    onClick={() => setTimeframe(tf)}
-                    className={`px-4 py-2 rounded-lg transition-all ${
-                      timeframe === tf
-                        ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        : 'bg-gray-800/50 text-gray-400 hover:bg-gray-800'
-                    }`}
-                  >
-                    {tf}
-                  </button>
-                ))}
-              </div>
-              
-              {/* Enhanced Chart with AI Predictions */}
-              <div className="h-96">
-                <EnhancedStockChart symbol={symbol} timeframe={timeframe} />
-              </div>
+              <TripleChart symbol={symbol} />
             </div>
 
             {/* Key Stats */}
@@ -223,9 +202,9 @@ function StatCard({ label, value }: { label: string; value: string }) {
 
 function RelatedStock({ symbol, name, change }: { symbol: string; name: string; change: number }) {
   return (
-    <div 
+    <Link 
+      href={`/stock/${symbol}`}
       className="flex items-center justify-between p-3 bg-black/30 rounded-lg hover:bg-black/50 transition-colors cursor-pointer"
-      onClick={() => window.location.href = `/stock/${symbol}`}
     >
       <div>
         <div className="text-white font-medium">{symbol}</div>
@@ -234,6 +213,6 @@ function RelatedStock({ symbol, name, change }: { symbol: string; name: string; 
       <div className={`font-medium ${change > 0 ? 'text-green-400' : 'text-red-400'}`}>
         {change > 0 ? '+' : ''}{change}%
       </div>
-    </div>
+    </Link>
   );
 }

@@ -15,14 +15,13 @@ except ImportError:
     class StockMaster(Base):
         __tablename__ = "stock_master"
         
-        symbol = Column(String(20), primary_key=True, index=True, nullable=False)
-        name = Column(String(200), nullable=False)
-        exchange = Column(String(255))
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        symbol = Column(String(20), nullable=False, unique=True, index=True)
+        name = Column(String(255), nullable=False)
         sector = Column(String(100))
-        industry = Column(String(100))
-        country = Column(String(50))
-        website = Column(String(200))
-        description = Column(Text)
+        market = Column(String(50))
+        country = Column(String(50), default='Japan')
+        currency = Column(String(10), default='JPY')
         is_active = Column(Boolean, default=True)
         created_at = Column(DateTime, default=datetime.utcnow)
         updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

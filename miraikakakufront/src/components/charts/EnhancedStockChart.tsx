@@ -1,34 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale,
-  Filler,
-} from 'chart.js';
-import 'chartjs-adapter-date-fns';
+import StockChart from './StockChart';
 import { format, addDays, subDays } from 'date-fns';
 import { Brain, TrendingUp, Target, DollarSign } from 'lucide-react';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale,
-  Filler
-);
 
 // データ型定義
 interface HistoricalData {
@@ -59,6 +34,7 @@ interface EnhancedStockChartProps {
   symbol: string;
   timeframe?: string;
   showThumbnail?: boolean;
+  chartType?: 'historical' | 'past-prediction' | 'future-prediction';
 }
 
 // MAS (Mean Absolute Error) 計算関数
@@ -152,7 +128,7 @@ const generateMockData = (symbol: string): {
   return { historical, pastPredictions, futurePredictions };
 };
 
-export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumbnail = false }: EnhancedStockChartProps) {
+export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumbnail = false, chartType = 'historical' }: EnhancedStockChartProps) {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{
     historical: HistoricalData[];
@@ -219,10 +195,10 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
       ...data.futurePredictions.map(f => f.date)
     ].sort();
 
-    return {
-      labels: allDates,
-      datasets: [
-        {
+    const datasets = [];
+
+    if (chartType === 'historical' || !showThumbnail) {
+        datasets.push({
           label: '実績価格',
           data: allDates.map(date => {
             const historical = data.historical.find(h => h.date === date);
@@ -234,8 +210,11 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
           pointRadius: 2,
           pointHoverRadius: 6,
           fill: false,
-        },
-        {
+        });
+    }
+
+    if (chartType === 'past-prediction' || !showThumbnail) {
+        datasets.push({
           label: 'LSTM過去予測',
           data: allDates.map(date => {
             const pastPred = data.pastPredictions.find(p => p.date === date);
@@ -260,8 +239,11 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
           pointRadius: 3,
           borderDash: [5, 5],
           fill: false,
-        },
-        {
+        });
+    }
+
+    if (chartType === 'future-prediction' || !showThumbnail) {
+        datasets.push({
           label: 'LSTM未来予測',
           data: allDates.map(date => {
             const futurePred = data.futurePredictions.find(f => f.date === date);
@@ -284,10 +266,14 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
           borderWidth: 3,
           pointRadius: 4,
           fill: false,
-        },
-      ],
+        });
+    }
+
+    return {
+      labels: allDates,
+      datasets,
     };
-  }, [data]);
+  }, [data, chartType, showThumbnail]);
 
   const chartOptions = useMemo(() => ({
     responsive: true,
@@ -354,7 +340,7 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
     return (
       <div className="h-24 relative">
         {chartData && (
-          <Line data={chartData} options={{
+          <StockChart data={chartData} options={{
             ...chartOptions,
             plugins: { ...chartOptions.plugins, legend: { display: false } },
             scales: {
@@ -412,7 +398,7 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
       {/* メインチャート */}
       <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-6">
         <div className="h-96">
-          {chartData && <Line data={chartData} options={chartOptions} />}
+          {chartData && <StockChart data={chartData} options={chartOptions} />}
         </div>
       </div>
 

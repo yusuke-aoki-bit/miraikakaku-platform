@@ -53,7 +53,40 @@ export default function PredictionsPage() {
         <h2 className="text-lg font-semibold text-white mb-4">
           {selectedSymbol} - AI予測チャート
         </h2>
-        <StockChart symbol={selectedSymbol} />
+        <StockChart 
+          data={{
+            labels: ['1日前', '2日前', '3日前', '4日前', '5日前', '今日', '明日'],
+            datasets: [{
+              label: selectedSymbol,
+              data: [150, 152, 148, 155, 157, 160, 163],
+              borderColor: 'rgb(75, 192, 192)',
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              tension: 0.1
+            }]
+          }}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: {
+                display: true,
+                labels: { color: 'white' }
+              },
+              title: {
+                display: false
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: 'gray' },
+                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+              },
+              y: {
+                ticks: { color: 'gray' },
+                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+              }
+            }
+          }}
+        />
       </div>
     </div>
   );

@@ -25,9 +25,9 @@ async def search_stocks(
         return [StockSearchResponse(
             symbol=stock.symbol,
             company_name=stock.name,
-            exchange=stock.exchange,
-            sector=stock.sector,
-            industry=stock.industry
+            exchange=stock.market or "Unknown",  # marketをexchangeとしてマッピング
+            sector=stock.sector or "Unknown",
+            industry=None  # industryカラムは存在しない
         ) for stock in stocks]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"検索エラー: {str(e)}")

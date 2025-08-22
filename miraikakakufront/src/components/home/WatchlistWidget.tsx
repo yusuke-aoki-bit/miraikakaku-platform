@@ -66,10 +66,10 @@ export default function WatchlistWidget() {
       ) : (
         <div className="space-y-3">
           {watchlist.map((item) => (
-            <div 
+            <Link 
               key={item.symbol}
-              className="flex items-center justify-between p-3 bg-black/30 rounded-lg hover:bg-black/50 transition-colors cursor-pointer"
-              onClick={() => window.location.href = `/realtime?symbol=${item.symbol}`}
+              href={`/realtime?symbol=${item.symbol}`}
+              className="flex items-center justify-between p-3 bg-black/30 rounded-lg hover:bg-black/50 transition-colors"
             >
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
@@ -93,7 +93,7 @@ export default function WatchlistWidget() {
                   <span>{item.changePercent > 0 ? '+' : ''}{item.changePercent}%</span>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

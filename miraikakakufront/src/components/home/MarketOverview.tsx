@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowUp, ArrowDown, Minus, AlertCircle, TrendingUp, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
 
 interface MarketData {
@@ -167,18 +168,17 @@ export default function MarketOverview() {
                 return (
                   <tr 
                     key={normalized.symbol}
-                    className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors cursor-pointer group"
-                    onClick={() => window.location.href = `/stock/${normalized.symbol}`}
+                    className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors group"
                   >
                     <td className="py-4">
-                      <div>
+                      <Link href={`/stock/${normalized.symbol}`} className="block">
                         <div className="text-white font-medium group-hover:text-red-400 transition-colors">
                           {normalized.symbol}
                           {isUSD && <span className="text-xs text-blue-400 ml-1">USD</span>}
                           {!isUSD && normalized.symbol.match(/^\d/) && <span className="text-xs text-green-400 ml-1">JPY</span>}
                         </div>
                         <div className="text-gray-400 text-sm">{normalized.name}</div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="py-4 text-right">
                       <div className="text-white font-medium">
@@ -228,12 +228,12 @@ export default function MarketOverview() {
       )}
 
       <div className="mt-4 flex justify-center">
-        <button 
-          onClick={() => window.location.href = '/rankings'}
+        <Link 
+          href="/rankings"
           className="px-6 py-2 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-all duration-200"
         >
           すべて表示
-        </button>
+        </Link>
       </div>
     </div>
   );
