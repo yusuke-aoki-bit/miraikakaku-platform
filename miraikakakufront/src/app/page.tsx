@@ -27,7 +27,7 @@ export default function Home() {
           <h1 className="text-5xl md:text-7xl font-bold gradient-text-primary mb-4">
             Miraikakaku
           </h1>
-          <p className="text-neutral text-center text-lg md:text-xl">
+          <p className="text-neutral-400 text-center text-lg md:text-xl">
             AI駆動の株価予測プラットフォーム
           </p>
         </div>
@@ -57,43 +57,8 @@ export default function Home() {
             <AIInsights />
           </div>
           
-          {/* Right Column - Quick Actions & News */}
+          {/* Right Column - News */}
           <div className="space-y-6">
-            {/* Quick Actions */}
-            <div className="card-glass card-content">
-              <h3 className="card-title mb-4">クイックアクション</h3>
-              <div className="space-y-3">
-                <QuickActionCard
-                  icon={<TrendingUp className="w-5 h-5" />}
-                  title="ポートフォリオ分析"
-                  description="リスク評価とパフォーマンス"
-                  color="from-base-blue-500 to-base-blue-400"
-                  href="/dashboard"
-                />
-                <QuickActionCard
-                  icon={<Bell className="w-5 h-5" />}
-                  title="アラート設定"
-                  description="価格変動の通知を管理"
-                  color="from-base-blue-600 to-base-blue-500"
-                  href="/watchlist"
-                />
-                <QuickActionCard
-                  icon={<BookOpen className="w-5 h-5" />}
-                  title="マーケットレポート"
-                  description="日次分析レポートを確認"
-                  color="from-icon-green to-icon-green/80"
-                  href="/analysis"
-                />
-                <QuickActionCard
-                  icon={<Users className="w-5 h-5" />}
-                  title="AI予測"
-                  description="AI による株価予測"
-                  color="from-icon-red to-icon-red/80"
-                  href="/predictions"
-                />
-              </div>
-            </div>
-            
             {/* Market News */}
             <div className="card-glass card-content">
               <h3 className="card-title mb-4">マーケットニュース</h3>
@@ -130,34 +95,6 @@ export default function Home() {
   );
 }
 
-interface QuickActionCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  color: string;
-  href: string;
-}
-
-function QuickActionCard({ icon, title, description, color, href }: QuickActionCardProps) {
-  return (
-    <Link href={href} className="block w-full">
-      <div className="card-interactive group text-left">
-        <div className="flex items-start space-x-3">
-          <div className={`p-2 rounded-lg bg-gradient-to-r ${color} bg-opacity-20 group-hover:scale-110 transition-transform`}>
-            <div className="text-text-white">{icon}</div>
-          </div>
-          <div className="flex-1">
-            <h4 className="text-text-white font-medium group-hover:text-primary transition-colors">
-              {title}
-            </h4>
-            <p className="text-neutral text-sm mt-1">{description}</p>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
 interface NewsItemProps {
   time: string;
   title: string;
@@ -166,21 +103,21 @@ interface NewsItemProps {
 
 function NewsItem({ time, title, category }: NewsItemProps) {
   const categoryColors: { [key: string]: string } = {
-    '市場': 'status-warning',
-    '企業': 'status-success',
-    '海外': 'text-primary bg-base-blue-400/10',
-    'セクター': 'status-danger'
+    '市場': 'text-warning bg-warning/10 border-warning',
+    '企業': 'text-success bg-success/10 border-success',
+    '海外': 'text-primary bg-primary/10 border-primary',
+    'セクター': 'text-danger bg-danger/10 border-danger'
   };
 
   return (
-    <div className="group cursor-pointer hover:bg-base-gray-800/20 p-2 rounded-lg transition-colors">
+    <div className="group cursor-pointer hover:bg-neutral-800/20 p-2 rounded-lg transition-colors">
       <div className="flex items-start space-x-3">
-        <span className="text-neutral text-xs mt-1 whitespace-nowrap">{time}</span>
+        <span className="text-neutral-400 text-xs mt-1 whitespace-nowrap">{time}</span>
         <div className="flex-1">
-          <h4 className="text-text-medium group-hover:text-text-white transition-colors text-sm font-medium">
+          <h4 className="text-neutral-300 group-hover:text-white transition-colors text-sm font-medium">
             {title}
           </h4>
-          <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full border ${categoryColors[category] || 'status-neutral'}`}>
+          <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full border ${categoryColors[category] || 'text-neutral-400 bg-neutral-400/10 border-neutral-400'}`}>
             {category}
           </span>
         </div>

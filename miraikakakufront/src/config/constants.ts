@@ -5,7 +5,7 @@
 
 // ===== API Configuration =====
 export const API_CONFIG = {
-  DEFAULT_BASE_URL: 'https://miraikakaku-api-enhanced-465603676610.us-central1.run.app',
+  DEFAULT_BASE_URL: 'http://localhost:8000', // Data Feed Service統一
   DEFAULT_TIMEOUT: 30000, // 30 seconds
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000, // 1 second
@@ -56,12 +56,60 @@ export const UI_CONFIG = {
 
 // ===== Chart Configuration =====
 export const CHART_CONFIG = {
+  // Chart heights
   DEFAULT_HEIGHT: 400, // pixels
   CANDLESTICK_HEIGHT: 500,
   THUMBNAIL_HEIGHT: 200,
+  CHART_HEIGHT: {
+    THUMBNAIL: 40,
+    SMALL: 192,
+    MEDIUM: 300,
+    LARGE: 400,
+  },
+  
+  // Animation and styling
   ANIMATION_DURATION: 750,
   GRID_STROKE_WIDTH: 1,
   LINE_STROKE_WIDTH: 2,
+  
+  // Mock data generation
+  CHART_DATA_POINTS: 30,
+  CHART_SIN_FREQUENCY: 5,
+  CHART_SIN_AMPLITUDE: 5,
+  CHART_NOISE_RANGE: 8,
+  LSTM_PREDICTION_VARIANCE: 3,
+  VERTEX_PREDICTION_VARIANCE: 4,
+  
+  // Financial calculations
+  MAE_BASE: {
+    LSTM: 2,
+    VERTEX: 1.8,
+  },
+  MAE_VARIANCE: {
+    LSTM: 3,
+    VERTEX: 3.5,
+  },
+  
+  // Rating thresholds (for display colors)
+  RATING_THRESHOLDS: {
+    EXCELLENT: 85,
+    GOOD: 70,
+  },
+  
+  // Chart trend calculation
+  TREND_CALCULATION: {
+    SIN_MULTIPLIER: 0.1,
+    VOLATILITY_RANGE: 0.05,
+    PRICE_VARIATION: 0.02,
+    HIGH_MULTIPLIER: 1.02,
+    LOW_MULTIPLIER: 0.98,
+  },
+  
+  // Volume generation
+  VOLUME: {
+    MIN: 500000,
+    MAX: 1000000,
+  },
 } as const;
 
 // ===== Stock Market Constants =====
@@ -95,6 +143,41 @@ export const ANALYSIS_CONFIG = {
     GOOD: 75,
     FAIR: 60,
     POOR: 40,
+  },
+} as const;
+
+// ===== Investment Analysis Constants =====
+export const INVESTMENT_CONFIG = {
+  LSTM_ACCURACY: {
+    BASE: 75,
+    VARIANCE: 20,
+  },
+  VERTEX_ACCURACY: {
+    BASE: 70,
+    VARIANCE: 25,
+  },
+  PROFITABILITY_MULTIPLIER: {
+    LSTM: 0.12,
+    VERTEX: 0.11,
+  },
+  RISK_LEVELS: {
+    LOW_THRESHOLD: 85,
+    MEDIUM_THRESHOLD: 70,
+  },
+  RECOMMENDATION_THRESHOLDS: {
+    STRONG_BUY: 85,
+    BUY: 75,
+    HOLD: 60,
+  },
+  PRICE_VARIANCE: {
+    MAX_POSITIVE: 0.25,
+    MIN_NEGATIVE: -0.08,
+    STOP_LOSS_BASE: 0.93,
+    STOP_LOSS_VARIANCE: 0.07,
+  },
+  EXPECTED_RETURN: {
+    LSTM: 15,
+    VERTEX: 18,
   },
 } as const;
 

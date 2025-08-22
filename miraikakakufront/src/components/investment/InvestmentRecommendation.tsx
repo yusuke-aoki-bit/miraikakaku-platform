@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, AlertTriangle, Target, DollarSign, Brain, Star } from 'lucide-react';
 import ThumbnailChart from '../charts/ThumbnailChart';
+import { INVESTMENT_CONFIG, CHART_CONFIG } from '../../config/constants';
 
 interface PredictionAccuracy {
   model: 'LSTM' | 'VertexAI';
@@ -28,39 +29,41 @@ const generateRecommendation = (symbol: string, currentPrice: number): {
   chartData: any;
   overallRating: number;
 } => {
-  const lstmAccuracy = 75 + Math.random() * 20;
-  const vertexAccuracy = 70 + Math.random() * 25;
+  const lstmAccuracy = INVESTMENT_CONFIG.LSTM_ACCURACY.BASE + Math.random() * INVESTMENT_CONFIG.LSTM_ACCURACY.VARIANCE;
+  const vertexAccuracy = INVESTMENT_CONFIG.VERTEX_ACCURACY.BASE + Math.random() * INVESTMENT_CONFIG.VERTEX_ACCURACY.VARIANCE;
   
   const models: PredictionAccuracy[] = [
     {
       model: 'LSTM',
       accuracy: lstmAccuracy,
-      mae: 2 + Math.random() * 3,
-      profitability: lstmAccuracy * 0.12,
-      riskLevel: lstmAccuracy > 85 ? 'Low' : lstmAccuracy > 70 ? 'Medium' : 'High',
-      recommendation: lstmAccuracy > 85 ? 'Strong Buy' : lstmAccuracy > 75 ? 'Buy' : lstmAccuracy > 60 ? 'Hold' : 'Sell',
-      targetPrice: currentPrice * (1 + (Math.random() * 0.2 - 0.05)),
-      stopLoss: currentPrice * (0.95 - Math.random() * 0.05),
-      expectedReturn: (lstmAccuracy / 100) * 15
+      mae: CHART_CONFIG.MAE_BASE.LSTM + Math.random() * CHART_CONFIG.MAE_VARIANCE.LSTM,
+      profitability: lstmAccuracy * INVESTMENT_CONFIG.PROFITABILITY_MULTIPLIER.LSTM,
+      riskLevel: lstmAccuracy > INVESTMENT_CONFIG.RISK_LEVELS.LOW_THRESHOLD ? 'Low' : lstmAccuracy > INVESTMENT_CONFIG.RISK_LEVELS.MEDIUM_THRESHOLD ? 'Medium' : 'High',
+      recommendation: lstmAccuracy > INVESTMENT_CONFIG.RECOMMENDATION_THRESHOLDS.STRONG_BUY ? 'Strong Buy' : lstmAccuracy > INVESTMENT_CONFIG.RECOMMENDATION_THRESHOLDS.BUY ? 'Buy' : lstmAccuracy > INVESTMENT_CONFIG.RECOMMENDATION_THRESHOLDS.HOLD ? 'Hold' : 'Sell',
+      targetPrice: currentPrice * (1 + (Math.random() * INVESTMENT_CONFIG.PRICE_VARIANCE.MAX_POSITIVE + INVESTMENT_CONFIG.PRICE_VARIANCE.MIN_NEGATIVE)),
+      stopLoss: currentPrice * (INVESTMENT_CONFIG.PRICE_VARIANCE.STOP_LOSS_BASE - Math.random() * INVESTMENT_CONFIG.PRICE_VARIANCE.STOP_LOSS_VARIANCE),
+      expectedReturn: (lstmAccuracy / 100) * INVESTMENT_CONFIG.EXPECTED_RETURN.LSTM
     },
     {
       model: 'VertexAI',
       accuracy: vertexAccuracy,
-      mae: 1.8 + Math.random() * 3.5,
-      profitability: vertexAccuracy * 0.11,
-      riskLevel: vertexAccuracy > 85 ? 'Low' : vertexAccuracy > 70 ? 'Medium' : 'High',
-      recommendation: vertexAccuracy > 85 ? 'Strong Buy' : vertexAccuracy > 75 ? 'Buy' : vertexAccuracy > 60 ? 'Hold' : 'Sell',
-      targetPrice: currentPrice * (1 + (Math.random() * 0.25 - 0.08)),
-      stopLoss: currentPrice * (0.93 - Math.random() * 0.07),
-      expectedReturn: (vertexAccuracy / 100) * 18
+      mae: CHART_CONFIG.MAE_BASE.VERTEX + Math.random() * CHART_CONFIG.MAE_VARIANCE.VERTEX,
+      profitability: vertexAccuracy * INVESTMENT_CONFIG.PROFITABILITY_MULTIPLIER.VERTEX,
+      riskLevel: vertexAccuracy > INVESTMENT_CONFIG.RISK_LEVELS.LOW_THRESHOLD ? 'Low' : vertexAccuracy > INVESTMENT_CONFIG.RISK_LEVELS.MEDIUM_THRESHOLD ? 'Medium' : 'High',
+      recommendation: vertexAccuracy > INVESTMENT_CONFIG.RECOMMENDATION_THRESHOLDS.STRONG_BUY ? 'Strong Buy' : vertexAccuracy > INVESTMENT_CONFIG.RECOMMENDATION_THRESHOLDS.BUY ? 'Buy' : vertexAccuracy > INVESTMENT_CONFIG.RECOMMENDATION_THRESHOLDS.HOLD ? 'Hold' : 'Sell',
+      targetPrice: currentPrice * (1 + (Math.random() * INVESTMENT_CONFIG.PRICE_VARIANCE.MAX_POSITIVE + INVESTMENT_CONFIG.PRICE_VARIANCE.MIN_NEGATIVE)),
+      stopLoss: currentPrice * (INVESTMENT_CONFIG.PRICE_VARIANCE.STOP_LOSS_BASE - Math.random() * INVESTMENT_CONFIG.PRICE_VARIANCE.STOP_LOSS_VARIANCE),
+      expectedReturn: (vertexAccuracy / 100) * INVESTMENT_CONFIG.EXPECTED_RETURN.VERTEX
     }
   ];
 
   // チャート用データ
-  const dates = Array.from({length: 30}, (_, i) => `Day ${i + 1}`);
-  const actual = Array.from({length: 30}, (_, i) => currentPrice + Math.sin(i/5) * 5 + (Math.random() - 0.5) * 8);
-  const lstm = actual.map(price => price + (Math.random() - 0.5) * 3);
-  const vertexai = actual.map(price => price + (Math.random() - 0.5) * 4);
+  const dates = Array.from({length: CHART_CONFIG.CHART_DATA_POINTS}, (_, i) => `Day ${i + 1}`);
+  const actual = Array.from({length: CHART_CONFIG.CHART_DATA_POINTS}, (_, i) => 
+    currentPrice + Math.sin(i/CHART_CONFIG.CHART_SIN_FREQUENCY) * CHART_CONFIG.CHART_SIN_AMPLITUDE + (Math.random() - 0.5) * CHART_CONFIG.CHART_NOISE_RANGE
+  );
+  const lstm = actual.map(price => price + (Math.random() - 0.5) * CHART_CONFIG.LSTM_PREDICTION_VARIANCE);
+  const vertexai = actual.map(price => price + (Math.random() - 0.5) * CHART_CONFIG.VERTEX_PREDICTION_VARIANCE);
 
   const chartData = { dates, actual, lstm, vertexai };
   const overallRating = (lstmAccuracy + vertexAccuracy) / 2;
@@ -91,8 +94,8 @@ export default function InvestmentRecommendation({
   );
 
   const getRatingColor = (rating: number) => {
-    if (rating >= 85) return 'text-green-400 bg-green-400/10 border-green-400/30';
-    if (rating >= 70) return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30';
+    if (rating >= CHART_CONFIG.RATING_THRESHOLDS.EXCELLENT) return 'text-green-400 bg-green-400/10 border-green-400/30';
+    if (rating >= CHART_CONFIG.RATING_THRESHOLDS.GOOD) return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30';
     return 'text-red-400 bg-red-400/10 border-red-400/30';
   };
 
@@ -122,7 +125,7 @@ export default function InvestmentRecommendation({
         </div>
         
         <div className="mb-2">
-          <ThumbnailChart data={recommendation.chartData} height={40} />
+          <ThumbnailChart data={recommendation.chartData} height={CHART_CONFIG.CHART_HEIGHT.THUMBNAIL} />
         </div>
         
         <div className="text-xs text-gray-400 flex justify-between">
@@ -250,7 +253,7 @@ export default function InvestmentRecommendation({
       <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-6">
         <h3 className="text-xl font-bold text-white mb-4">予測精度比較（過去30日）</h3>
         <div className="h-48">
-          <ThumbnailChart data={recommendation.chartData} height={192} />
+          <ThumbnailChart data={recommendation.chartData} height={CHART_CONFIG.CHART_HEIGHT.SMALL} />
         </div>
         <div className="flex justify-center space-x-6 mt-4 text-sm">
           <div className="flex items-center space-x-2">

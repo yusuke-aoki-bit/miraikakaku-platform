@@ -40,8 +40,8 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    from database.database import init_database
-    await init_database()
+    from database.database import init_database_async
+    await init_database_async()
 
 @app.get("/")
 async def root():

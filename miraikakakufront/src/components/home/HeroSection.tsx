@@ -30,14 +30,14 @@ export default function HeroSection() {
                 Miraikakaku
               </span>
             </h1>
-            <p className="text-gray-400 text-lg">
+            <p className="text-neutral-400 text-lg">
               AIが市場を24時間監視中
             </p>
           </div>
           
-          <div className="hidden md:flex items-center space-x-2 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-full">
-            <Activity className="w-4 h-4 text-green-400 animate-pulse" />
-            <span className="text-green-400 font-medium">マーケット: {marketStatus}</span>
+          <div className="hidden md:flex items-center space-x-2 px-4 py-2 bg-success/10 border border-success/30 rounded-full">
+            <Activity className="w-4 h-4 text-success animate-pulse" />
+            <span className="text-success font-medium">マーケット: {marketStatus}</span>
           </div>
         </div>
 
@@ -87,21 +87,27 @@ interface StatCardProps {
 
 function StatCard({ title, value, change, trend, icon }: StatCardProps) {
   const trendColors = {
-    up: 'text-green-400 bg-green-400/10 border-green-400/30',
-    down: 'text-red-400 bg-red-400/10 border-red-400/30',
-    neutral: 'text-gray-400 bg-gray-400/10 border-gray-400/30'
+    up: 'text-success bg-success/10 border-success/30',
+    down: 'text-danger bg-danger/10 border-danger/30',
+    neutral: 'text-neutral-400 bg-neutral-400/10 border-neutral-400/30'
   };
 
+  const trendTextColors = {
+    up: 'text-success',
+    down: 'text-danger',
+    neutral: 'text-neutral-400'
+  }
+
   return (
-    <div className="bg-black/40 backdrop-blur-sm border border-gray-800/50 rounded-xl p-4 hover:border-red-500/30 transition-all duration-300 hover:transform hover:scale-105">
+    <div className="bg-black/40 backdrop-blur-sm border border-neutral-800/50 rounded-xl p-4 hover:border-primary/30 transition-all duration-300 hover:transform hover:scale-105">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-gray-400 text-sm">{title}</span>
+        <span className="text-neutral-400 text-sm">{title}</span>
         <div className={`p-1.5 rounded-lg ${trendColors[trend]}`}>
           {icon}
         </div>
       </div>
       <div className="text-2xl font-bold text-white mb-1">{value}</div>
-      <div className={`text-sm ${trend === 'up' ? 'text-green-400' : trend === 'down' ? 'text-red-400' : 'text-gray-400'}`}>
+      <div className={`text-sm ${trendTextColors[trend]}`}>
         {change}
       </div>
     </div>
