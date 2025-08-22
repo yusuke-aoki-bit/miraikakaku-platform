@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { STOCK_CONSTANTS } from '@/config/magic-numbers';
 
 interface MarketData {
   symbol: string;
@@ -32,11 +33,11 @@ export default function AnalysisPage() {
       if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
         const mockData = symbols.map(symbol => ({
           symbol,
-          current_price: 150 + Math.random() * 50,
-          change_percent: (Math.random() - 0.5) * 10,
-          volume: Math.floor(Math.random() * 10000000),
-          market_cap: Math.floor(Math.random() * 1000000000000),
-          pe_ratio: 15 + Math.random() * 25,
+          current_price: STOCK_CONSTANTS.BASE_PRICE + Math.random() * STOCK_CONSTANTS.PRICE_VARIATION,
+          change_percent: (Math.random() - 0.5) * STOCK_CONSTANTS.MAX_CHANGE_PERCENT,
+          volume: Math.floor(Math.random() * STOCK_CONSTANTS.BASE_VOLUME),
+          market_cap: Math.floor(Math.random() * STOCK_CONSTANTS.BASE_MARKET_CAP),
+          pe_ratio: STOCK_CONSTANTS.BASE_PE_RATIO + Math.random() * STOCK_CONSTANTS.PE_RATIO_VARIATION,
           recommendation: ['BUY', 'SELL', 'HOLD'][Math.floor(Math.random() * 3)],
           analyst_target: 160 + Math.random() * 40
         }));
@@ -46,26 +47,42 @@ export default function AnalysisPage() {
       
       const promises = symbols.map(async (symbol) => {
         try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/${symbol}/analysis`,
-            {
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            }
-          );
+          // 実際の価格データと予測データを取得して分析情報を構築
+          const [priceResponse, predResponse] = await Promise.all([
+            fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/${symbol}/price?days=7`),
+            fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/${symbol}/predictions?days=7`)
+          ]);
           
-          if (response.ok) {
-            return await response.json();
+          if (priceResponse.ok && predResponse.ok) {
+            const [priceData, predData] = await Promise.all([
+              priceResponse.json(),
+              predResponse.json()
+            ]);
+            
+            const currentPrice = priceData[0]?.close_price || 150;
+            const predictedPrice = predData[0]?.predicted_price || currentPrice;
+            const changePercent = ((predictedPrice - currentPrice) / currentPrice) * 100;
+            const volume = priceData[0]?.volume || 1000000;
+            
+            return {
+              symbol,
+              current_price: currentPrice,
+              change_percent: changePercent,
+              volume,
+              market_cap: currentPrice * 1000000000, // 推定時価総額
+              pe_ratio: STOCK_CONSTANTS.BASE_PE_RATIO + Math.random() * 10,
+              recommendation: changePercent > 2 ? 'BUY' : changePercent < -2 ? 'SELL' : 'HOLD',
+              analyst_target: predictedPrice
+            };
           } else {
             // API応答エラー時のモックデータ
             return {
               symbol,
-              current_price: 150 + Math.random() * 50,
-              change_percent: (Math.random() - 0.5) * 10,
-              volume: Math.floor(Math.random() * 10000000),
-              market_cap: Math.floor(Math.random() * 1000000000000),
-              pe_ratio: 15 + Math.random() * 25,
+              current_price: STOCK_CONSTANTS.BASE_PRICE + Math.random() * STOCK_CONSTANTS.PRICE_VARIATION,
+              change_percent: (Math.random() - 0.5) * STOCK_CONSTANTS.MAX_CHANGE_PERCENT,
+              volume: Math.floor(Math.random() * STOCK_CONSTANTS.BASE_VOLUME),
+              market_cap: Math.floor(Math.random() * STOCK_CONSTANTS.BASE_MARKET_CAP),
+              pe_ratio: STOCK_CONSTANTS.BASE_PE_RATIO + Math.random() * STOCK_CONSTANTS.PE_RATIO_VARIATION,
               recommendation: ['BUY', 'SELL', 'HOLD'][Math.floor(Math.random() * 3)],
               analyst_target: 160 + Math.random() * 40
             };
@@ -75,11 +92,11 @@ export default function AnalysisPage() {
           // エラー時のモックデータ
           return {
             symbol,
-            current_price: 150 + Math.random() * 50,
-            change_percent: (Math.random() - 0.5) * 10,
-            volume: Math.floor(Math.random() * 10000000),
-            market_cap: Math.floor(Math.random() * 1000000000000),
-            pe_ratio: 15 + Math.random() * 25,
+            current_price: STOCK_CONSTANTS.BASE_PRICE + Math.random() * STOCK_CONSTANTS.PRICE_VARIATION,
+            change_percent: (Math.random() - 0.5) * STOCK_CONSTANTS.MAX_CHANGE_PERCENT,
+            volume: Math.floor(Math.random() * STOCK_CONSTANTS.BASE_VOLUME),
+            market_cap: Math.floor(Math.random() * STOCK_CONSTANTS.BASE_MARKET_CAP),
+            pe_ratio: STOCK_CONSTANTS.BASE_PE_RATIO + Math.random() * STOCK_CONSTANTS.PE_RATIO_VARIATION,
             recommendation: ['BUY', 'SELL', 'HOLD'][Math.floor(Math.random() * 3)],
             analyst_target: 160 + Math.random() * 40
           };
@@ -94,11 +111,11 @@ export default function AnalysisPage() {
       const symbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'NVDA'];
       const mockData = symbols.map(symbol => ({
         symbol,
-        current_price: 150 + Math.random() * 50,
-        change_percent: (Math.random() - 0.5) * 10,
-        volume: Math.floor(Math.random() * 10000000),
-        market_cap: Math.floor(Math.random() * 1000000000000),
-        pe_ratio: 15 + Math.random() * 25,
+        current_price: STOCK_CONSTANTS.BASE_PRICE + Math.random() * STOCK_CONSTANTS.PRICE_VARIATION,
+        change_percent: (Math.random() - 0.5) * STOCK_CONSTANTS.MAX_CHANGE_PERCENT,
+        volume: Math.floor(Math.random() * STOCK_CONSTANTS.BASE_VOLUME),
+        market_cap: Math.floor(Math.random() * STOCK_CONSTANTS.BASE_MARKET_CAP),
+        pe_ratio: STOCK_CONSTANTS.BASE_PE_RATIO + Math.random() * STOCK_CONSTANTS.PE_RATIO_VARIATION,
         recommendation: ['BUY', 'SELL', 'HOLD'][Math.floor(Math.random() * 3)],
         analyst_target: 160 + Math.random() * 40
       }));

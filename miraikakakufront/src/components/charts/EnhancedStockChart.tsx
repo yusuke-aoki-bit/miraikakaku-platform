@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import StockChart from './StockChart';
-import { format, addDays, subDays } from 'date-fns';
 import { Brain, TrendingUp, Target, DollarSign } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 
 // データ型定義
 interface HistoricalData {
@@ -65,69 +65,6 @@ const calculateAccuracy = (predictions: number[], actuals: number[]): number => 
   return accuracies.reduce((sum, acc) => sum + acc, 0) / accuracies.length;
 };
 
-// モックデータ生成関数
-const generateMockData = (symbol: string): {
-  historical: HistoricalData[];
-  pastPredictions: PredictionData[];
-  futurePredictions: PredictionData[];
-} => {
-  const basePrice = 150 + Math.random() * 100;
-  const today = new Date();
-  
-  // 過去30日の実績データ
-  const historical: HistoricalData[] = [];
-  for (let i = 30; i >= 1; i--) {
-    const date = format(subDays(today, i), 'yyyy-MM-dd');
-    const price = basePrice + (Math.random() - 0.5) * 20 + Math.sin(i / 5) * 10;
-    historical.push({
-      date,
-      actual_price: price,
-      volume: Math.floor(1000000 + Math.random() * 5000000)
-    });
-  }
-  
-  // 過去15日の予測データ（実績との比較用）
-  const pastPredictions: PredictionData[] = [];
-  for (let i = 15; i >= 1; i--) {
-    const date = format(subDays(today, i), 'yyyy-MM-dd');
-    const actualPrice = historical.find(h => h.date === date)?.actual_price || basePrice;
-    
-    const lstmPred = actualPrice + (Math.random() - 0.5) * 5;
-    const vertexPred = actualPrice + (Math.random() - 0.5) * 8;
-    
-    pastPredictions.push({
-      date,
-      lstm_prediction: lstmPred,
-      vertexai_prediction: vertexPred,
-      lstm_confidence: 0.7 + Math.random() * 0.25,
-      vertexai_confidence: 0.65 + Math.random() * 0.3,
-      actual_price: actualPrice
-    });
-  }
-  
-  // 未来15日の予測データ
-  const futurePredictions: PredictionData[] = [];
-  const currentPrice = historical[historical.length - 1]?.actual_price || basePrice;
-  
-  for (let i = 1; i <= 15; i++) {
-    const date = format(addDays(today, i), 'yyyy-MM-dd');
-    const trend = Math.sin(i / 3) * 5;
-    
-    const lstmPred = currentPrice + trend + (Math.random() - 0.5) * 10;
-    const vertexPred = currentPrice + trend * 1.2 + (Math.random() - 0.5) * 12;
-    
-    futurePredictions.push({
-      date,
-      lstm_prediction: lstmPred,
-      vertexai_prediction: vertexPred,
-      lstm_confidence: 0.6 + Math.random() * 0.35,
-      vertexai_confidence: 0.55 + Math.random() * 0.4
-    });
-  }
-  
-  return { historical, pastPredictions, futurePredictions };
-};
-
 export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumbnail = false, chartType = 'historical' }: EnhancedStockChartProps) {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{
@@ -176,11 +113,29 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      // 実際のAPIコールの代わりにモックデータを使用
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const mockData = generateMockData(symbol);
-      setData(mockData);
-      setLoading(false);
+      
+      try {
+        const [historicalRes, pastPredictionsRes, futurePredictionsRes] = await Promise.all([
+          apiClient.getStockPrice(symbol, 30),
+          apiClient.getHistoricalPredictions(symbol, 15),
+          apiClient.getStockPredictions(symbol, undefined, 15)
+        ]);
+
+        const historical = historicalRes.status === 'success' && Array.isArray(historicalRes.data) ? (historicalRes.data as any[]).map(d => ({...d, date: d.date.split('T')[0], actual_price: d.close_price, volume: d.volume || 0})) : [];
+        const pastPredictions = pastPredictionsRes.status === 'success' && Array.isArray(pastPredictionsRes.data) ? (pastPredictionsRes.data as any[]).map(d => ({...d, date: d.target_date})) : [];
+        const futurePredictions = futurePredictionsRes.status === 'success' && Array.isArray(futurePredictionsRes.data) ? (futurePredictionsRes.data as any[]).map(d => ({...d, date: d.target_date})) : [];
+
+        setData({
+          historical,
+          pastPredictions,
+          futurePredictions,
+        });
+      } catch (error) {
+        console.error("Failed to fetch chart data", error);
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();

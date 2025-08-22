@@ -5,7 +5,6 @@ import AppContainer from '@/components/layout/AppContainer'
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider'
 import KeyboardShortcuts from '@/components/accessibility/KeyboardShortcuts'
 import { PerformanceIndicator } from '@/components/performance/PerformanceMonitor'
-import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -46,7 +45,6 @@ export default function RootLayout({
           </AppContainer>
           <KeyboardShortcuts />
           <PerformanceIndicator />
-          <ServiceWorkerRegistrar />
         </AccessibilityProvider>
       </body>
     </html>

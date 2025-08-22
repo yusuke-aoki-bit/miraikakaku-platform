@@ -1,6 +1,8 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+import asyncio
+import json
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -25,11 +27,45 @@ app = FastAPI(title="Universal Stock Market API", version="3.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "*"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# WebSocket接続管理
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        logger.info(f"WebSocket接続: {len(self.active_connections)}件")
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+        logger.info(f"WebSocket切断: {len(self.active_connections)}件")
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        try:
+            await websocket.send_text(message)
+        except:
+            self.disconnect(websocket)
+
+    async def broadcast(self, message: str):
+        disconnected = []
+        for connection in self.active_connections:
+            try:
+                await connection.send_text(message)
+            except:
+                disconnected.append(connection)
+        
+        for conn in disconnected:
+            self.disconnect(conn)
+
+manager = ConnectionManager()
 
 # Cloud SQL接続設定
 def get_cloud_sql_connection():
@@ -387,6 +423,200 @@ async def get_universal_rankings(
     except Exception as e:
         logger.error(f"Rankings error: {e}")
         raise HTTPException(status_code=500, detail="ランキング生成エラー")
+
+@app.get("/api/finance/stocks/{symbol}/indicators")
+async def get_technical_indicators(symbol: str, days: int = 30, db: Session = Depends(get_db)):
+    """テクニカル指標取得API"""
+    try:
+        logger.info(f"Technical indicators: {symbol}, {days} days")
+        
+        # Yahoo Financeから株価データ取得
+        ticker = yf.Ticker(symbol)
+        hist = ticker.history(period=f"{min(days + 30, 365)}d")
+        
+        if hist.empty:
+            raise HTTPException(status_code=404, detail="株価データが取得できません")
+        
+        # 価格データを配列に変換
+        closes = hist['Close'].tolist()
+        highs = hist['High'].tolist()
+        lows = hist['Low'].tolist()
+        volumes = hist['Volume'].tolist()
+        
+        indicators = {}
+        
+        # 移動平均線
+        if len(closes) >= 5:
+            indicators['sma_5'] = round(sum(closes[-5:]) / 5, 2)
+        if len(closes) >= 20:
+            indicators['sma_20'] = round(sum(closes[-20:]) / 20, 2)
+        if len(closes) >= 50:
+            indicators['sma_50'] = round(sum(closes[-50:]) / 50, 2)
+        
+        # RSI計算
+        if len(closes) >= 14:
+            gains, losses = [], []
+            for i in range(1, min(15, len(closes))):
+                change = closes[-(i)] - closes[-(i+1)]
+                gains.append(max(0, change))
+                losses.append(max(0, -change))
+            
+            avg_gain = sum(gains) / len(gains) if gains else 0
+            avg_loss = sum(losses) / len(losses) if losses else 0.01
+            rs = avg_gain / avg_loss if avg_loss != 0 else 100
+            indicators['rsi'] = round(100 - (100 / (1 + rs)), 2)
+        
+        # ボリンジャーバンド
+        if len(closes) >= 20:
+            sma_20 = sum(closes[-20:]) / 20
+            variance = sum((x - sma_20) ** 2 for x in closes[-20:]) / 20
+            std_dev = variance ** 0.5
+            indicators['bollinger_upper'] = round(sma_20 + (2 * std_dev), 2)
+            indicators['bollinger_middle'] = round(sma_20, 2)
+            indicators['bollinger_lower'] = round(sma_20 - (2 * std_dev), 2)
+        
+        # MACD計算（簡略版）
+        if len(closes) >= 26:
+            ema_12 = closes[-1]
+            ema_26 = closes[-1]
+            alpha_12 = 2 / (12 + 1)
+            alpha_26 = 2 / (26 + 1)
+            
+            for i in range(min(26, len(closes))):
+                price = closes[-(i+1)]
+                ema_12 = (price * alpha_12) + (ema_12 * (1 - alpha_12))
+                ema_26 = (price * alpha_26) + (ema_26 * (1 - alpha_26))
+            
+            indicators['macd'] = round(ema_12 - ema_26, 4)
+        
+        # 出来高情報
+        if len(volumes) >= 20:
+            volume_avg = sum(volumes[-20:]) / 20
+            indicators['volume_avg'] = int(volume_avg)
+            indicators['volume_ratio'] = round(volumes[-1] / volume_avg if volume_avg > 0 else 1, 2)
+        
+        # 価格変動率
+        if len(closes) >= 2:
+            indicators['daily_change_pct'] = round(((closes[-1] - closes[-2]) / closes[-2]) * 100, 2)
+        if len(closes) >= 7:
+            indicators['weekly_change_pct'] = round(((closes[-1] - closes[-7]) / closes[-7]) * 100, 2)
+        
+        # 基本情報
+        indicators.update({
+            'symbol': symbol,
+            'current_price': round(closes[-1], 2),
+            'current_volume': int(volumes[-1]),
+            'last_updated': datetime.utcnow().isoformat(),
+            'data_points': len(closes)
+        })
+        
+        return indicators
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Indicators error: {e}")
+        raise HTTPException(status_code=500, detail=f"テクニカル指標計算エラー: {str(e)}")
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket接続エンドポイント"""
+    await manager.connect(websocket)
+    try:
+        # 接続時メッセージ
+        welcome = {
+            "type": "connection",
+            "data": {
+                "message": "Universal Stock API WebSocketに接続しました",
+                "timestamp": datetime.utcnow().isoformat(),
+                "active_connections": len(manager.active_connections)
+            }
+        }
+        await manager.send_personal_message(json.dumps(welcome), websocket)
+        
+        # 定期的な価格更新シミュレーション
+        while True:
+            # 主要銘柄の価格更新をシミュレート
+            symbols = ["AAPL", "GOOGL", "MSFT", "TSLA", "NVDA"]
+            for symbol in symbols:
+                try:
+                    ticker = yf.Ticker(symbol)
+                    info = ticker.history(period="1d", interval="1m")
+                    if not info.empty:
+                        latest_price = info['Close'].iloc[-1]
+                        price_update = {
+                            "type": "price_update",
+                            "data": {
+                                "symbol": symbol,
+                                "price": round(latest_price, 2),
+                                "timestamp": datetime.utcnow().isoformat()
+                            }
+                        }
+                        await manager.send_personal_message(json.dumps(price_update), websocket)
+                except:
+                    # Yahoo Finance APIエラーの場合はシミュレートデータ
+                    price_update = {
+                        "type": "price_update",
+                        "data": {
+                            "symbol": symbol,
+                            "price": round(200 + random.uniform(-50, 50), 2),
+                            "timestamp": datetime.utcnow().isoformat()
+                        }
+                    }
+                    await manager.send_personal_message(json.dumps(price_update), websocket)
+                
+                await asyncio.sleep(1)  # 1秒間隔
+            
+            await asyncio.sleep(10)  # 10秒後に全銘柄更新を繰り返し
+            
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+        manager.disconnect(websocket)
+
+@app.websocket("/ws/{symbol}")
+async def websocket_symbol_endpoint(websocket: WebSocket, symbol: str):
+    """特定銘柄のWebSocket接続"""
+    await manager.connect(websocket)
+    try:
+        while True:
+            try:
+                # Yahoo Financeから最新価格取得
+                ticker = yf.Ticker(symbol)
+                info = ticker.history(period="1d", interval="1m")
+                
+                if not info.empty:
+                    latest_price = info['Close'].iloc[-1]
+                    price_update = {
+                        "type": "price_update",
+                        "data": {
+                            "symbol": symbol.upper(),
+                            "price": round(latest_price, 2),
+                            "volume": int(info['Volume'].iloc[-1]) if 'Volume' in info.columns else 0,
+                            "timestamp": datetime.utcnow().isoformat()
+                        }
+                    }
+                else:
+                    # フォールバック: シミュレートデータ
+                    price_update = {
+                        "type": "price_update",
+                        "data": {
+                            "symbol": symbol.upper(),
+                            "price": round(100 + random.uniform(-20, 20), 2),
+                            "timestamp": datetime.utcnow().isoformat()
+                        }
+                    }
+                
+                await manager.send_personal_message(json.dumps(price_update), websocket)
+                await asyncio.sleep(3)  # 3秒間隔
+                
+            except Exception as e:
+                logger.error(f"Symbol WebSocket error: {e}")
+                await asyncio.sleep(5)
+            
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -299,3 +299,123 @@ async def get_composite_rankings(
         return rankings[:limit]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"総合ランキング取得エラー: {str(e)}")
+
+@router.get("/stocks/{symbol}/indicators")
+async def get_technical_indicators(
+    symbol: str,
+    days: int = Query(30, ge=7, le=365, description="計算期間"),
+    db: Session = Depends(get_db)
+):
+    """テクニカル指標取得API"""
+    try:
+        # 株価データ取得
+        end_date = datetime.utcnow()
+        start_date = end_date - timedelta(days=days + 30)  # 計算に必要な追加データ
+        
+        prices = db.query(StockPriceHistory).filter(
+            StockPriceHistory.symbol == symbol.upper(),
+            StockPriceHistory.date >= start_date
+        ).order_by(StockPriceHistory.date.asc()).all()
+        
+        if len(prices) < 20:
+            raise HTTPException(status_code=404, detail="十分な株価データがありません")
+        
+        # 価格配列を準備
+        closes = [float(p.close_price) for p in prices]
+        highs = [float(p.high_price) if p.high_price else float(p.close_price) for p in prices]
+        lows = [float(p.low_price) if p.low_price else float(p.close_price) for p in prices]
+        volumes = [int(p.volume) if p.volume else 0 for p in prices]
+        
+        # テクニカル指標計算
+        indicators = {}
+        
+        # 移動平均線
+        if len(closes) >= 5:
+            sma_5 = sum(closes[-5:]) / 5
+            indicators['sma_5'] = round(sma_5, 2)
+        
+        if len(closes) >= 20:
+            sma_20 = sum(closes[-20:]) / 20
+            indicators['sma_20'] = round(sma_20, 2)
+            
+        if len(closes) >= 50:
+            sma_50 = sum(closes[-50:]) / 50
+            indicators['sma_50'] = round(sma_50, 2)
+        
+        # RSI計算
+        if len(closes) >= 14:
+            gains = []
+            losses = []
+            for i in range(1, min(15, len(closes))):
+                change = closes[-(i)] - closes[-(i+1)]
+                if change > 0:
+                    gains.append(change)
+                    losses.append(0)
+                else:
+                    gains.append(0)
+                    losses.append(abs(change))
+            
+            avg_gain = sum(gains) / len(gains) if gains else 0
+            avg_loss = sum(losses) / len(losses) if losses else 0.01
+            rs = avg_gain / avg_loss if avg_loss != 0 else 100
+            rsi = 100 - (100 / (1 + rs))
+            indicators['rsi'] = round(rsi, 2)
+        
+        # ボリンジャーバンド
+        if len(closes) >= 20:
+            sma_20 = sum(closes[-20:]) / 20
+            variance = sum((x - sma_20) ** 2 for x in closes[-20:]) / 20
+            std_dev = variance ** 0.5
+            
+            indicators['bollinger_upper'] = round(sma_20 + (2 * std_dev), 2)
+            indicators['bollinger_middle'] = round(sma_20, 2)
+            indicators['bollinger_lower'] = round(sma_20 - (2 * std_dev), 2)
+        
+        # MACD計算
+        if len(closes) >= 26:
+            # 指数移動平均計算
+            ema_12 = closes[-1]
+            ema_26 = closes[-1]
+            
+            alpha_12 = 2 / (12 + 1)
+            alpha_26 = 2 / (26 + 1)
+            
+            for i in range(min(26, len(closes))):
+                price = closes[-(i+1)]
+                ema_12 = (price * alpha_12) + (ema_12 * (1 - alpha_12))
+                ema_26 = (price * alpha_26) + (ema_26 * (1 - alpha_26))
+            
+            macd_line = ema_12 - ema_26
+            indicators['macd'] = round(macd_line, 4)
+        
+        # 出来高移動平均
+        if len(volumes) >= 20:
+            volume_avg = sum(volumes[-20:]) / 20
+            indicators['volume_avg'] = int(volume_avg)
+            indicators['volume_ratio'] = round(volumes[-1] / volume_avg if volume_avg > 0 else 1, 2)
+        
+        # 価格変動率
+        if len(closes) >= 2:
+            daily_change = ((closes[-1] - closes[-2]) / closes[-2]) * 100
+            indicators['daily_change_pct'] = round(daily_change, 2)
+        
+        if len(closes) >= 7:
+            weekly_change = ((closes[-1] - closes[-7]) / closes[-7]) * 100
+            indicators['weekly_change_pct'] = round(weekly_change, 2)
+        
+        # 現在価格情報
+        current_price = prices[-1]
+        indicators.update({
+            'symbol': symbol.upper(),
+            'current_price': float(current_price.close_price),
+            'current_volume': int(current_price.volume) if current_price.volume else 0,
+            'last_updated': current_price.date.isoformat(),
+            'data_points': len(prices)
+        })
+        
+        return indicators
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"テクニカル指標計算エラー: {str(e)}")

@@ -1,26 +1,40 @@
-# 📡 Miraikakaku API Documentation
+# API ドキュメント
 
-The Miraikakaku API provides comprehensive endpoints for stock market data, AI-powered predictions, and real-time financial analysis. Built with FastAPI, it offers automatic OpenAPI documentation and high-performance data access.
+## 概要
+MiraikakakuプラットフォームのAPI仕様書。フロントエンドとバックエンド間のデータ交換とWebSocket通信について記載。FastAPIベースで構築され、自動OpenAPIドキュメント生成と高性能なデータアクセスを提供。
 
-## 🌍 Base URLs
+---
 
-| Environment | Base URL | WebSocket URL |
+## 基本情報
+
+### ベースURL
+| 環境 | Base URL | WebSocket URL |
 |-------------|----------|---------------|
-| **Development** | `http://localhost:8000` | `ws://localhost:8000` |
-| **Production** | `https://api.miraikakaku.com` | `wss://api.miraikakaku.com` |
+| **開発環境** | `http://localhost:8000` | `ws://localhost:8000` |
+| **本番環境** | `https://api.miraikakaku.com` | `wss://api.miraikakaku.com` |
 
-## 🔐 Authentication
+### 認証
+- **方式**: JWT Bearer Token（将来実装予定）
+- **ヘッダー**: `Authorization: Bearer <token>`
 
-### Authentication Methods
-- **API Keys**: Required for production access
-- **JWT Tokens**: For user-specific operations
-- **CORS**: Configured for frontend origins
+### レスポンス形式
+```typescript
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+  timestamp: string;
+}
+```
 
-### Headers
-```http
-Authorization: Bearer <your-jwt-token>
-X-API-Key: <your-api-key>
-Content-Type: application/json
+### エラーハンドリング
+```typescript
+interface ApiError {
+  code: string;
+  message: string;
+  details?: any;
+}
 ```
 
 ## 📊 Core API Endpoints

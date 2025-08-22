@@ -16,7 +16,8 @@
     "test:e2e:report": "playwright show-report",
     "dev:unified": "./scripts/dev-unified.sh",
     "env:init": "./scripts/env-manager.sh init",
-    "env:validate": "./scripts/env-manager.sh validate"
+    "env:validate": "./scripts/env-manager.sh validate",
+    "generate:pwa-screenshots": "node generate-pwa-screenshots.js"
   },
   "dependencies": {
     "@testing-library/jest-dom": "^6.7.0",

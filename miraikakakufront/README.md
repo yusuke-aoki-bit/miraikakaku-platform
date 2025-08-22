@@ -1,31 +1,84 @@
-# 🚀 Miraikakaku - AI-Driven Stock Prediction Platform
+# Miraikakaku - AI株価予測プラットフォーム
 
-**Miraikakaku** (未来価格 - "Future Price" in Japanese) is a cutting-edge web application that leverages artificial intelligence to provide comprehensive stock market analysis and price predictions. Built with modern web technologies, it offers real-time market data, AI-powered insights, and intuitive user experiences.
+<p align="center">
+  <img src="public/icon-192x192.png" alt="Miraikakaku Logo" width="120" height="120">
+</p>
 
-## 🌟 Features
+<p align="center">
+  <strong>先進的なAI技術による株価予測プラットフォーム</strong><br>
+  深層学習モデル（LSTM）とVertex AIを活用した高精度な市場分析ツール
+</p>
 
-### 📈 Core Features
-- **Real-time Stock Data** - Live market data and price updates
-- **AI Price Predictions** - Machine learning-powered stock price forecasting
-- **Interactive Charts** - Advanced charting with technical indicators
-- **Market Rankings** - Growth potential and accuracy-based rankings
-- **Portfolio Analysis** - Risk assessment and performance tracking
-- **Smart Search** - Intelligent stock symbol and company name search
-- **Responsive Design** - Optimized for desktop, tablet, and mobile devices
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js 15">
+  <img src="https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript" alt="TypeScript 5">
+  <img src="https://img.shields.io/badge/PWA-Enabled-green?style=for-the-badge" alt="PWA">
+  <img src="https://img.shields.io/badge/Docker-Supported-blue?style=for-the-badge&logo=docker" alt="Docker">
+</p>
 
-### 🤖 AI Capabilities
-- **Multi-Model Predictions** - Various ML models for enhanced accuracy
-- **Confidence Scoring** - Reliability metrics for each prediction
-- **Historical Accuracy** - Track record of past predictions
-- **Market Sentiment Analysis** - News and social media sentiment integration
-- **Risk Assessment** - Volatility and risk factor analysis
+**Miraikakaku**（未来価格）は、最先端のAI技術を駆使した株価予測プラットフォームです。機械学習モデル（LSTM、Vertex AI）を用いて株価、出来高、通貨（外国為替）の将来予測を行い、投資家の意思決定をサポートします。
 
-### 🎨 User Experience
-- **Dark Theme** - Modern, eye-friendly dark interface
-- **Glass Morphism** - Beautiful translucent design elements
-- **Smooth Animations** - Fluid transitions and micro-interactions
-- **Intuitive Navigation** - Clear information architecture
-- **Accessibility** - WCAG compliant design
+---
+
+## 📋 目次
+
+- [概要](#概要)
+- [主な機能](#主な機能)
+- [技術スタック](#技術スタック)
+- [プロジェクト構成](#プロジェクト構成)
+- [セットアップ](#セットアップ)
+- [使用方法](#使用方法)
+- [API仕様](#api仕様)
+- [PWA機能](#pwa機能)
+- [デプロイメント](#デプロイメント)
+- [開発者向け情報](#開発者向け情報)
+- [貢献](#貢献)
+- [ライセンス](#ライセンス)
+
+---
+
+## 🎯 概要
+
+**Miraikakaku**は、最先端のAI技術を駆使した株価予測プラットフォームです。機械学習モデル（LSTM、Vertex AI）を用いて株価の将来予測を行い、投資家の意思決定をサポートします。
+
+### 🌟 特徴
+
+- **高精度AI予測**: LSTM（Long Short-Term Memory）とVertex AIによる多角的予測
+- **リアルタイム分析**: WebSocketを活用したライブ市場データ
+- **包括的分析**: 株価、出来高、通貨（外国為替）の統合分析
+- **プログレッシブウェブアプリ（PWA）**: オフライン対応とネイティブアプリ体験
+- **レスポンシブデザイン**: モバイル・タブレット・デスクトップ完全対応
+
+---
+
+## 🚀 主な機能
+
+### 📊 株価予測・分析
+- **リアルタイムダッシュボード**: 市場動向のライブ監視
+- **AI予測チャート**: LSTM・Vertex AIによる将来価格予測
+- **トリプルチャート**: 複数時間軸での比較分析
+- **推奨レーティング**: AI分析による投資推奨度
+
+### 📈 出来高分析
+- **出来高予測**: 過去データと未来予測の可視化
+- **価格-出来高相関**: 統計的相関関係の分析
+- **トレンド分析**: 出来高パターンによる市場動向予測
+
+### 💱 通貨予測
+- **8通貨ペア対応**: 主要外国為替レートの予測
+- **経済カレンダー**: 重要経済指標との連動分析
+- **テクニカル指標**: RSI、MACD、ボリンジャーバンド
+- **トレーディングシグナル**: 売買タイミングの提案
+
+### 🔍 検索・ランキング
+- **インテリジェント検索**: 銘柄・企業名での高速検索
+- **パフォーマンスランキング**: 予測精度・収益性ランキング
+- **セクター分析**: 業界別パフォーマンス比較
+
+### 👤 ユーザー機能
+- **ウォッチリスト**: お気に入り銘柄の管理
+- **アラート機能**: 価格変動・予測更新通知
+- **履歴管理**: 過去の予測精度追跡
 
 ## 🛠 Technology Stack
 
