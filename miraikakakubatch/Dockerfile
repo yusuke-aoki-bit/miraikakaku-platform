@@ -13,11 +13,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Python依存関係をインストール
-COPY requirements.txt .
+COPY miraikakakubatch/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # アプリケーションコードをコピー
-COPY functions/ ./
+COPY miraikakakubatch/functions/ ./
+
+# 共通ライブラリをコピー
+COPY shared/ ./shared/
 
 # 非rootユーザーを作成
 RUN groupadd -r batchuser && useradd -r -g batchuser batchuser
@@ -34,5 +37,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
-# バッチ処理メイン実行
-CMD ["python", "main.py"]
+# バッチ処理メイン実行 (Enhanced版を使用)
+CMD ["python", "enhanced_batch_main.py"]

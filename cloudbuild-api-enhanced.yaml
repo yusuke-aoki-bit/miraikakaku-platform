@@ -1,0 +1,5 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/pricewise-huqkr/miraikakaku-api-enhanced', '-f', 'miraikakakuapi/Dockerfile.enhanced', '.']
+images:
+- 'gcr.io/pricewise-huqkr/miraikakaku-api-enhanced'

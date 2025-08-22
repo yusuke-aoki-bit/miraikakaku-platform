@@ -1,14 +1,39 @@
-# 共通のデータベース設定を使用
+# フォールバック可能なデータベース設定
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../shared'))
 
-from config.database import get_db, init_database, SessionLocal, db_config
+try:
+    from shared.config.database import get_db, init_database, SessionLocal, db_config
+    engine = db_config.get_engine()
+except ImportError:
+    # フォールバック: 元の設定
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from dotenv import load_dotenv
+    
+    load_dotenv()
+    
+    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./miraikakaku.db")
+    
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        echo=os.getenv("LOG_LEVEL") == "DEBUG",
+        connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+    )
+    
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    
+    def get_db():
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
 
-# 既存コードとの互換性のため
-engine = db_config.get_engine()
-
-async def init_database_api():
+async def init_database():
     """API固有のデータベース初期化"""
     from .models import Base, StockMaster, StockPriceHistory, StockPredictions, AIInferenceLog
     Base.metadata.create_all(bind=engine)

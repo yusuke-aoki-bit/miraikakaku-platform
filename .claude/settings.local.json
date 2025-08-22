@@ -76,7 +76,8 @@
       "Bash(sqlite3:*)",
       "Bash(gcloud builds list:*)",
       "Bash(gcloud scheduler jobs create:*)",
-      "Bash(/dev/null)"
+      "Bash(/dev/null)",
+      "Bash(gsutil cp:*)"
     ],
     "deny": [],
     "ask": []

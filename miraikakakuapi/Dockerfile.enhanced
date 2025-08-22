@@ -1,0 +1,48 @@
+# Enhanced Miraikakaku API Dockerfile
+# LSTM予測・Cloud SQL統合機能付き
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# システムパッケージのインストール
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    libffi-dev \
+    libssl-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Pythonの依存関係をインストール
+COPY miraikakakuapi/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 追加のML依存関係
+RUN pip install --no-cache-dir \
+    tensorflow==2.20.0 \
+    scikit-learn==1.7.1 \
+    matplotlib==3.9.3 \
+    seaborn==0.13.2
+
+# アプリケーションファイルをコピー
+COPY miraikakakuapi/functions/ ./
+
+# 環境変数設定
+ENV PYTHONPATH=/app
+ENV GOOGLE_CLOUD_PROJECT=pricewise-huqkr
+ENV CLOUD_SQL_INSTANCE=miraikakaku
+ENV CLOUD_SQL_DATABASE=miraikakaku_prod
+ENV CLOUD_SQL_USER=root
+ENV CLOUD_SQL_PASSWORD=miraikakaku2025
+ENV CLOUD_SQL_REGION=us-central1
+
+# ポート設定
+EXPOSE 8080
+
+# ヘルスチェック
+HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# アプリケーション起動
+CMD ["python", "enhanced_main.py"]
