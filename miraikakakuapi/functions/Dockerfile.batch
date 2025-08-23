@@ -1,20 +1,31 @@
-# Dockerfile for batch processing Cloud Run jobs
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy requirements first for better caching
+# 必要なシステムパッケージをインストール
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    pkg-config \
+    default-libmysqlclient-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 要件をコピーしてインストール
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy all necessary files
-COPY *.py .
-COPY database/ ./database/
-COPY api/ ./api/
-COPY repositories/ ./repositories/
+# 追加パッケージ（バッチ処理用）
+RUN pip install schedule
 
-# Set Python path
+# アプリケーションファイルをコピー
+COPY . .
+
+# 環境変数
 ENV PYTHONPATH=/app
+ENV PORT=8080
 
-# Default command (will be overridden by Cloud Run)
-CMD ["python", "comprehensive_batch.py"]
+# ヘルスチェック用のシンプルサーバーを含むエントリーポイント
+COPY docker-entrypoint.py .
+EXPOSE 8080
+
+CMD ["python", "docker-entrypoint.py"]

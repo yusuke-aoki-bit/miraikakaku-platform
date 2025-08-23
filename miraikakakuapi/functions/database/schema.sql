@@ -98,7 +98,25 @@ CREATE TABLE IF NOT EXISTS analysis_reports (
     INDEX idx_report_type (report_type)
 );
 
--- ユーザーウォッチリストテーブル（将来拡張用）
+-- ユーザープロファイルテーブル
+CREATE TABLE IF NOT EXISTS user_profiles (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(100) UNIQUE NOT NULL,
+    username VARCHAR(50),
+    email VARCHAR(100),
+    investment_style ENUM('conservative', 'moderate', 'aggressive', 'growth', 'value') DEFAULT 'moderate',
+    risk_tolerance ENUM('low', 'medium', 'high') DEFAULT 'medium',
+    investment_experience ENUM('beginner', 'intermediate', 'advanced', 'expert') DEFAULT 'beginner',
+    preferred_sectors JSON,
+    investment_goals TEXT,
+    total_portfolio_value DECIMAL(15,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_investment_style (investment_style)
+);
+
+-- ユーザーウォッチリストテーブル
 CREATE TABLE IF NOT EXISTS user_watchlists (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(100) NOT NULL,
@@ -106,9 +124,97 @@ CREATE TABLE IF NOT EXISTS user_watchlists (
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     alert_threshold_up DECIMAL(5,2),
     alert_threshold_down DECIMAL(5,2),
+    notes TEXT,
+    priority ENUM('high', 'medium', 'low') DEFAULT 'medium',
     FOREIGN KEY (symbol) REFERENCES stock_master(symbol),
+    FOREIGN KEY (user_id) REFERENCES user_profiles(user_id),
     UNIQUE KEY unique_user_symbol (user_id, symbol),
     INDEX idx_user_id (user_id)
+);
+
+-- AI判断根拠テーブル
+CREATE TABLE IF NOT EXISTS ai_decision_factors (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    prediction_id BIGINT NOT NULL,
+    factor_type ENUM('technical', 'fundamental', 'sentiment', 'news', 'pattern') NOT NULL,
+    factor_name VARCHAR(100) NOT NULL,
+    influence_score DECIMAL(5,2) NOT NULL,
+    description TEXT,
+    confidence DECIMAL(5,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (prediction_id) REFERENCES stock_predictions(id),
+    INDEX idx_prediction_id (prediction_id),
+    INDEX idx_factor_type (factor_type)
+);
+
+-- ユーザーポートフォリオテーブル
+CREATE TABLE IF NOT EXISTS user_portfolios (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(100) NOT NULL,
+    symbol VARCHAR(10) NOT NULL,
+    shares DECIMAL(10,4) NOT NULL,
+    average_cost DECIMAL(12,4) NOT NULL,
+    purchase_date DATE,
+    portfolio_weight DECIMAL(5,2),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user_profiles(user_id),
+    FOREIGN KEY (symbol) REFERENCES stock_master(symbol),
+    INDEX idx_user_portfolio (user_id, symbol),
+    INDEX idx_user_active (user_id, is_active)
+);
+
+-- コミュニティ予測コンテストテーブル
+CREATE TABLE IF NOT EXISTS prediction_contests (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    contest_name VARCHAR(100) NOT NULL,
+    symbol VARCHAR(10) NOT NULL,
+    contest_start_date DATE NOT NULL,
+    prediction_deadline DATETIME NOT NULL,
+    target_date DATE NOT NULL,
+    actual_price DECIMAL(12,4),
+    status ENUM('active', 'closed', 'completed') DEFAULT 'active',
+    prize_description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (symbol) REFERENCES stock_master(symbol),
+    INDEX idx_contest_status (status),
+    INDEX idx_target_date (target_date)
+);
+
+-- ユーザー予測コンテスト参加テーブル
+CREATE TABLE IF NOT EXISTS user_contest_predictions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    contest_id BIGINT NOT NULL,
+    user_id VARCHAR(100) NOT NULL,
+    predicted_price DECIMAL(12,4) NOT NULL,
+    confidence_level ENUM('low', 'medium', 'high') DEFAULT 'medium',
+    reasoning TEXT,
+    accuracy_score DECIMAL(5,2),
+    rank_position INT,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (contest_id) REFERENCES prediction_contests(id),
+    FOREIGN KEY (user_id) REFERENCES user_profiles(user_id),
+    UNIQUE KEY unique_contest_user (contest_id, user_id),
+    INDEX idx_contest_accuracy (contest_id, accuracy_score DESC)
+);
+
+-- テーマ別インサイトテーブル
+CREATE TABLE IF NOT EXISTS theme_insights (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    theme_name VARCHAR(50) NOT NULL,
+    theme_category ENUM('technology', 'energy', 'finance', 'healthcare', 'consumer', 'industrial', 'materials') NOT NULL,
+    insight_date DATE NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    summary TEXT NOT NULL,
+    key_metrics JSON,
+    related_symbols JSON,
+    trend_direction ENUM('bullish', 'bearish', 'neutral') DEFAULT 'neutral',
+    impact_score DECIMAL(3,1),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_theme_date (theme_name, insight_date),
+    INDEX idx_category (theme_category),
+    INDEX idx_trend (trend_direction)
 );
 
 -- 初期データ挿入

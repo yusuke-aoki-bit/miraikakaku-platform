@@ -39,6 +39,21 @@ class ComprehensiveBatchLoader:
             'errors': 0
         }
         self.error_symbols = deque()
+        self.delisted_symbols = self._load_delisted_symbols()
+        
+    def _load_delisted_symbols(self):
+        """廃止銘柄スキップリストを読み込み"""
+        delisted = set()
+        try:
+            with open('delisted_symbols_skip.txt', 'r') as f:
+                for line in f:
+                    symbol = line.strip()
+                    if symbol:
+                        delisted.add(symbol)
+            logger.info(f"📋 廃止銘柄スキップリスト読み込み: {len(delisted)}個")
+        except FileNotFoundError:
+            logger.warning("⚠️  廃止銘柄スキップリストが見つかりません")
+        return delisted
         
     def get_all_active_symbols(self):
         """全てのアクティブ銘柄を取得（12,107銘柄）"""
@@ -92,6 +107,12 @@ class ComprehensiveBatchLoader:
         """包括的データ取得・保存（価格データ + 予測データ）"""
         db = next(get_db())
         result = {'symbol': symbol, 'prices': 0, 'predictions': 0, 'error': None}
+        
+        # 廃止銘柄スキップ
+        clean_symbol = symbol.replace('.T', '').replace('^', '')
+        if clean_symbol in self.delisted_symbols:
+            result['error'] = f'Skipped delisted symbol: {clean_symbol}'
+            return result
         
         try:
             # 長期間のデータ取得（2年分、ML学習に必要）

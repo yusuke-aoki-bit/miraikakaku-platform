@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-ターボデータ拡張 - 即効性重視でデータを10倍以上増加
-確実にデータが取得できる銘柄で集中的に大量データを生成
+ターボデータ拡張 - 修正版
+Foreign Key制約エラーを解決し、エラー処理を改善
 """
 
 import logging
@@ -22,7 +22,7 @@ from database.database import get_db
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class TurboDataExpansion:
+class TurboDataExpansionFixed:
     def __init__(self):
         self.guaranteed_symbols = self.get_guaranteed_data_symbols()
         self.delisted_symbols = self._load_delisted_symbols()
@@ -81,13 +81,66 @@ class TurboDataExpansion:
             ]
         }
     
-    def turbo_fetch_data(self, symbol, years=5):
-        """ターボデータ取得（大量履歴＋予測）"""
+    def ensure_stock_master_exists(self, db, symbol, yf_ticker):
+        """銘柄がstock_masterに存在することを確認、なければ自動追加"""
+        try:
+            # 存在チェック
+            exists = db.execute(text(
+                "SELECT COUNT(*) FROM stock_master WHERE symbol = :sym"
+            ), {"sym": symbol}).scalar()
+            
+            if exists > 0:
+                return True
+            
+            # 存在しない場合は自動追加
+            logger.info(f"🔧 銘柄を自動追加: {symbol}")
+            
+            # Yahoo Financeから基本情報を取得
+            try:
+                info = yf_ticker.info
+                company_name = info.get('longName', info.get('shortName', symbol))
+                sector = info.get('sector', 'Unknown')
+                industry = info.get('industry', 'Unknown')
+                currency = info.get('currency', 'USD' if not symbol.endswith('.T') else 'JPY')
+                country = info.get('country', 'US' if not symbol.endswith('.T') else 'Japan')
+            except:
+                # 基本情報取得失敗時のフォールバック
+                company_name = symbol
+                sector = 'Unknown'
+                industry = 'Unknown'
+                currency = 'USD' if not symbol.endswith('.T') else 'JPY'
+                country = 'US' if not symbol.endswith('.T') else 'Japan'
+            
+            # stock_masterに挿入
+            db.execute(text("""
+                INSERT INTO stock_master 
+                (symbol, company_name, sector, industry, currency, country, is_active, created_at)
+                VALUES (:sym, :name, :sector, :industry, :currency, :country, 1, NOW())
+            """), {
+                "sym": symbol,
+                "name": company_name[:100],  # 長さ制限
+                "sector": sector[:50],
+                "industry": industry[:100],
+                "currency": currency,
+                "country": country
+            })
+            
+            db.commit()
+            logger.info(f"✅ 銘柄追加完了: {symbol} - {company_name}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ 銘柄追加エラー {symbol}: {e}")
+            return False
+    
+    def turbo_fetch_data_safe(self, symbol, years=5):
+        """安全なターボデータ取得（Foreign Key制約エラー対策）"""
         # 廃止銘柄スキップ
         clean_symbol = symbol.replace('.T', '').replace('^', '')
         if clean_symbol in self.delisted_symbols:
             return {'symbol': symbol, 'prices': 0, 'predictions': 0, 'error': f'Skipped delisted symbol: {clean_symbol}'}
         
+        db = None
         try:
             ticker = yf.Ticker(symbol)
             
@@ -98,27 +151,36 @@ class TurboDataExpansion:
                 return {'symbol': symbol, 'prices': 0, 'predictions': 0, 'error': 'No data'}
             
             db = next(get_db())
+            
+            # 🔧 重要: stock_masterの存在確認と自動追加
+            if not self.ensure_stock_master_exists(db, symbol, ticker):
+                return {'symbol': symbol, 'prices': 0, 'predictions': 0, 'error': 'Failed to ensure stock_master entry'}
+            
             try:
-                db_symbol = symbol.replace('.T', '').replace('^', '')
-                
-                # 価格データ一括挿入
+                # 価格データ保存
                 price_records = 0
+                
+                # 重複チェック用の既存日付を取得
+                existing_dates = set()
+                result = db.execute(text(
+                    "SELECT date FROM stock_prices WHERE symbol = :sym"
+                ), {"sym": symbol}).fetchall()
+                existing_dates = {row[0] for row in result}
+                
+                # 価格データ挿入（重複チェック改善）
                 for date, row in hist.iterrows():
-                    try:
-                        # 重複チェック
-                        exists = db.execute(text(
-                            "SELECT COUNT(*) FROM stock_prices WHERE symbol = :sym AND date = :dt"
-                        ), {"sym": db_symbol, "dt": date.date()}).scalar()
-                        
-                        if exists == 0:
+                    date_only = date.date()
+                    
+                    if date_only not in existing_dates:
+                        try:
                             db.execute(text("""
                                 INSERT INTO stock_prices 
-                                (symbol, date, open_price, high_price, low_price, close_price, 
-                                 volume, adjusted_close, created_at)
-                                VALUES (:sym, :dt, :op, :hi, :lo, :cl, :vol, :adj, NOW())
+                                (symbol, date, open_price, high_price, low_price, 
+                                 close_price, volume, adjusted_close)
+                                VALUES (:sym, :dt, :op, :hi, :lo, :cl, :vol, :adj)
                             """), {
-                                "sym": db_symbol,
-                                "dt": date.date(),
+                                "sym": symbol,
+                                "dt": date_only,
                                 "op": float(row['Open']),
                                 "hi": float(row['High']),
                                 "lo": float(row['Low']),
@@ -127,14 +189,15 @@ class TurboDataExpansion:
                                 "adj": float(row['Close'])
                             })
                             price_records += 1
-                    except Exception:
-                        continue
+                        except Exception as price_err:
+                            logger.warning(f"価格データ挿入スキップ {symbol} {date_only}: {price_err}")
+                            continue
                 
                 if price_records > 0:
                     db.commit()
                 
                 # 大量予測データ生成（120日分）
-                pred_records = self.generate_turbo_predictions(db, db_symbol, hist)
+                pred_records = self.generate_turbo_predictions_safe(db, symbol, hist)
                 
                 logger.info(f"✅ {symbol}: 価格{price_records}件, 予測{pred_records}件")
                 
@@ -145,14 +208,21 @@ class TurboDataExpansion:
                     'error': None
                 }
                 
-            finally:
-                db.close()
+            except Exception as data_err:
+                logger.error(f"データ処理エラー {symbol}: {data_err}")
+                if db:
+                    db.rollback()
+                return {'symbol': symbol, 'prices': 0, 'predictions': 0, 'error': str(data_err)}
                 
         except Exception as e:
+            logger.error(f"全体的なエラー {symbol}: {e}")
             return {'symbol': symbol, 'prices': 0, 'predictions': 0, 'error': str(e)}
+        finally:
+            if db:
+                db.close()
     
-    def generate_turbo_predictions(self, db, db_symbol, hist_data):
-        """ターボ予測生成（120日間の詳細予測）"""
+    def generate_turbo_predictions_safe(self, db, symbol, hist_data):
+        """安全な予測生成（Foreign Key制約対応）"""
         try:
             if len(hist_data) < 100:
                 return 0
@@ -179,16 +249,20 @@ class TurboDataExpansion:
             
             prediction_count = 0
             
+            # 既存予測日付を一度に取得（パフォーマンス改善）
+            existing_pred_dates = set()
+            result = db.execute(text(
+                "SELECT prediction_date FROM stock_predictions WHERE symbol = :sym"
+            ), {"sym": symbol}).fetchall()
+            existing_pred_dates = {row[0] for row in result}
+            
             # 120日間予測（MLモデル用大量データ）
+            batch_predictions = []
             for days in range(1, 121):
                 pred_date = datetime.now().date() + timedelta(days=days)
                 
-                # 重複チェック
-                exists = db.execute(text(
-                    "SELECT COUNT(*) FROM stock_predictions WHERE symbol = :sym AND prediction_date = :dt"
-                ), {"sym": db_symbol, "dt": pred_date}).scalar()
-                
-                if exists > 0:
+                # 重複チェック（メモリ上で実行）
+                if pred_date in existing_pred_dates:
                     continue
                 
                 # 複合予測モデル
@@ -226,38 +300,48 @@ class TurboDataExpansion:
                 # モデル精度
                 accuracy = 0.75 + np.random.uniform(-0.1, 0.1)
                 
-                # データ挿入
-                db.execute(text("""
-                    INSERT INTO stock_predictions 
-                    (symbol, prediction_date, current_price, predicted_price,
-                     confidence_score, prediction_days, model_version, 
-                     model_accuracy, created_at)
-                    VALUES (:sym, :dt, :cur, :pred, :conf, :days, :model, :acc, NOW())
-                """), {
-                    "sym": db_symbol,
+                batch_predictions.append({
+                    "sym": symbol,
                     "dt": pred_date,
                     "cur": latest_price,
                     "pred": round(predicted_price, 4),
                     "conf": round(confidence, 3),
                     "days": days,
-                    "model": 'TURBO_EXPANSION_V1',
+                    "model": 'TURBO_EXPANSION_V2_FIXED',
                     "acc": round(accuracy, 3)
                 })
-                prediction_count += 1
             
-            if prediction_count > 0:
-                db.commit()
+            # バッチ挿入（パフォーマンス改善）
+            if batch_predictions:
+                try:
+                    for pred in batch_predictions:
+                        db.execute(text("""
+                            INSERT INTO stock_predictions 
+                            (symbol, prediction_date, current_price, predicted_price,
+                             confidence_score, prediction_days, model_version, 
+                             model_accuracy, created_at)
+                            VALUES (:sym, :dt, :cur, :pred, :conf, :days, :model, :acc, NOW())
+                        """), pred)
+                        prediction_count += 1
+                    
+                    db.commit()
+                    logger.info(f"🔮 {symbol}: {prediction_count}件の予測を生成")
+                    
+                except Exception as batch_err:
+                    logger.error(f"予測バッチ挿入エラー {symbol}: {batch_err}")
+                    db.rollback()
+                    return 0
             
             return prediction_count
             
         except Exception as e:
-            logger.error(f"予測生成エラー {db_symbol}: {e}")
+            logger.error(f"予測生成エラー {symbol}: {e}")
             return 0
     
-    def execute_turbo_expansion(self):
-        """ターボ拡張実行"""
+    def execute_turbo_expansion_fixed(self):
+        """修正版ターボ拡張実行"""
         logger.info("="*80)
-        logger.info("🔥 ターボデータ拡張開始 - 確実な大量データ収集")
+        logger.info("🔥 ターボデータ拡張開始 (修正版) - 安全な大量データ収集")
         logger.info("="*80)
         
         start_time = time.time()
@@ -270,56 +354,69 @@ class TurboDataExpansion:
         
         logger.info(f"総対象: {len(all_symbols)}銘柄")
         
-        results = []
         total_prices = 0
         total_predictions = 0
+        successful_symbols = 0
+        failed_symbols = []
         
-        # 並行処理で高速実行
-        with ThreadPoolExecutor(max_workers=8) as executor:
-            futures = {
-                executor.submit(self.turbo_fetch_data, symbol): symbol 
+        # 並行処理（適度な同時実行数）
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            # 全銘柄を並行処理で実行
+            future_to_symbol = {
+                executor.submit(self.turbo_fetch_data_safe, symbol): symbol 
                 for symbol in all_symbols
             }
             
-            for future in as_completed(futures):
+            for i, future in enumerate(as_completed(future_to_symbol)):
+                symbol = future_to_symbol[future]
+                
                 try:
-                    result = future.result(timeout=60)
-                    results.append(result)
+                    result = future.result(timeout=300)  # 5分タイムアウト
                     
-                    if not result['error']:
+                    if result['error']:
+                        logger.warning(f"⚠️  {symbol}: {result['error']}")
+                        failed_symbols.append(f"{symbol}: {result['error']}")
+                    else:
                         total_prices += result['prices']
                         total_predictions += result['predictions']
+                        successful_symbols += 1
                     
-                    # 進捗表示
-                    if len(results) % 10 == 0:
-                        logger.info(f"進捗: {len(results)}/{len(all_symbols)} - "
-                                  f"価格+{total_prices}, 予測+{total_predictions}")
+                    # 進捗表示（10銘柄ごと）
+                    if (i + 1) % 10 == 0:
+                        logger.info(f"進捗: {i + 1}/{len(all_symbols)} - 価格+{total_prices}, 予測+{total_predictions}")
                         
                 except Exception as e:
-                    logger.error(f"処理エラー: {e}")
+                    logger.error(f"❌ {symbol} 処理エラー: {e}")
+                    failed_symbols.append(f"{symbol}: {str(e)}")
         
         # 結果サマリー
-        elapsed = time.time() - start_time
-        success_count = len([r for r in results if not r['error']])
+        end_time = time.time()
+        duration = end_time - start_time
         
         logger.info("="*80)
-        logger.info("🎉 ターボ拡張完了")
-        logger.info(f"⏱️  処理時間: {elapsed/60:.1f}分")
-        logger.info(f"✅ 成功率: {success_count}/{len(all_symbols)} ({success_count/len(all_symbols)*100:.1f}%)")
-        logger.info(f"💾 追加価格データ: {total_prices:,}件")
-        logger.info(f"🔮 追加予測データ: {total_predictions:,}件")
+        logger.info("🎯 ターボ拡張完了 (修正版)")
+        logger.info(f"⏱️  実行時間: {duration:.1f}秒")
+        logger.info(f"✅ 成功: {successful_symbols}/{len(all_symbols)}銘柄")
+        logger.info(f"💰 価格データ: {total_prices:,}件")
+        logger.info(f"🔮 予測データ: {total_predictions:,}件")
+        
+        if failed_symbols:
+            logger.info(f"❌ 失敗銘柄数: {len(failed_symbols)}")
+            logger.info("失敗銘柄詳細:")
+            for failed in failed_symbols[:10]:  # 上位10件を表示
+                logger.info(f"   {failed}")
+        
         logger.info("="*80)
         
         return {
-            'processed': len(results),
-            'success': success_count,
-            'price_records': total_prices,
-            'predictions': total_predictions,
-            'elapsed': elapsed
+            'processed_symbols': len(all_symbols),
+            'successful_symbols': successful_symbols,
+            'failed_symbols': len(failed_symbols),
+            'total_prices': total_prices,
+            'total_predictions': total_predictions,
+            'duration': duration
         }
 
 if __name__ == "__main__":
-    turbo = TurboDataExpansion()
-    result = turbo.execute_turbo_expansion()
-    
-    logger.info(f"✅ ターボ拡張完了: +{result['price_records']:,}価格, +{result['predictions']:,}予測")
+    expander = TurboDataExpansionFixed()
+    expander.execute_turbo_expansion_fixed()

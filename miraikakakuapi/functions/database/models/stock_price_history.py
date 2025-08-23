@@ -4,7 +4,7 @@ from datetime import datetime
 from .base import Base
 
 class StockPriceHistory(Base):
-    __tablename__ = "stock_price_history"
+    __tablename__ = "stock_prices"
     
     id = Column(Integer, primary_key=True, index=True)
     symbol = Column(String(20), ForeignKey("stock_master.symbol"), nullable=False, index=True)
@@ -15,7 +15,7 @@ class StockPriceHistory(Base):
     close_price = Column(Numeric(12, 4), nullable=False)
     adjusted_close = Column(Numeric(12, 4))
     volume = Column(Integer)
-    data_source = Column(String(50), default="yfinance")
+    # data_source = Column(String(50), default="yfinance")  # 実際のDBには存在しない
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # インデックスの作成

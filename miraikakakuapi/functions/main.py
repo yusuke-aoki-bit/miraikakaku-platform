@@ -196,12 +196,14 @@ async def test_index_predictions(symbol: str, days: int = 30):
 from api.finance.routes import router as finance_router
 from api.finance.routes_v2 import router as finance_v2_router
 from api.websocket.routes import router as websocket_router
+from api.user.routes import router as user_router
 # from api.auth.routes import router as auth_router
 # from api.admin.routes import router as admin_router
 
 # app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
 app.include_router(finance_router, prefix="/api/finance", tags=["finance"])
 app.include_router(finance_v2_router, prefix="/api/finance", tags=["finance_v2"])
+app.include_router(user_router, prefix="/api", tags=["users"])
 # app.include_router(admin_router, prefix="/api/admin", tags=["administration"])
 app.include_router(websocket_router, prefix="", tags=["websocket"])
 

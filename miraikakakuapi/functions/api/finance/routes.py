@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from database.database import get_db
 from database.models import StockMaster, StockPriceHistory, StockPredictions
 from api.models.finance_models import StockPriceResponse, StockPredictionResponse, StockSearchResponse
@@ -8,6 +9,82 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 
 router = APIRouter()
+
+@router.get("/ml-readiness")
+async def get_ml_readiness(db: Session = Depends(get_db)):
+    """機械学習の準備状況を評価"""
+    try:
+        # データ件数取得
+        prices_count = db.execute(text("SELECT COUNT(*) FROM stock_prices")).scalar()
+        predictions_count = db.execute(text("SELECT COUNT(*) FROM stock_predictions")).scalar()
+        symbols_with_prices = db.execute(text("SELECT COUNT(DISTINCT symbol) FROM stock_prices")).scalar()
+        symbols_with_predictions = db.execute(text("SELECT COUNT(DISTINCT symbol) FROM stock_predictions")).scalar()
+        
+        # スコア計算（0-100）
+        score = 0
+        
+        # 価格データ（最大40点）
+        if prices_count > 10000:
+            score += 40
+        elif prices_count > 5000:
+            score += 30
+        elif prices_count > 1000:
+            score += 20
+        elif prices_count > 100:
+            score += 10
+        
+        # 予測データ（最大30点）
+        if predictions_count > 5000:
+            score += 30
+        elif predictions_count > 2500:
+            score += 25
+        elif predictions_count > 1000:
+            score += 20
+        elif predictions_count > 100:
+            score += 10
+        
+        # 銘柄カバレッジ（最大20点）
+        if symbols_with_prices > 100:
+            score += 10
+        elif symbols_with_prices > 50:
+            score += 5
+        
+        if symbols_with_predictions > 100:
+            score += 10
+        elif symbols_with_predictions > 50:
+            score += 5
+        
+        # データの多様性（最大10点）
+        if symbols_with_prices > 10 and symbols_with_predictions > 10:
+            score += 10
+        elif symbols_with_prices > 5 and symbols_with_predictions > 5:
+            score += 5
+        
+        # 推奨アクション
+        recommendations = []
+        if prices_count < 10000:
+            recommendations.append("価格データを10,000件以上に増やしてください")
+        if predictions_count < 5000:
+            recommendations.append("予測データを5,000件以上に増やしてください")
+        if symbols_with_prices < 100:
+            recommendations.append("より多くの銘柄データを収集してください")
+        
+        return {
+            "ml_readiness_score": score,
+            "max_score": 100,
+            "data_stats": {
+                "price_records": prices_count,
+                "prediction_records": predictions_count,
+                "symbols_with_prices": symbols_with_prices,
+                "symbols_with_predictions": symbols_with_predictions
+            },
+            "recommendations": recommendations,
+            "is_ready": score >= 70,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/stocks/search", response_model=List[StockSearchResponse])
 async def search_stocks(
@@ -58,7 +135,7 @@ async def get_stock_price(
             low_price=float(price.low_price) if price.low_price else None,
             close_price=float(price.close_price),
             volume=price.volume,
-            data_source=price.data_source
+            data_source="database"
         ) for price in prices]
     except HTTPException:
         raise
