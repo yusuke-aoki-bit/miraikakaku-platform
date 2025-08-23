@@ -97,7 +97,7 @@ async def search_stocks(
         stocks = db.query(StockMaster).filter(
             (StockMaster.symbol.contains(query.upper())) |
             (StockMaster.name.contains(query))
-        ).filter(StockMaster.is_active == True).limit(limit).all()
+        ).filter(StockMaster.is_active == 1).limit(limit).all()
         
         return [StockSearchResponse(
             symbol=stock.symbol,
@@ -152,12 +152,11 @@ async def get_stock_predictions(
     """株価予測取得API"""
     try:
         query_filter = db.query(StockPredictions).filter(
-            StockPredictions.symbol == symbol.upper(),
-            StockPredictions.is_active == True
+            StockPredictions.symbol == symbol.upper()
         )
         
         if model_type:
-            query_filter = query_filter.filter(StockPredictions.model_type == model_type)
+            query_filter = query_filter.filter(StockPredictions.model_version == model_type)
         
         predictions = query_filter.order_by(StockPredictions.prediction_date.desc()).limit(days).all()
         
@@ -166,9 +165,9 @@ async def get_stock_predictions(
             prediction_date=pred.prediction_date,
             predicted_price=float(pred.predicted_price),
             confidence_score=float(pred.confidence_score) if pred.confidence_score else None,
-            model_type=pred.model_type,
-            prediction_horizon=pred.prediction_horizon,
-            is_active=pred.is_active
+            model_type=pred.model_version,
+            prediction_horizon=pred.prediction_days,
+            is_active=True
         ) for pred in predictions]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"予測データ取得エラー: {str(e)}")
@@ -243,7 +242,7 @@ async def get_accuracy_rankings(
     """予測精度ランキング"""
     try:
         # 各銘柄の予測精度を計算
-        stocks = db.query(StockMaster).filter(StockMaster.is_active == True).limit(50).all()
+        stocks = db.query(StockMaster).filter(StockMaster.is_active == 1).limit(50).all()
         rankings = []
         
         for stock in stocks:
@@ -255,7 +254,7 @@ async def get_accuracy_rankings(
                 StockPredictions.symbol == stock.symbol,
                 StockPredictions.prediction_date >= start_date,
                 StockPredictions.prediction_date <= end_date,
-                StockPredictions.is_active == True
+                StockPredictions.id.isnot(None)
             ).all()
             
             if predictions:
@@ -282,14 +281,14 @@ async def get_growth_potential_rankings(
 ):
     """成長ポテンシャルランキング"""
     try:
-        stocks = db.query(StockMaster).filter(StockMaster.is_active == True).limit(50).all()
+        stocks = db.query(StockMaster).filter(StockMaster.is_active == 1).limit(50).all()
         rankings = []
         
         for stock in stocks:
             # 最新の予測価格と現在価格を比較
             latest_prediction = db.query(StockPredictions).filter(
                 StockPredictions.symbol == stock.symbol,
-                StockPredictions.is_active == True
+                StockPredictions.id.isnot(None)
             ).order_by(StockPredictions.prediction_date.desc()).first()
             
             current_price = db.query(StockPriceHistory).filter(
@@ -323,7 +322,7 @@ async def get_composite_rankings(
 ):
     """総合ランキング（精度と成長ポテンシャルの組み合わせ）"""
     try:
-        stocks = db.query(StockMaster).filter(StockMaster.is_active == True).limit(50).all()
+        stocks = db.query(StockMaster).filter(StockMaster.is_active == 1).limit(50).all()
         rankings = []
         
         for stock in stocks:
@@ -335,7 +334,7 @@ async def get_composite_rankings(
                 StockPredictions.symbol == stock.symbol,
                 StockPredictions.prediction_date >= start_date,
                 StockPredictions.prediction_date <= end_date,
-                StockPredictions.is_active == True
+                StockPredictions.id.isnot(None)
             ).all()
             
             accuracy_score = 0
@@ -346,7 +345,7 @@ async def get_composite_rankings(
             # 成長ポテンシャル計算
             latest_prediction = db.query(StockPredictions).filter(
                 StockPredictions.symbol == stock.symbol,
-                StockPredictions.is_active == True
+                StockPredictions.id.isnot(None)
             ).order_by(StockPredictions.prediction_date.desc()).first()
             
             current_price = db.query(StockPriceHistory).filter(
