@@ -62,7 +62,7 @@ const NavigationItemComponent = ({ item, isCollapsed, depth = 0 }: NavigationIte
   if (item.href && !hasChildren) {
     return (
       <motion.div
-        initial={{ opacity: 0, x: -20 }}
+        initial={{ opacity: 1, x: 0 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: depth * 0.05 }}
       >
@@ -84,18 +84,13 @@ const NavigationItemComponent = ({ item, isCollapsed, depth = 0 }: NavigationIte
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div
-                initial={{ opacity: 0, width: 0 }}
+                initial={{ opacity: 1, width: 'auto' }}
                 animate={{ opacity: 1, width: 'auto' }}
                 exit={{ opacity: 0, width: 0 }}
                 className="flex items-center justify-between flex-1 ml-3 overflow-hidden"
               >
                 <div className="flex flex-col min-w-0 flex-1">
                   <span className="font-medium truncate">{item.label}</span>
-                  {item.hotkey && (
-                    <span className="text-xs opacity-60 font-mono">
-                      {item.hotkey}
-                    </span>
-                  )}
                 </div>
                 
                 {item.href && (
@@ -126,7 +121,7 @@ const NavigationItemComponent = ({ item, isCollapsed, depth = 0 }: NavigationIte
   return (
     <div>
       <motion.button
-        initial={{ opacity: 0, x: -20 }}
+        initial={{ opacity: 1, x: 0 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: depth * 0.05 }}
         onClick={handleClick}
@@ -139,18 +134,13 @@ const NavigationItemComponent = ({ item, isCollapsed, depth = 0 }: NavigationIte
         <AnimatePresence>
           {!isCollapsed && (
             <motion.div
-              initial={{ opacity: 0, width: 0 }}
+              initial={{ opacity: 1, width: 'auto' }}
               animate={{ opacity: 1, width: 'auto' }}
               exit={{ opacity: 0, width: 0 }}
               className="flex items-center justify-between flex-1 ml-3 overflow-hidden"
             >
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="font-medium truncate">{item.label}</span>
-                {item.hotkey && (
-                  <span className="text-xs opacity-60 font-mono">
-                    {item.hotkey}
-                  </span>
-                )}
               </div>
               
               {hasChildren && (
@@ -179,7 +169,8 @@ const NavigationItemComponent = ({ item, isCollapsed, depth = 0 }: NavigationIte
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-1 space-y-1"
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="mt-1 space-y-1 overflow-hidden"
           >
             {item.children?.map((child) => (
               <NavigationItemComponent
@@ -206,7 +197,7 @@ export default function Sidebar() {
   } = useNavigationStore();
   const { config: userConfig } = useUserModeStore();
 
-  const primaryNavigation = getPrimaryNavigation(userConfig.mode);
+  const primaryNavigation = getPrimaryNavigation('pro');
   const favoriteNavigation = primaryNavigation
     .filter(item => item.href && favoritePages.includes(item.href))
     .slice(0, 5);
@@ -218,29 +209,29 @@ export default function Sidebar() {
       }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="bg-surface-background border-r border-border-default flex flex-col backdrop-blur-sm"
+      style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
     >
       {/* Sidebar Header */}
       <div className="flex items-center justify-between p-4 border-b border-border-default">
-        <AnimatePresence>
-          {!sidebarCollapsed && (
-            <motion.div
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 'auto' }}
-              exit={{ opacity: 0, width: 0 }}
-              className="flex items-center space-x-2"
-            >
-              <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">M</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-text-primary text-sm">Miraikakaku</h3>
-                <p className="text-text-tertiary text-xs">
-                  {userConfig.mode === 'pro' ? 'プロモード' : 'ライトモード'}
-                </p>
-              </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">M</span>
+          </div>
+          <AnimatePresence>
+            {!sidebarCollapsed && (
+              <motion.div
+                initial={{ opacity: 1, width: 'auto' }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                className="overflow-hidden"
+              >
+                <div>
+                  <h3 className="font-semibold text-text-primary text-sm">Miraikakaku</h3>
+                </div>
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
         
         <button
           onClick={toggleSidebar}
@@ -257,7 +248,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
         <nav className="p-4 space-y-2">
           {/* Favorites Section */}
           {!sidebarCollapsed && favoriteNavigation.length > 0 && (
@@ -294,11 +285,11 @@ export default function Sidebar() {
       </div>
 
       {/* Sidebar Footer */}
-      <div className="p-4 border-t border-border-default">
+      <div className="p-4 border-t border-border-default flex-shrink-0">
         <AnimatePresence>
           {!sidebarCollapsed && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
+              initial={{ opacity: 1, height: 'auto' }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               className="text-center"

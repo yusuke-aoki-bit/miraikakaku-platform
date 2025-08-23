@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,11 +71,6 @@ export default function TabNavigation({ className = '' }: TabNavigationProps) {
                       >
                         <tab.icon size={16} />
                         <span className="font-medium">{tab.label}</span>
-                        {tab.hotkey && (
-                          <span className="text-xs text-text-tertiary font-mono ml-auto">
-                            {tab.hotkey}
-                          </span>
-                        )}
                       </Link>
                     ))}
                   </motion.div>
@@ -154,13 +149,6 @@ function TabItem({ tab, pathname }: TabItemProps) {
       {/* Badge for notifications (placeholder) */}
       {tab.id === 'predictions' && (
         <div className="absolute -top-1 -right-1 w-2 h-2 bg-status-danger rounded-full" />
-      )}
-
-      {/* Hotkey indicator for larger screens */}
-      {!isMobile && tab.hotkey && (
-        <div className="absolute top-1 right-1 text-[8px] text-text-tertiary font-mono opacity-70">
-          {tab.hotkey.replace('⌘+', '')}
-        </div>
       )}
     </Link>
   );

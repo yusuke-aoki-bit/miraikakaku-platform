@@ -17,7 +17,7 @@ export default function FocusTrap({
   initialFocus 
 }: FocusTrapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { trapFocus, restoreFocus: restorePreviousFocus } = useFocusManagement();
+  const { trapFocus } = useFocusManagement();
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {

@@ -4,12 +4,12 @@ import { test, expect } from '@playwright/test';
 test.describe('API専用テスト', () => {
   test('APIヘルスチェック', async ({ request }) => {
     try {
-      const response = await request.get('http://localhost:8001/health');
+      const response = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/health');
       expect(response.ok()).toBeTruthy();
       
       const healthData = await response.json();
       expect(healthData).toHaveProperty('status', 'healthy');
-      expect(healthData).toHaveProperty('service', 'miraikakaku-api');
+      expect(healthData).toHaveProperty('service', 'miraikakaku-api-production');
       
       console.log('✅ APIヘルスチェック成功:', healthData);
     } catch (error) {
@@ -20,7 +20,7 @@ test.describe('API専用テスト', () => {
 
   test('株式検索API', async ({ request }) => {
     try {
-      const response = await request.get('http://localhost:8001/api/finance/stocks/search?query=AAPL&limit=10');
+      const response = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/search?query=AAPL&limit=10');
       
       if (response.ok()) {
         const searchResults = await response.json();
@@ -44,7 +44,7 @@ test.describe('API専用テスト', () => {
 
   test('データフィードAPI', async ({ request }) => {
     try {
-      const response = await request.get('http://localhost:8000/health');
+      const response = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/health');
       
       if (response.ok()) {
         const healthData = await response.json();
@@ -60,7 +60,7 @@ test.describe('API専用テスト', () => {
   test('APIエラーハンドリング', async ({ request }) => {
     try {
       // 存在しないエンドポイントをテスト
-      const response = await request.get('http://localhost:8001/api/nonexistent');
+      const response = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/nonexistent');
       // FastAPIは存在しないエンドポイントに対して500エラーを返す場合がある
       expect([404, 500]).toContain(response.status());
       
@@ -72,7 +72,7 @@ test.describe('API専用テスト', () => {
 
   test('レスポンス形式の検証', async ({ request }) => {
     try {
-      const response = await request.get('http://localhost:8001/health');
+      const response = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/health');
       
       if (response.ok()) {
         const contentType = response.headers()['content-type'];

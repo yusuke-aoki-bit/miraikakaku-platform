@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   BarChart3, 
-  TrendingUp, 
+ 
   Settings, 
   Maximize, 
   Download,
@@ -61,10 +61,7 @@ export default function TradingViewChart({
   theme = 'dark',
   height = 500,
   showToolbar = true,
-  enableTrading = false,
-  studies = [],
-  className = '',
-  onSymbolChange
+  className = ''
 }: TradingViewChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<any>(null);
@@ -73,7 +70,6 @@ export default function TradingViewChart({
   const [activeStudies, setActiveStudies] = useState<ChartStudy[]>(DEFAULT_STUDIES);
   const [showStudiesPanel, setShowStudiesPanel] = useState(false);
   const [chartType, setChartType] = useState<'candlesticks' | 'line' | 'area'>('candlesticks');
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Initialize TradingView widget
   useEffect(() => {
@@ -175,10 +171,8 @@ export default function TradingViewChart({
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       chartContainerRef.current?.requestFullscreen();
-      setIsFullscreen(true);
     } else {
       document.exitFullscreen();
-      setIsFullscreen(false);
     }
   };
 
@@ -219,7 +213,7 @@ export default function TradingViewChart({
               ].map((chart) => (
                 <button
                   key={chart.type}
-                  onClick={() => setChartType(chart.type as any)}
+                  onClick={() => setChartType(chart.type as 'candlesticks' | 'line' | 'area')}
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                     chartType === chart.type
                       ? 'bg-brand-primary text-white'

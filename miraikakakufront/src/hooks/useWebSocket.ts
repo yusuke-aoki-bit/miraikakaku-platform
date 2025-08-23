@@ -32,14 +32,13 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   const connect = () => {
     try {
       setConnectionStatus('connecting');
-      const wsUrl = url.startsWith('ws') ? url : `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8001'}${url}`;
+      const wsUrl = url.startsWith('ws') ? url : `${process.env.NEXT_PUBLIC_WS_URL || 'wss://miraikakaku-api-465603676610.us-central1.run.app'}${url}`;
       
-      // WebSocketサーバーが存在しない場合のフォールバック
-      if (!process.env.NEXT_PUBLIC_WS_URL && typeof window !== 'undefined') {
-        console.warn('WebSocket URL not configured. Simulating offline mode.');
-        setConnectionStatus('error');
-        setError('WebSocketサーバーが設定されていません');
-        return;
+      // WebSocketサーバーが利用できない場合のフォールバック
+      // Cloud Run環境ではWebSocketは部分的なサポートのため、エラーを許容
+      if (wsUrl.includes('run.app')) {
+        console.info('Cloud Run WebSocket - Limited support, running in degraded mode');
+        // WebSocket接続は試みるが、失敗してもアプリケーションは継続
       }
       
       ws.current = new WebSocket(wsUrl);
@@ -82,7 +81,13 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
       };
 
       ws.current.onerror = (event) => {
-        setError('WebSocket接続エラー - サーバーが応答していません');
+        // Cloud Run環境でのWebSocketエラーは警告レベルに下げる
+        if (wsUrl.includes('run.app')) {
+          console.warn('WebSocket connection not available in Cloud Run - continuing without real-time updates');
+          setError('リアルタイム更新は利用できません（Cloud Run環境）');
+        } else {
+          setError('WebSocket接続エラー - サーバーが応答していません');
+        }
         setConnectionStatus('error');
         options.onError?.(event);
       };
@@ -110,11 +115,18 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   };
 
   useEffect(() => {
-    connect();
-    
-    return () => {
-      disconnect();
-    };
+    // クライアントサイドでのみWebSocket接続を実行
+    if (typeof window !== 'undefined') {
+      // 少し遅延させて、クライアントサイドのハイドレーション後に接続
+      const timeout = setTimeout(() => {
+        connect();
+      }, 100);
+      
+      return () => {
+        clearTimeout(timeout);
+        disconnect();
+      };
+    }
   }, [url]);
 
   return {

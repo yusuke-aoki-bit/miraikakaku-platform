@@ -7,7 +7,7 @@ import { useResponsive } from '@/hooks/useResponsive';
 
 export default function PWAInstallBanner() {
   const { showBanner, handleInstall, handleDismiss } = usePWAInstallBanner();
-  const { isMobile, isTablet } = useResponsive();
+  const { isMobile } = useResponsive();
 
   if (!showBanner) return null;
 

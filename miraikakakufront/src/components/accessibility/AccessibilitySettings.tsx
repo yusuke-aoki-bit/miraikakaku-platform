@@ -26,7 +26,7 @@ export default function AccessibilitySettings({
     announce 
   } = useAccessibilityContext();
 
-  const handleToggle = (key: keyof typeof preferences, value: any) => {
+  const handleToggle = (key: keyof typeof preferences, value: boolean | number | string) => {
     updatePreferences({ [key]: value });
     announce(`${key}が${value}に設定されました`);
   };

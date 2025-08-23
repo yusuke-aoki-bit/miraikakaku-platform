@@ -2,35 +2,23 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { NavigationItem, TabNavigationItem, CommandItem } from '@/types/navigation';
 import { 
-  Home,
-  TrendingUp,
   PieChart,
   Brain,
-  Briefcase,
   BookmarkCheck,
-  History,
   Calculator,
-  Settings,
   BarChart3,
   Trophy,
   Activity,
   Search,
-  Star,
   Target,
-  AlertTriangle,
-  Bell,
-  User,
   Layout,
-  Grid3X3,
   Edit,
-  Save,
   Plus,
   Download,
   Upload,
   RefreshCw,
   HelpCircle,
-  DollarSign,
-  Globe
+  DollarSign
 } from 'lucide-react';
 
 interface NavigationStore {
@@ -88,17 +76,16 @@ export const useNavigationStore = create<NavigationStore>()(
         });
       },
 
-      getPrimaryNavigation: (userMode: 'light' | 'pro'): NavigationItem[] => {
+      getPrimaryNavigation: (): NavigationItem[] => {
         const baseNavigation: NavigationItem[] = [
           {
             id: 'dashboard',
             label: 'ダッシュボード',
-            href: '/dashboard',
+            href: '/',
             icon: Layout,
             category: 'primary',
             userLevel: ['beginner', 'intermediate', 'advanced'],
-            hotkey: '⌘+1',
-            description: 'カスタマイズ可能なダッシュボード'
+            description: 'リアルタイムダッシュボード'
           },
           {
             id: 'market',
@@ -113,8 +100,7 @@ export const useNavigationStore = create<NavigationStore>()(
                 href: '/realtime',
                 icon: Activity,
                 category: 'secondary',
-                userLevel: ['beginner', 'intermediate', 'advanced'],
-                hotkey: '⌘+R'
+                userLevel: ['beginner', 'intermediate', 'advanced']
               },
               {
                 id: 'rankings',
@@ -149,54 +135,22 @@ export const useNavigationStore = create<NavigationStore>()(
                 category: 'secondary',
                 userLevel: ['intermediate', 'advanced'],
                 description: '主要通貨ペアのAI予測'
-              }
-            ]
-          },
-          {
-            id: 'portfolio',
-            label: 'ポートフォリオ',
-            icon: Briefcase,
-            category: 'primary',
-            userLevel: ['beginner', 'intermediate', 'advanced'],
-            children: [
+              },
               {
                 id: 'watchlist',
                 label: 'ウォッチリスト',
                 href: '/watchlist',
                 icon: BookmarkCheck,
                 category: 'secondary',
-                userLevel: ['beginner', 'intermediate', 'advanced'],
-                hotkey: '⌘+W'
+                userLevel: ['beginner', 'intermediate', 'advanced']
               },
-              {
-                id: 'history',
-                label: '取引履歴',
-                href: '/history',
-                icon: History,
-                category: 'secondary',
-                userLevel: ['intermediate', 'advanced']
-              }
-            ]
-          }
-        ];
-
-        // Add advanced navigation for pro mode
-        if (userMode === 'pro') {
-          baseNavigation.push({
-            id: 'analysis-tools',
-            label: '分析ツール',
-            icon: Calculator,
-            category: 'primary',
-            userLevel: ['intermediate', 'advanced'],
-            children: [
               {
                 id: 'predictions',
                 label: 'AI予測',
                 href: '/predictions',
                 icon: Brain,
                 category: 'secondary',
-                userLevel: ['intermediate', 'advanced'],
-                hotkey: '⌘+P'
+                userLevel: ['intermediate', 'advanced']
               },
               {
                 id: 'tools',
@@ -205,28 +159,10 @@ export const useNavigationStore = create<NavigationStore>()(
                 icon: Target,
                 category: 'secondary',
                 userLevel: ['advanced']
-              },
-              {
-                id: 'risk-analysis',
-                label: 'リスク分析',
-                href: '/risk',
-                icon: AlertTriangle,
-                category: 'secondary',
-                userLevel: ['advanced']
               }
             ]
-          });
-        }
-
-        baseNavigation.push({
-          id: 'settings',
-          label: '設定',
-          href: '/management',
-          icon: Settings,
-          category: 'primary',
-          userLevel: ['beginner', 'intermediate', 'advanced'],
-          hotkey: '⌘+,'
-        });
+          }
+        ];
 
         return baseNavigation;
       },
@@ -235,44 +171,56 @@ export const useNavigationStore = create<NavigationStore>()(
         {
           id: 'dashboard',
           label: 'ダッシュボード',
-          href: '/dashboard',
-          icon: Layout,
-          hotkey: '⌘+1'
+          href: '/',
+          icon: Layout
         },
         {
-          id: 'predictions',
-          label: '予測',
-          href: '/predictions',
-          icon: Brain,
-          hotkey: '⌘+2'
+          id: 'realtime',
+          label: 'リアルタイム',
+          href: '/realtime',
+          icon: Activity
         },
         {
-          id: 'portfolio',
-          label: 'ポートフォリオ',
-          href: '/watchlist',
-          icon: Briefcase,
-          hotkey: '⌘+3'
+          id: 'rankings',
+          label: 'ランキング',
+          href: '/rankings',
+          icon: Trophy
         },
         {
           id: 'analysis',
           label: '分析',
           href: '/analysis',
-          icon: BarChart3,
-          hotkey: '⌘+4'
+          icon: BarChart3
         },
         {
-          id: 'market',
-          label: 'マーケット',
-          href: '/realtime',
-          icon: TrendingUp,
-          hotkey: '⌘+5'
+          id: 'volume',
+          label: '出来高',
+          href: '/volume',
+          icon: BarChart3
+        },
+        {
+          id: 'currency',
+          label: '為替',
+          href: '/currency',
+          icon: DollarSign
+        },
+        {
+          id: 'watchlist',
+          label: 'ウォッチリスト',
+          href: '/watchlist',
+          icon: BookmarkCheck
+        },
+        {
+          id: 'predictions',
+          label: 'AI予測',
+          href: '/predictions',
+          icon: Brain
         },
         {
           id: 'tools',
           label: 'ツール',
           href: '/tools',
-          icon: Calculator,
-          hotkey: '⌘+6'
+          icon: Calculator
         }
       ],
 
@@ -287,8 +235,7 @@ export const useNavigationStore = create<NavigationStore>()(
             action: () => window.location.href = '/dashboard',
             category: 'navigation',
             keywords: ['dashboard', 'ダッシュボード', 'メイン'],
-            userLevel: ['beginner', 'intermediate', 'advanced'],
-            hotkey: '⌘+1'
+            userLevel: ['beginner', 'intermediate', 'advanced']
           },
           {
             id: 'go-predictions',
@@ -298,8 +245,7 @@ export const useNavigationStore = create<NavigationStore>()(
             action: () => window.location.href = '/predictions',
             category: 'navigation',
             keywords: ['predictions', '予測', 'AI', '株価'],
-            userLevel: ['intermediate', 'advanced'],
-            hotkey: '⌘+2'
+            userLevel: ['intermediate', 'advanced']
           },
           {
             id: 'go-watchlist',
@@ -309,8 +255,7 @@ export const useNavigationStore = create<NavigationStore>()(
             action: () => window.location.href = '/watchlist',
             category: 'navigation',
             keywords: ['watchlist', 'ウォッチリスト', 'お気に入り', '銘柄'],
-            userLevel: ['beginner', 'intermediate', 'advanced'],
-            hotkey: '⌘+W'
+            userLevel: ['beginner', 'intermediate', 'advanced']
           },
           {
             id: 'go-realtime',
@@ -320,8 +265,7 @@ export const useNavigationStore = create<NavigationStore>()(
             action: () => window.location.href = '/realtime',
             category: 'navigation',
             keywords: ['realtime', 'リアルタイム', '株価', 'ライブ'],
-            userLevel: ['beginner', 'intermediate', 'advanced'],
-            hotkey: '⌘+R'
+            userLevel: ['beginner', 'intermediate', 'advanced']
           },
           
           // Action commands
@@ -337,8 +281,7 @@ export const useNavigationStore = create<NavigationStore>()(
             },
             category: 'search',
             keywords: ['search', '検索', '銘柄', '株式', 'stock'],
-            userLevel: ['beginner', 'intermediate', 'advanced'],
-            hotkey: '⌘+K'
+            userLevel: ['beginner', 'intermediate', 'advanced']
           },
           {
             id: 'refresh-data',
@@ -348,8 +291,7 @@ export const useNavigationStore = create<NavigationStore>()(
             action: () => window.location.reload(),
             category: 'action',
             keywords: ['refresh', '更新', 'データ', '最新'],
-            userLevel: ['beginner', 'intermediate', 'advanced'],
-            hotkey: '⌘+⇧+R'
+            userLevel: ['beginner', 'intermediate', 'advanced']
           },
           
           // Layout commands
@@ -361,8 +303,7 @@ export const useNavigationStore = create<NavigationStore>()(
             action: () => get().toggleSidebar(),
             category: 'layout',
             keywords: ['sidebar', 'サイドバー', '表示', '非表示'],
-            userLevel: ['beginner', 'intermediate', 'advanced'],
-            hotkey: '⌘+\\'
+            userLevel: ['beginner', 'intermediate', 'advanced']
           }
         ];
 
@@ -380,8 +321,7 @@ export const useNavigationStore = create<NavigationStore>()(
               },
               category: 'action',
               keywords: ['edit', '編集', 'ダッシュボード', 'レイアウト'],
-              userLevel: ['intermediate', 'advanced'],
-              hotkey: '⌘+E'
+              userLevel: ['intermediate', 'advanced']
             },
             {
               id: 'add-widget',
@@ -393,8 +333,7 @@ export const useNavigationStore = create<NavigationStore>()(
               },
               category: 'widget',
               keywords: ['widget', 'ウィジェット', '追加', 'add'],
-              userLevel: ['intermediate', 'advanced'],
-              hotkey: '⌘+⇧+A'
+              userLevel: ['intermediate', 'advanced']
             },
             {
               id: 'export-layout',
@@ -431,8 +370,7 @@ export const useNavigationStore = create<NavigationStore>()(
           action: () => console.log('Show help'),
           category: 'action',
           keywords: ['help', 'ヘルプ', 'サポート', '使い方'],
-          userLevel: ['beginner', 'intermediate', 'advanced'],
-          hotkey: '⌘+?'
+          userLevel: ['beginner', 'intermediate', 'advanced']
         });
 
         return baseCommands;

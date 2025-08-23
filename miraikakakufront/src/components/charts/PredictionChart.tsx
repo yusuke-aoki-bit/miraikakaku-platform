@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo, useRef } from 'react';
 import { 
-  LineChart, 
   Line, 
   XAxis, 
   YAxis, 
@@ -13,9 +11,6 @@ import {
   Area,
   ComposedChart,
   ReferenceLine,
-  Legend,
-  Brush,
-  ReferenceArea
 } from 'recharts';
 import { 
   TrendingUp, 
@@ -26,8 +21,6 @@ import {
   EyeOff,
   Settings,
   Download,
-  ZoomIn,
-  ZoomOut,
   RotateCcw
 } from 'lucide-react';
 
@@ -85,14 +78,10 @@ export default function PredictionChart({
   metadata,
   className = '',
   height = 400,
-  showControls = true,
-  onTimeRangeChange
+  showControls = true
 }: PredictionChartProps) {
   const [visibleConfidenceLevels, setVisibleConfidenceLevels] = useState([90, 95]);
   const [showActualPrices, setShowActualPrices] = useState(true);
-  const [highlightedPoint, setHighlightedPoint] = useState<PredictionDataPoint | null>(null);
-  const [zoomDomain, setZoomDomain] = useState<{ start?: number; end?: number }>({});
-  const [hoveredArea, setHoveredArea] = useState<string | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
   const processedData = useMemo(() => {
@@ -156,13 +145,20 @@ export default function PredictionChart({
   };
 
   const resetZoom = () => {
-    setZoomDomain({});
+    // Reset zoom functionality would go here
+    console.log('Reset zoom');
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  interface CustomTooltipProps {
+    active?: boolean;
+    payload?: Array<{ name: string; value: number; color: string; payload: Record<string, unknown> }>;
+    label?: string;
+  }
+
+  const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (!active || !payload || !payload.length) return null;
 
-    const data = payload[0]?.payload;
+    const data = payload[0]?.payload as any;
     if (!data) return null;
 
     return (
@@ -214,14 +210,6 @@ export default function PredictionChart({
         </div>
       </div>
     );
-  };
-
-  const CustomAreaShape = (props: any) => {
-    const { payload, ...rest } = props;
-    const confidence = payload?.model_confidence || 0;
-    const opacity = Math.max(0.1, confidence * 0.3);
-    
-    return <Area {...rest} fillOpacity={opacity} />;
   };
 
   const renderConfidenceBands = () => {
@@ -324,7 +312,7 @@ export default function PredictionChart({
       {/* Confidence Level Controls */}
       <div className="flex items-center space-x-4 mb-4">
         <span className="text-sm text-text-secondary">信頼区間:</span>
-        {CONFIDENCE_LEVELS.map(({ level, color, stroke }) => (
+        {CONFIDENCE_LEVELS.map(({ level, color }) => (
           <button
             key={level}
             onClick={() => toggleConfidenceLevel(level)}
@@ -334,7 +322,7 @@ export default function PredictionChart({
                 : 'text-text-secondary hover:text-text-primary bg-surface-elevated'
             }`}
             style={{
-              backgroundColor: visibleConfidenceLevels.includes(level) ? stroke : undefined
+              backgroundColor: visibleConfidenceLevels.includes(level) ? color : undefined
             }}
           >
             {level}%
@@ -349,11 +337,10 @@ export default function PredictionChart({
             data={processedData}
             margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
             onMouseMove={(e) => {
-              if (e?.activePayload?.[0]) {
-                setHighlightedPoint(e.activePayload[0].payload);
-              }
+              // Chart interaction handling
+              console.log('Chart interaction:', e?.activePayload?.[0]);
             }}
-            onMouseLeave={() => setHighlightedPoint(null)}
+            onMouseLeave={() => console.log('Mouse left chart')}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" opacity={0.5} />
             

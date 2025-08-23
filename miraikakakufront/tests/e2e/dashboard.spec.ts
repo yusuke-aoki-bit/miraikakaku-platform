@@ -10,7 +10,7 @@ test.describe('ダッシュボードページ', () => {
     await expect(page).toHaveTitle(/Miraikakaku/);
     
     // ダッシュボードのメインコンテンツが表示されているか確認
-    const main = page.locator('main');
+    const main = page.locator('main').first();
     await expect(main).toBeVisible();
     
     // ダッシュボード特有の要素を確認

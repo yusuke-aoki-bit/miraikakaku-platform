@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { UserMode, UserModeConfig, UserBehaviorMetrics, DEFAULT_USER_MODE_CONFIG, PRO_MODE_CONFIG } from '@/types/user-modes';
+import { UserMode, UserModeConfig, UserBehaviorMetrics, PRO_MODE_CONFIG } from '@/types/user-modes';
 
 interface UserModeStore {
   config: UserModeConfig;
@@ -31,14 +31,15 @@ const INITIAL_METRICS: UserBehaviorMetrics = {
 export const useUserModeStore = create<UserModeStore>()(
   persist(
     (set, get) => ({
-      config: DEFAULT_USER_MODE_CONFIG,
+      config: PRO_MODE_CONFIG,
       metrics: INITIAL_METRICS,
       isTransitioning: false,
 
       setMode: (mode: UserMode) => {
-        const newConfig = mode === 'pro' ? PRO_MODE_CONFIG : DEFAULT_USER_MODE_CONFIG;
+        console.log('Setting mode to:', mode);
+        // Always use PRO mode
         set((state) => ({
-          config: { ...newConfig, mode },
+          config: { ...PRO_MODE_CONFIG, mode: 'pro' },
           metrics: {
             ...state.metrics,
             lastModeSwitch: new Date(),
@@ -47,9 +48,8 @@ export const useUserModeStore = create<UserModeStore>()(
       },
 
       toggleMode: () => {
-        const { config } = get();
-        const newMode: UserMode = config.mode === 'light' ? 'pro' : 'light';
-        get().setMode(newMode);
+        // Mode switching disabled - always stay in PRO mode
+        get().setMode('pro');
       },
 
       updateConfig: (updates: Partial<UserModeConfig>) => {
@@ -134,7 +134,7 @@ export const useUserModeStore = create<UserModeStore>()(
 
       resetToDefaults: () => {
         set({
-          config: DEFAULT_USER_MODE_CONFIG,
+          config: PRO_MODE_CONFIG,
           metrics: INITIAL_METRICS,
           isTransitioning: false,
         });

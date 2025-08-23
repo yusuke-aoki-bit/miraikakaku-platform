@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Users, Database, Brain, Activity, AlertTriangle, Settings } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Users, Database, Brain, Activity, AlertTriangle } from 'lucide-react';
 
 interface SystemStats {
   total_users: number;
@@ -39,11 +39,7 @@ export default function ManagementPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'models' | 'logs'>('overview');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchAllData();
-  }, []);
-
-  const fetchAllData = async () => {
+  const fetchAllData = useCallback(async () => {
     setLoading(true);
     try {
       await Promise.all([
@@ -56,7 +52,11 @@ export default function ManagementPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAllData();
+  }, [fetchAllData]);
 
   const fetchSystemStats = async () => {
     try {
@@ -276,7 +276,7 @@ export default function ManagementPage() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'overview' | 'users' | 'models' | 'logs')}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium ${
                   activeTab === tab.id
                     ? 'bg-blue-600 text-white'

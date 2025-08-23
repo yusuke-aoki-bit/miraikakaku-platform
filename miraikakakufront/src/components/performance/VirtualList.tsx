@@ -23,7 +23,6 @@ export default function VirtualList<T>({
   const {
     visibleItems,
     totalHeight,
-    offsetY,
     scrollElementRef,
     startIndex
   } = useVirtualScrolling(items, itemHeight, height);

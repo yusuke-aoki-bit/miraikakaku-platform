@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Line,
   XAxis,
@@ -61,14 +61,7 @@ export default function AdvancedStockChart({ symbol }: AdvancedStockChartProps) 
   const [showIndicators, setShowIndicators] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (symbol) {
-      fetchChartData();
-      fetchTechnicalIndicators();
-    }
-  }, [symbol, timeRange]);
-
-  const fetchChartData = async () => {
+  const fetchChartData = useCallback(async () => {
     setLoading(true);
     try {
       const days = { '1M': 30, '3M': 90, '6M': 180, '1Y': 365 }[timeRange];
@@ -93,7 +86,16 @@ export default function AdvancedStockChart({ symbol }: AdvancedStockChartProps) 
         predictionData = await predictionResponse.json();
       }
 
-      const chartPoints = priceData.map((price: any) => ({
+      interface PricePoint {
+        date: string;
+        close_price: number;
+        open_price: number;
+        high_price: number;
+        low_price: number;
+        volume: number;
+      }
+
+      const chartPoints = priceData.map((price: PricePoint) => ({
         date: new Date(price.date).toLocaleDateString(),
         close: price.close_price,
         open: price.open_price,
@@ -102,16 +104,25 @@ export default function AdvancedStockChart({ symbol }: AdvancedStockChartProps) 
         volume: price.volume,
       }));
 
-      const withMA = chartPoints.map((point: any, index: number) => {
+      interface ChartPoint {
+        date: string;
+        close: number;
+        open: number;
+        high: number;
+        low: number;
+        volume: number;
+      }
+
+      const withMA = chartPoints.map((point: ChartPoint, index: number) => {
         const sma5Data = chartPoints.slice(Math.max(0, index - 4), index + 1);
         const sma20Data = chartPoints.slice(Math.max(0, index - 19), index + 1);
         
         return {
           ...point,
           sma_5: sma5Data.length >= 5 ? 
-            sma5Data.reduce((sum: number, p: any) => sum + p.close, 0) / sma5Data.length : undefined,
+            sma5Data.reduce((sum: number, p: ChartPoint) => sum + p.close, 0) / sma5Data.length : undefined,
           sma_20: sma20Data.length >= 20 ? 
-            sma20Data.reduce((sum: number, p: any) => sum + p.close, 0) / sma20Data.length : undefined,
+            sma20Data.reduce((sum: number, p: ChartPoint) => sum + p.close, 0) / sma20Data.length : undefined,
         };
       });
 
@@ -119,7 +130,14 @@ export default function AdvancedStockChart({ symbol }: AdvancedStockChartProps) 
       // Connect the last historical point to the first prediction point for a continuous line
       const lastHistoricalPoint = withMA.length > 0 ? withMA[withMA.length - 1] : null;
 
-      predictionData.forEach((pred: any, index: number) => {
+      interface PredictionPoint {
+        predicted_price: number;
+        confidence_score?: number;
+        date: string;
+        target_date: string;
+      }
+
+      predictionData.forEach((pred: PredictionPoint, index: number) => {
         const predictionValue = pred.predicted_price;
         const confidenceScore = pred.confidence_score || 0.8;
         const margin = predictionValue * (1 - confidenceScore) * 0.5;
@@ -147,9 +165,9 @@ export default function AdvancedStockChart({ symbol }: AdvancedStockChartProps) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [symbol, timeRange]);
 
-  const fetchTechnicalIndicators = async () => {
+  const fetchTechnicalIndicators = useCallback(async () => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/${symbol}/indicators`
@@ -162,15 +180,28 @@ export default function AdvancedStockChart({ symbol }: AdvancedStockChartProps) 
     } catch (error) {
       console.error('テクニカル指標取得エラー:', error);
     }
-  };
+  }, [symbol]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  useEffect(() => {
+    if (symbol) {
+      fetchChartData();
+      fetchTechnicalIndicators();
+    }
+  }, [symbol, timeRange, fetchChartData, fetchTechnicalIndicators]);
+
+  interface TooltipProps {
+    active?: boolean;
+    payload?: Array<{ name: string; value: number; color: string; payload: Record<string, unknown> }>;
+    label?: string;
+  }
+
+  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const data = payload[0].payload as any;
       return (
         <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
           <p className="font-semibold">{label}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }}>
               {entry.name}: ${entry.value?.toFixed(2)}
             </p>

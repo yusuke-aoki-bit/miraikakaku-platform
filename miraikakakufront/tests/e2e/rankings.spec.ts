@@ -33,9 +33,9 @@ test.describe('ランキングページ', () => {
     
     // Verify the API endpoints that power the tabs are working
     const apiChecks = await Promise.all([
-      page.request.get('http://localhost:8001/api/finance/rankings/composite'),
-      page.request.get('http://localhost:8001/api/finance/rankings/growth-potential'),
-      page.request.get('http://localhost:8001/api/finance/rankings/accuracy')
+      page.request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/rankings/composite'),
+      page.request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/rankings/growth-potential'),
+      page.request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/rankings/accuracy')
     ]);
     
     apiChecks.forEach((response, index) => {

@@ -11,16 +11,33 @@ interface APIResponse<T = any> {
 
 class APIClient {
   private baseURL: string;
+  private cache: Map<string, { data: any; timestamp: number }>;
+  private cacheTimeout: number = 60000; // 1分間のキャッシュ
 
   constructor() {
     this.baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || API_CONFIG.DEFAULT_BASE_URL;
+    this.cache = new Map();
   }
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    useCache: boolean = true
   ): Promise<APIResponse<T>> {
     try {
+      // GETリクエストの場合のみキャッシュを使用
+      if (useCache && options.method === undefined) {
+        const cacheKey = `${endpoint}`;
+        const cached = this.cache.get(cacheKey);
+        
+        if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+          return {
+            status: 'success',
+            data: cached.data,
+          };
+        }
+      }
+
       const url = `${this.baseURL}${endpoint}`;
       const response = await fetch(url, {
         headers: {
@@ -38,6 +55,24 @@ class APIClient {
       }
 
       const data = await response.json();
+      
+      // 成功したGETリクエストをキャッシュに保存
+      if (useCache && options.method === undefined) {
+        const cacheKey = `${endpoint}`;
+        this.cache.set(cacheKey, {
+          data,
+          timestamp: Date.now(),
+        });
+        
+        // キャッシュサイズ制限（最大100エントリ）
+        if (this.cache.size > 100) {
+          const firstKey = this.cache.keys().next().value;
+          if (firstKey) {
+            this.cache.delete(firstKey);
+          }
+        }
+      }
+      
       return {
         status: 'success',
         data,
@@ -436,7 +471,17 @@ class APIClient {
 
   // ヘルスチェック
   async healthCheck() {
-    return this.request('/health');
+    return this.request('/health', {}, false); // ヘルスチェックはキャッシュしない
+  }
+  
+  // キャッシュクリア
+  clearCache() {
+    this.cache.clear();
+  }
+  
+  // 特定エンドポイントのキャッシュクリア
+  clearCacheForEndpoint(endpoint: string) {
+    this.cache.delete(endpoint);
   }
 }
 

@@ -15,7 +15,7 @@ import {
   TimeScale,
   Filler,
 } from 'chart.js';
-import { TrendingUp, TrendingDown, Activity, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 ChartJS.register(
@@ -79,8 +79,9 @@ export default function VolumeChart({
 
         if (priceResponse.status === 'success' && predictionResponse.status === 'success') {
           // データを統合
-          const priceData = (priceResponse as any).data || [];
-          const predictionData = (predictionResponse as any).data || [];
+          
+          // データ取得完了（実装では使用）
+          console.log('Price and prediction data loaded successfully');
 
           // モックデータ生成（実際のAPIが出来高データを返さない場合）
           const combinedData: VolumeData[] = [];

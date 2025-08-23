@@ -6,14 +6,14 @@ test.describe('包括的E2Eテスト', () => {
     console.log('🧪 完全なAPI機能テストを開始...');
     
     // 1. ヘルスチェック
-    const healthResponse = await request.get('http://localhost:8001/health');
+    const healthResponse = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/health');
     expect(healthResponse.ok()).toBeTruthy();
     const healthData = await healthResponse.json();
     expect(healthData.status).toBe('healthy');
     console.log('✅ ヘルスチェック成功');
     
     // 2. 株式検索API
-    const searchResponse = await request.get('http://localhost:8001/api/finance/stocks/search?query=AAPL&limit=5');
+    const searchResponse = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/search?query=AAPL&limit=5');
     expect(searchResponse.ok()).toBeTruthy();
     const searchResults = await searchResponse.json();
     expect(Array.isArray(searchResults)).toBeTruthy();
@@ -23,7 +23,7 @@ test.describe('包括的E2Eテスト', () => {
     console.log('✅ 株式検索API成功:', searchResults.length + ' 件の結果');
     
     // 3. 株価履歴API
-    const priceResponse = await request.get('http://localhost:8001/api/finance/stocks/AAPL/price?days=7');
+    const priceResponse = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/AAPL/price?days=7');
     if (priceResponse.ok()) {
       const priceData = await priceResponse.json();
       expect(Array.isArray(priceData)).toBeTruthy();
@@ -38,14 +38,14 @@ test.describe('包括的E2Eテスト', () => {
     }
     
     // 4. 予測API
-    const predictionResponse = await request.get('http://localhost:8001/api/finance/stocks/AAPL/predictions?days=3');
+    const predictionResponse = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/AAPL/predictions?days=3');
     if (predictionResponse.ok()) {
       const predictionData = await predictionResponse.json();
       expect(Array.isArray(predictionData)).toBeTruthy();
       if (predictionData.length > 0) {
         expect(predictionData[0]).toHaveProperty('symbol');
         expect(predictionData[0]).toHaveProperty('predicted_price');
-        expect(predictionData[0]).toHaveProperty('target_date');
+        expect(predictionData[0]).toHaveProperty('prediction_date');
       }
       console.log('✅ 予測API成功:', predictionData.length + ' 件の予測');
     } else {
@@ -59,7 +59,7 @@ test.describe('包括的E2Eテスト', () => {
     console.log('🗄️ データベース整合性テストを開始...');
     
     // 株式マスターデータの確認
-    const searchResponse = await request.get('http://localhost:8001/api/finance/stocks/search?query=&limit=10');
+    const searchResponse = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/search?query=&limit=10');
     if (searchResponse.ok()) {
       const allStocks = await searchResponse.json();
       console.log('📊 データベース内株式数:', allStocks.length);
@@ -69,14 +69,14 @@ test.describe('包括的E2Eテスト', () => {
         const symbol = stock.symbol;
         
         // 価格履歴の確認
-        const priceCheck = await request.get(`http://localhost:8001/api/finance/stocks/${symbol}/price?days=5`);
+        const priceCheck = await request.get(`https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/${symbol}/price?days=5`);
         if (priceCheck.ok()) {
           const priceData = await priceCheck.json();
           console.log(`✅ ${symbol}: ${priceData.length}日分の価格データ`);
         }
         
         // 予測データの確認
-        const predictionCheck = await request.get(`http://localhost:8001/api/finance/stocks/${symbol}/predictions?days=3`);
+        const predictionCheck = await request.get(`https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/${symbol}/predictions?days=3`);
         if (predictionCheck.ok()) {
           const predictionData = await predictionCheck.json();
           console.log(`✅ ${symbol}: ${predictionData.length}日分の予測データ`);
@@ -96,7 +96,7 @@ test.describe('包括的E2Eテスト', () => {
     
     await page.evaluate(() => {
       return new Promise((resolve) => {
-        const ws = new WebSocket('ws://localhost:8001/ws');
+        const ws = new WebSocket('wss://miraikakaku-api-465603676610.us-central1.run.app/ws');
         
         ws.onopen = () => {
           console.log('WebSocket接続成功');
@@ -142,15 +142,15 @@ test.describe('包括的E2Eテスト', () => {
     console.log('🛠️ エラーハンドリングテストを開始...');
     
     // 無効なパラメータテスト
-    const invalidSearchResponse = await request.get('http://localhost:8001/api/finance/stocks/search?query=&limit=0');
+    const invalidSearchResponse = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/search?query=&limit=0');
     console.log('無効な検索パラメータ:', invalidSearchResponse.status());
     
     // 存在しない銘柄テスト
-    const nonExistentStockResponse = await request.get('http://localhost:8001/api/finance/stocks/NONEXISTENT/price');
+    const nonExistentStockResponse = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/NONEXISTENT/price');
     console.log('存在しない銘柄:', nonExistentStockResponse.status());
     
     // 大きすぎる範囲テスト
-    const largeRangeResponse = await request.get('http://localhost:8001/api/finance/stocks/AAPL/price?days=9999');
+    const largeRangeResponse = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/AAPL/price?days=9999');
     console.log('大きすぎる日数範囲:', largeRangeResponse.status());
     
     console.log('🎉 エラーハンドリングテスト完了');
@@ -163,11 +163,11 @@ test.describe('包括的E2Eテスト', () => {
     
     // 複数の並列リクエスト
     const promises = [
-      request.get('http://localhost:8001/health'),
-      request.get('http://localhost:8001/api/finance/stocks/search?query=A&limit=5'),
-      request.get('http://localhost:8001/api/finance/stocks/AAPL/price?days=7'),
-      request.get('http://localhost:8001/api/finance/stocks/MSFT/price?days=7'),
-      request.get('http://localhost:8001/api/finance/stocks/GOOGL/predictions?days=3')
+      request.get('https://miraikakaku-api-465603676610.us-central1.run.app/health'),
+      request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/search?query=A&limit=5'),
+      request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/AAPL/price?days=7'),
+      request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/MSFT/price?days=7'),
+      request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/GOOGL/predictions?days=3')
     ];
     
     const responses = await Promise.all(promises);

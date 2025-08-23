@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import InvestmentRecommendation from '../investment/InvestmentRecommendation';
 import { INVESTMENT_CONFIG } from '@/config/constants';
-import { waitFor } from '@testing-library/react';
 
 // ThumbnailChartコンポーネントのモック
 jest.mock('../charts/ThumbnailChart', () => {

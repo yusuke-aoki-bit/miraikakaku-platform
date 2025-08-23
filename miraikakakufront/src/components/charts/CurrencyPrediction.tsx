@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
-import { DollarSign, TrendingUp, TrendingDown, Globe, AlertTriangle, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Globe, AlertTriangle, Target } from 'lucide-react';
 
 interface CurrencyPair {
   pair: string;
@@ -95,10 +95,8 @@ export default function CurrencyPrediction({ selectedPair = 'USD/JPY' }: Currenc
     const upperBound = [];
     const lowerBound = [];
 
-    const now = new Date();
     
     for (let i = 0; i < hours; i++) {
-      const time = new Date(now.getTime() - (hours - i) * 60 * 60 * 1000);
       labels.push(
         timeFrame === '1H' ? `${i}分前` :
         timeFrame === '1D' ? `${hours - i}時間前` :

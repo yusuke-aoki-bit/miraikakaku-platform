@@ -80,7 +80,8 @@
       "Bash(gsutil cp:*)",
       "Bash(./venv_batch/bin/python3:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []

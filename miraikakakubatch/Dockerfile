@@ -15,14 +15,11 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Python依存関係をインストール
-COPY miraikakakubatch/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # アプリケーションコードをコピー
-COPY miraikakakubatch/functions/ ./
-
-# 共通ライブラリをコピー
-COPY shared/ ./shared/
+COPY functions/ ./
 
 # 非rootユーザーを作成
 RUN groupadd -r batchuser && useradd -r -g batchuser batchuser

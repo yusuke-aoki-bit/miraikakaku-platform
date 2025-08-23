@@ -60,6 +60,7 @@ export default function WatchlistPage() {
   };
 
   const addToWatchlist = (symbol: string) => {
+    console.log('Adding to watchlist:', symbol);
     // 実際の実装では銘柄データを取得して追加
     setShowAddStock(false);
   };

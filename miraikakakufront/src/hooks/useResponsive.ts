@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 export type BreakpointKey = 'mobile' | 'tablet' | 'desktop' | 'ultrawide';
 
@@ -30,7 +30,7 @@ export interface ResponsiveState {
 }
 
 export function useResponsive(customBreakpoints?: Partial<ResponsiveBreakpoints>): ResponsiveState {
-  const breakpoints = { ...FINANCIAL_BREAKPOINTS, ...customBreakpoints };
+  const breakpoints = useMemo(() => ({ ...FINANCIAL_BREAKPOINTS, ...customBreakpoints }), [customBreakpoints]);
   
   const [state, setState] = useState<ResponsiveState>(() => {
     if (typeof window === 'undefined') {

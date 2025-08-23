@@ -27,7 +27,7 @@ const KEYBOARD_SHORTCUTS: KeyboardShortcut[] = [
   
   // Accessibility
   { key: 'Alt + A', description: 'アクセシビリティ設定を開く', category: 'アクセシビリティ' },
-  { key: 'Alt + ?', description: 'キーボードショートカット一覧を表示', category: 'アクセシビリティ' },
+  { key: 'Alt + ?', description: 'このヘルプ（ショートカット一覧）を表示', category: 'アクセシビリティ' },
   { key: 'Tab', description: '次の要素に移動', category: 'アクセシビリティ' },
   { key: 'Shift + Tab', description: '前の要素に移動', category: 'アクセシビリティ' },
   
@@ -48,24 +48,38 @@ export default function KeyboardShortcuts() {
   const { announce } = useAccessibilityContext();
 
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
-    // Alt + ? to open shortcuts
-    if (e.altKey && e.key === '?') {
+    // Check if we're in an input field, text area, or contenteditable element
+    const target = e.target as HTMLElement;
+    const isInputField = target.tagName === 'INPUT' || 
+                        target.tagName === 'TEXTAREA' || 
+                        target.isContentEditable;
+    
+    // Don't handle shortcuts if user is typing in an input field
+    if (isInputField) return;
+    
+    // Alt + ? to open shortcuts (avoid conflict with help dialogs)
+    if (e.altKey && e.key === '?' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
+      e.stopPropagation();
       setIsOpen(true);
       announce('キーボードショートカット一覧を開きました');
+      return;
     }
     
-    // Escape to close
-    if (e.key === 'Escape' && isOpen) {
+    // Escape to close (only if shortcuts modal is open)
+    if (e.key === 'Escape' && isOpen && !e.altKey && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
+      e.stopPropagation();
       setIsOpen(false);
       announce('キーボードショートカット一覧を閉じました');
+      return;
     }
   }, [isOpen, announce]);
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyPress);
-    return () => document.removeEventListener('keydown', handleKeyPress);
+    // Use capture phase to handle shortcuts before other components
+    document.addEventListener('keydown', handleKeyPress, true);
+    return () => document.removeEventListener('keydown', handleKeyPress, true);
   }, [handleKeyPress]);
 
   const groupedShortcuts = KEYBOARD_SHORTCUTS.reduce((acc, shortcut) => {
@@ -83,15 +97,6 @@ export default function KeyboardShortcuts() {
 
   return (
     <>
-      {/* Help button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 w-12 h-12 bg-brand-primary text-white rounded-full shadow-lg hover:bg-brand-primary-hover transition-colors z-fixed flex items-center justify-center"
-        aria-label="キーボードショートカット一覧を表示"
-        title="キーボードショートカット (Alt + ?)"
-      >
-        <Keyboard size={20} />
-      </button>
 
       <AnimatePresence>
         {isOpen && (

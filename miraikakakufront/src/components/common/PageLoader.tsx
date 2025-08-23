@@ -13,7 +13,6 @@ export default function PageLoader({ children, minLoadTime = 1000 }: PageLoaderP
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const startTime = Date.now();
     
     // プログレスバーのアニメーション
     const progressInterval = setInterval(() => {

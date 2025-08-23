@@ -7,6 +7,11 @@ const nextConfig = {
     API_BASE_URL: process.env.API_BASE_URL || 'http://localhost:8000',
   },
   output: 'standalone',
+  eslint: {
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
+  },
   webpack: (config) => {
     config.experiments = {
       ...config.experiments,

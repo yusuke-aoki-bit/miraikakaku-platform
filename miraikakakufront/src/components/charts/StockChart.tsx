@@ -28,8 +28,17 @@ ChartJS.register(
 );
 
 interface StockChartProps {
-  data: any;
-  options: any;
+  data: {
+    labels: string[];
+    datasets: Array<{
+      label: string;
+      data: any[];
+      borderColor?: string;
+      backgroundColor?: string;
+      [key: string]: unknown;
+    }>;
+  };
+  options: Record<string, unknown>;
 }
 
 export default function StockChart({ data, options }: StockChartProps) {

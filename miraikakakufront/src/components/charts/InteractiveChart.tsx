@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Maximize2, Download, Settings } from 'lucide-react';
+import { CHART_COLORS, PLOTLY_COLORS } from '@/config/chart-colors';
 
 // Plotlyを動的インポート（SSRを避けるため）
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
@@ -22,21 +23,22 @@ interface CandlestickData {
   volume: number[];
 }
 
+
 export default function InteractiveChart({ symbol, height = 600 }: InteractiveChartProps) {
   const [candlestickData, setCandlestickData] = useState<CandlestickData>({
     x: [], open: [], high: [], low: [], close: [], volume: []
   });
-  const [predictions, setPredictions] = useState<any[]>([]);
+  interface PredictionData {
+    date: string;
+    target_date: string;
+    predicted_price: number;
+    confidence: number;
+  }
+  const [predictions, setPredictions] = useState<PredictionData[]>([]);
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
-  useEffect(() => {
-    if (symbol) {
-      fetchAdvancedData();
-    }
-  }, [symbol]);
-
-  const fetchAdvancedData = async () => {
+  const fetchAdvancedData = useCallback(async () => {
     setLoading(true);
     try {
       const [priceResponse, predictionResponse] = await Promise.all([
@@ -56,17 +58,26 @@ export default function InteractiveChart({ symbol, height = 600 }: InteractiveCh
       }
 
       // Candlestickデータを準備
-      const sortedPrices = priceData.sort((a: any, b: any) => 
+      interface PriceData {
+        date: string;
+        open_price?: number;
+        high_price?: number;
+        low_price?: number;
+        close_price: number;
+        volume?: number;
+      }
+      
+      const sortedPrices = priceData.sort((a: PriceData, b: PriceData) => 
         new Date(a.date).getTime() - new Date(b.date).getTime()
       );
 
       const candleData: CandlestickData = {
-        x: sortedPrices.map((p: any) => p.date),
-        open: sortedPrices.map((p: any) => p.open_price || p.close_price),
-        high: sortedPrices.map((p: any) => p.high_price || p.close_price),
-        low: sortedPrices.map((p: any) => p.low_price || p.close_price),
-        close: sortedPrices.map((p: any) => p.close_price),
-        volume: sortedPrices.map((p: any) => p.volume || 0),
+        x: sortedPrices.map((p: PriceData) => p.date),
+        open: sortedPrices.map((p: PriceData) => p.open_price || p.close_price),
+        high: sortedPrices.map((p: PriceData) => p.high_price || p.close_price),
+        low: sortedPrices.map((p: PriceData) => p.low_price || p.close_price),
+        close: sortedPrices.map((p: PriceData) => p.close_price),
+        volume: sortedPrices.map((p: PriceData) => p.volume || 0),
       };
 
       setCandlestickData(candleData);
@@ -76,7 +87,13 @@ export default function InteractiveChart({ symbol, height = 600 }: InteractiveCh
     } finally {
       setLoading(false);
     }
-  };
+  }, [symbol]);
+
+  useEffect(() => {
+    if (symbol) {
+      fetchAdvancedData();
+    }
+  }, [symbol, fetchAdvancedData]);
 
   const plotData = useMemo(() => {
     const traces: any[] = [];
@@ -91,8 +108,8 @@ export default function InteractiveChart({ symbol, height = 600 }: InteractiveCh
         close: candlestickData.close,
         type: 'candlestick',
         name: symbol,
-        increasing: { line: { color: '#10b981' } },
-        decreasing: { line: { color: '#ef4444' } },
+        increasing: { line: { color: CHART_COLORS.CANDLESTICK.UP_BORDER } },
+        decreasing: { line: { color: CHART_COLORS.CANDLESTICK.DOWN_BORDER } },
         yaxis: 'y1',
       });
 
@@ -103,7 +120,7 @@ export default function InteractiveChart({ symbol, height = 600 }: InteractiveCh
         type: 'bar',
         name: '出来高',
         opacity: 0.3,
-        marker: { color: '#6366f1' },
+        marker: { color: CHART_COLORS.VOLUME.PRIMARY },
         yaxis: 'y2',
       });
 
@@ -120,7 +137,7 @@ export default function InteractiveChart({ symbol, height = 600 }: InteractiveCh
         type: 'scatter',
         mode: 'lines',
         name: 'SMA(20)',
-        line: { color: '#f59e0b', width: 2 },
+        line: { color: CHART_COLORS.INDICATORS.SMA_20, width: 2 },
         yaxis: 'y1',
       });
     }
@@ -133,8 +150,8 @@ export default function InteractiveChart({ symbol, height = 600 }: InteractiveCh
         type: 'scatter',
         mode: 'lines+markers',
         name: 'AI予測',
-        line: { color: '#8b5cf6', width: 3, dash: 'dash' },
-        marker: { size: 8, symbol: 'diamond' },
+        line: { color: CHART_COLORS.PREDICTIONS.VERTEX_AI, width: 3, dash: 'dash' },
+        marker: { size: 8, symbol: 'diamond', color: CHART_COLORS.PREDICTIONS.VERTEX_AI },
         yaxis: 'y1',
       });
     }
@@ -162,16 +179,15 @@ export default function InteractiveChart({ symbol, height = 600 }: InteractiveCh
       domain: [0, 0.25],
       side: 'right' as const,
     },
-    plot_bgcolor: theme === 'dark' ? '#1f2937' : '#ffffff',
-    paper_bgcolor: theme === 'dark' ? '#111827' : '#ffffff',
-    font: {
-      color: theme === 'dark' ? '#ffffff' : '#000000',
-    },
+    plot_bgcolor: PLOTLY_COLORS.plot_bgcolor,
+    paper_bgcolor: PLOTLY_COLORS.paper_bgcolor,
+    font: PLOTLY_COLORS.font,
     showlegend: true,
     legend: {
       x: 0,
       y: 1,
-      bgcolor: 'rgba(255, 255, 255, 0.8)',
+      bgcolor: 'rgba(42, 42, 42, 0.9)',
+      font: { color: CHART_COLORS.TEXT.PRIMARY },
     },
     margin: { l: 50, r: 50, t: 50, b: 50 },
     height: height,
@@ -179,7 +195,7 @@ export default function InteractiveChart({ symbol, height = 600 }: InteractiveCh
 
   const config = {
     displayModeBar: true,
-    modeBarButtonsToRemove: ['pan2d', 'lasso2d'] as any[],
+    modeBarButtonsToRemove: ['pan2d', 'lasso2d'] as any,
     responsive: true,
     toImageButtonOptions: {
       format: 'png' as const,

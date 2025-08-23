@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { useLazyLoading, usePerformance } from '@/hooks/usePerformance';
 
 interface LazyImageProps {
@@ -40,7 +41,7 @@ export default function LazyImage({
     if ((isVisible || priority) && src && !isLoaded && !hasError) {
       const optimizedSrc = optimizeImage(src, width, height);
       
-      const img = new Image();
+      const img = new globalThis.Image();
       
       img.onload = () => {
         setCurrentSrc(optimizedSrc);
@@ -57,17 +58,6 @@ export default function LazyImage({
     }
   }, [isVisible, priority, src, width, height, optimizeImage, isLoaded, hasError, onLoad, onError]);
 
-  // Create responsive srcSet for high-DPI displays
-  const createSrcSet = () => {
-    if (!src || hasError) return undefined;
-    
-    const baseSrc = optimizeImage(src, width, height);
-    const retinaWidth = width ? width * 2 : undefined;
-    const retinaHeight = height ? height * 2 : undefined;
-    const retinaSrc = optimizeImage(src, retinaWidth, retinaHeight);
-    
-    return `${baseSrc} 1x, ${retinaSrc} 2x`;
-  };
 
   // Loading placeholder
   if (!isVisible && !priority) {
@@ -106,10 +96,11 @@ export default function LazyImage({
     >
       {/* Placeholder/blur */}
       {placeholder && !isLoaded && (
-        <img
+        <Image
           src={placeholder}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover filter blur-sm scale-110"
+          fill
+          className="object-cover filter blur-sm scale-110"
           aria-hidden="true"
         />
       )}
@@ -120,18 +111,18 @@ export default function LazyImage({
       )}
       
       {/* Main image */}
-      <img
+      <Image
         ref={imgRef}
         src={currentSrc}
-        srcSet={createSrcSet()}
         alt={alt}
-        width={width}
-        height={height}
-        className={`w-full h-full object-cover transition-opacity duration-300 ${
+        width={width || 400}
+        height={height || 300}
+        className={`object-cover transition-opacity duration-300 ${
           isLoaded ? 'opacity-100' : 'opacity-0'
         }`}
         loading={priority ? 'eager' : 'lazy'}
-        decoding="async"
+        priority={priority}
+        quality={quality === 'high' ? 95 : quality === 'medium' ? 75 : 50}
       />
       
       {/* Loading indicator */}
@@ -169,7 +160,7 @@ export function ProgressiveImage({
   // Load high quality image when visible
   useEffect(() => {
     if ((isVisible || priority) && src && !highQualityLoaded) {
-      const img = new Image();
+      const img = new globalThis.Image();
       img.onload = () => setHighQualityLoaded(true);
       img.src = optimizeImage(src, width, height);
     }
@@ -193,10 +184,11 @@ export function ProgressiveImage({
     >
       {/* Low quality placeholder */}
       {lowQualitySrc && (
-        <img
+        <Image
           src={lowQualitySrc}
           alt=""
-          className={`absolute inset-0 w-full h-full object-cover filter blur-sm transition-opacity duration-500 ${
+          fill
+          className={`object-cover filter blur-sm transition-opacity duration-500 ${
             highQualityLoaded ? 'opacity-0' : 'opacity-100'
           }`}
           aria-hidden="true"
@@ -205,15 +197,16 @@ export function ProgressiveImage({
       
       {/* High quality image */}
       {(highQualityLoaded || priority) && (
-        <img
+        <Image
           src={optimizeImage(src, width, height)}
           alt={alt}
-          width={width}
-          height={height}
-          className={`w-full h-full object-cover transition-opacity duration-500 ${
+          width={width || 400}
+          height={height || 300}
+          className={`object-cover transition-opacity duration-500 ${
             highQualityLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           loading={priority ? 'eager' : 'lazy'}
+          priority={priority}
         />
       )}
     </div>

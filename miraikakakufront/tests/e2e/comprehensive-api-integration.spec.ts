@@ -12,7 +12,7 @@ test.describe('Comprehensive API Integration Tests', () => {
     // APIサーバーとの基本接続確認
     const response = await page.evaluate(async () => {
       try {
-        const res = await fetch('http://localhost:8000/', {
+        const res = await fetch('https://miraikakaku-api-465603676610.us-central1.run.app/', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
@@ -58,7 +58,7 @@ test.describe('Comprehensive API Integration Tests', () => {
     // 株式データが実際に取得されることを確認
     const stockData = await page.evaluate(async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/finance/stocks/AAPL/price?days=7');
+        const response = await fetch('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/AAPL/price?days=7');
         if (response.ok) {
           return await response.json();
         }
@@ -80,7 +80,7 @@ test.describe('Comprehensive API Integration Tests', () => {
     // 予測データの取得と表示テスト
     const predictionData = await page.evaluate(async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/finance/stocks/AAPL/predictions?days=7');
+        const response = await fetch('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/AAPL/predictions?days=7');
         if (response.ok) {
           return await response.json();
         }
@@ -199,7 +199,7 @@ test.describe('Comprehensive API Integration Tests', () => {
     // 実際のAPI呼び出しが成功することを確認
     const volumeData = await page.evaluate(async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/finance/stocks/AAPL/price?days=30');
+        const response = await fetch('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/AAPL/price?days=30');
         if (response.ok) {
           const data = await response.json();
           return data.map((item: any) => ({
@@ -227,7 +227,7 @@ test.describe('Comprehensive API Integration Tests', () => {
     // 無効なシンボルでの検索テスト
     const invalidSymbolData = await page.evaluate(async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/finance/stocks/INVALID/price?days=7');
+        const response = await fetch('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/INVALID/price?days=7');
         return {
           status: response.status,
           ok: response.ok
@@ -267,7 +267,7 @@ test.describe('Comprehensive API Integration Tests', () => {
     // ダッシュボードでのデータ取得
     const dashboardData = await page.evaluate(async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/finance/stocks/AAPL/price?days=7');
+        const response = await fetch('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/AAPL/price?days=7');
         if (response.ok) {
           const data = await response.json();
           return data[0]; // 最新のデータ
@@ -286,7 +286,7 @@ test.describe('Comprehensive API Integration Tests', () => {
     // 分析ページでの同じデータ確認
     const analysisData = await page.evaluate(async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/finance/stocks/AAPL/price?days=7');
+        const response = await fetch('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/AAPL/price?days=7');
         if (response.ok) {
           const data = await response.json();
           return data[0]; // 最新のデータ
@@ -313,7 +313,7 @@ test.describe('Comprehensive API Integration Tests', () => {
       // 価格データの構造検証
       const priceData = await page.evaluate(async (sym) => {
         try {
-          const response = await fetch(`http://localhost:8000/api/finance/stocks/${sym}/price?days=3`);
+          const response = await fetch(`https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/${sym}/price?days=3`);
           if (response.ok) {
             return await response.json();
           }
@@ -341,7 +341,7 @@ test.describe('Comprehensive API Integration Tests', () => {
       // 予測データの構造検証
       const predictionData = await page.evaluate(async (sym) => {
         try {
-          const response = await fetch(`http://localhost:8000/api/finance/stocks/${sym}/predictions?days=3`);
+          const response = await fetch(`https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/${sym}/predictions?days=3`);
           if (response.ok) {
             return await response.json();
           }
@@ -381,7 +381,7 @@ test.describe('Comprehensive API Integration Tests', () => {
         const startTime = performance.now();
         
         try {
-          const response = await fetch(`http://localhost:8000${endpoint}`);
+          const response = await fetch(`https://miraikakaku-api-465603676610.us-central1.run.app${endpoint}`);
           const endTime = performance.now();
           const responseTime = endTime - startTime;
           

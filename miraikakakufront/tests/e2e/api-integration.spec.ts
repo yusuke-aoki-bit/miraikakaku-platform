@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('API統合テスト', () => {
   test('APIヘルスチェックが成功する', async ({ request }) => {
-    // APIサーバーのヘルスチェック
-    const response = await request.get('http://localhost:8001/health');
+    // Google Cloud Run APIサーバーのヘルスチェック
+    const response = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/health');
     expect(response.ok()).toBeTruthy();
     
     const healthData = await response.json();
@@ -12,7 +12,7 @@ test.describe('API統合テスト', () => {
 
   test('株式検索APIが動作する', async ({ request }) => {
     // 株式検索APIをテスト
-    const response = await request.get('http://localhost:8001/api/finance/stocks/search?query=AAPL&limit=10');
+    const response = await request.get('https://miraikakaku-api-465603676610.us-central1.run.app/api/finance/stocks/search?query=AAPL&limit=10');
     
     if (response.ok()) {
       const searchResults = await response.json();
@@ -82,7 +82,7 @@ test.describe('API統合テスト', () => {
     
     // リアルタイムページが読み込まれることを確認
     await page.waitForTimeout(3000);
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('main').first()).toBeVisible();
     
     // WebSocket接続のテスト（実装に応じて）
     const wsConnections = await page.evaluate(() => {

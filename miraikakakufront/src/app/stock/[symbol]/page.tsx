@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Star, TrendingUp, TrendingDown, Activity, DollarSign, Calendar, Info } from 'lucide-react';
+import { ArrowLeft, Star, TrendingUp, TrendingDown } from 'lucide-react';
 import Link from 'next/link';
 import TripleChart from '@/components/charts/TripleChart';
 import InvestmentRecommendation from '@/components/investment/InvestmentRecommendation';
@@ -28,7 +28,7 @@ export default function StockDetailPage() {
   const params = useParams();
   const symbol = params?.symbol as string;
   
-  const [stockData, setStockData] = useState<StockData>({
+  const [stockData] = useState<StockData>({
     symbol: symbol || '7203',
     companyName: 'トヨタ自動車',
     currentPrice: 2543.0,
@@ -52,7 +52,7 @@ export default function StockDetailPage() {
     const watchlist = localStorage.getItem('watchlist');
     if (watchlist) {
       const parsed = JSON.parse(watchlist);
-      setIsInWatchlist(parsed.some((item: any) => item.symbol === symbol));
+      setIsInWatchlist(parsed.some((item: { symbol: string }) => item.symbol === symbol));
     }
   }, [symbol]);
 
@@ -61,7 +61,7 @@ export default function StockDetailPage() {
     let parsed = watchlist ? JSON.parse(watchlist) : [];
     
     if (isInWatchlist) {
-      parsed = parsed.filter((item: any) => item.symbol !== symbol);
+      parsed = parsed.filter((item: { symbol: string }) => item.symbol !== symbol);
     } else {
       parsed.push({
         symbol: stockData.symbol,

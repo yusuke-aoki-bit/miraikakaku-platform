@@ -28,9 +28,20 @@ export default function AppContainer({ children }: AppContainerProps) {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-        event.preventDefault();
-        setCommandPaletteOpen((prev) => !prev);
+      // Check if we're in an input field, text area, or contenteditable element
+      const target = event.target as HTMLElement;
+      const isInputField = target.tagName === 'INPUT' || 
+                          target.tagName === 'TEXTAREA' || 
+                          target.isContentEditable;
+      
+      // Command palette shortcut: Ctrl+K or Cmd+K
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k' && !event.altKey && !event.shiftKey) {
+        // Don't interfere with browser shortcuts in input fields
+        if (!isInputField) {
+          event.preventDefault();
+          event.stopPropagation();
+          setCommandPaletteOpen((prev) => !prev);
+        }
       }
     };
 
@@ -69,22 +80,26 @@ export default function AppContainer({ children }: AppContainerProps) {
         {/* Sidebar */}
         {sidebarMode === 'persistent' ? (
           // Always visible sidebar (ultrawide)
-          <div className="relative z-auto">
+          <div className="relative z-auto h-full">
             <Sidebar />
           </div>
         ) : sidebarMode === 'push' ? (
           // Push sidebar (desktop) - shows/hides based on sidebarOpen state
           <div className={`transform transition-transform duration-300 ease-in-out ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } relative z-auto`}>
+          } relative z-auto h-full`}>
             <Sidebar />
           </div>
         ) : (
           // Overlay sidebar (mobile/tablet)
           <div className={`transform transition-transform duration-300 ease-in-out z-50 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } fixed inset-y-0 left-0`}
-          style={{ top: 'var(--header-height)' }}>
+          } fixed left-0`}
+          style={{ 
+            top: 'var(--header-height)', 
+            bottom: 0,
+            height: 'calc(100vh - var(--header-height))'
+          }}>
             <Sidebar />
           </div>
         )}

@@ -59,7 +59,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
       document.documentElement.classList.remove('focus-visible-enabled');
     }
 
-  }, [accessibility.preferences]);
+  }, [accessibility, accessibility.preferences]);
 
   return (
     <AccessibilityContext.Provider value={accessibility}>

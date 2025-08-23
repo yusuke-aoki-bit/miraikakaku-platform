@@ -59,7 +59,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
         <Link href="/" className="text-xl md:text-2xl font-bold bg-gradient-to-r from-base-blue-500 to-base-blue-400 bg-clip-text text-transparent whitespace-nowrap">
-          Miraikakaku
+          Miraikakaku Dashboard
         </Link>
       </div>
 

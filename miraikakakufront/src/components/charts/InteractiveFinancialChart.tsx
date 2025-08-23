@@ -11,17 +11,11 @@ import {
   Tooltip, 
   ResponsiveContainer, 
   Brush,
-  ReferenceLine,
-  ReferenceArea
 } from 'recharts';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, 
   TrendingDown, 
-  Volume, 
   Activity,
-  ZoomIn,
-  ZoomOut,
   RotateCcw,
   Download,
   Eye,
@@ -80,7 +74,7 @@ const INDICATOR_COLORS = {
   volume: '#74b9ff'
 };
 
-const generateMockData = (symbol: string): PriceData[] => {
+const generateMockData = (): PriceData[] => {
   const data: PriceData[] = [];
   const basePrice = 2500;
   const now = Date.now();
@@ -190,7 +184,6 @@ export default function InteractiveFinancialChart({
     volume: showVolume
   });
   const [zoomDomain, setZoomDomain] = useState<{ start?: number; end?: number }>({});
-  const [selectedPoint, setSelectedPoint] = useState<PriceData | null>(null);
   const [showCrosshair, setShowCrosshair] = useState(true);
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -199,7 +192,7 @@ export default function InteractiveFinancialChart({
       setData(initialData);
     } else {
       // Generate mock data for demonstration
-      const mockData = generateMockData(symbol);
+      const mockData = generateMockData();
       setData(mockData);
     }
   }, [initialData, symbol]);
@@ -265,40 +258,6 @@ export default function InteractiveFinancialChart({
     );
   };
 
-  const CandlestickShape = (props: any) => {
-    const { payload, x, y, width, height } = props;
-    const { open, high, low, close } = payload;
-    
-    const isPositive = close >= open;
-    const color = isPositive ? '#10b981' : '#ef4444';
-    const bodyHeight = Math.abs(close - open) / (high - low) * height;
-    const bodyY = y + (Math.max(close, open) - high) / (high - low) * height;
-    
-    return (
-      <g>
-        {/* Wick */}
-        <line
-          x1={x + width / 2}
-          y1={y}
-          x2={x + width / 2}
-          y2={y + height}
-          stroke={color}
-          strokeWidth={1}
-        />
-        
-        {/* Body */}
-        <rect
-          x={x + width * 0.2}
-          y={bodyY}
-          width={width * 0.6}
-          height={bodyHeight}
-          fill={isPositive ? 'transparent' : color}
-          stroke={color}
-          strokeWidth={1}
-        />
-      </g>
-    );
-  };
 
   return (
     <div className={`bg-surface-card border border-border-default rounded-2xl overflow-hidden ${className}`}>
@@ -396,9 +355,8 @@ export default function InteractiveFinancialChart({
             data={processedData}
             margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
             onMouseMove={(e) => {
-              if (e?.activePayload?.[0]) {
-                setSelectedPoint(e.activePayload[0].payload);
-              }
+              // Chart interaction handling
+              console.log('Chart interaction:', e?.activePayload?.[0]);
             }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" opacity={0.5} />

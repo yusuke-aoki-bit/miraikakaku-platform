@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Clock, Star as StarIcon, Hash, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import { Search, X, Clock, Hash, ArrowRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useNavigationStore } from '@/store/navigationStore';
 import { useUserModeStore } from '@/store/userModeStore';
@@ -43,7 +42,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
   const { getCommandItems, recentPages, addRecentPage } = useNavigationStore();
   const { config: userConfig, trackFeatureUsage } = useUserModeStore();
   
-  const allCommands = getCommandItems(userConfig.mode);
+  const allCommands = getCommandItems('pro');
 
   // Initialize recent items from navigation store
   useEffect(() => {
@@ -152,14 +151,19 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
     
     if (e.key === 'ArrowDown') {
       e.preventDefault();
+      e.stopPropagation();
       setSelectedIndex((prevIndex) => (prevIndex + 1) % Math.max(totalResults, 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
+      e.stopPropagation();
       setSelectedIndex((prevIndex) => (prevIndex - 1 + Math.max(totalResults, 1)) % Math.max(totalResults, 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
+      e.stopPropagation();
       handleSelection(selectedIndex);
-    } else if (e.key === 'Escape') {
+    } else if (e.key === 'Escape' && !e.altKey && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      e.stopPropagation();
       onClose();
     }
   }, [filteredCommands, stockResults, recentItems, selectedIndex, query.length, onClose]);

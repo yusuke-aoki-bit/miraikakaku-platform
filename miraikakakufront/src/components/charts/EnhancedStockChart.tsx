@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import StockChart from './StockChart';
-import { Brain, TrendingUp, Target, DollarSign } from 'lucide-react';
+import { Brain, DollarSign } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { CHART_COLORS, getChartColors } from '@/config/chart-colors';
 
 // データ型定義
 interface HistoricalData {
@@ -159,8 +160,8 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
             const historical = data.historical.find(h => h.date === date);
             return historical ? { x: date, y: historical.actual_price } : null;
           }).filter(Boolean),
-          borderColor: 'rgb(34, 197, 94)',
-          backgroundColor: 'rgba(34, 197, 94, 0.1)',
+          borderColor: CHART_COLORS.PRICE.UP,
+          backgroundColor: CHART_COLORS.PRICE.UP + '20',
           borderWidth: 3,
           pointRadius: 2,
           pointHoverRadius: 6,
@@ -175,8 +176,8 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
             const pastPred = data.pastPredictions.find(p => p.date === date);
             return pastPred ? { x: date, y: pastPred.lstm_prediction } : null;
           }).filter(Boolean),
-          borderColor: 'rgb(59, 130, 246)',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderColor: getChartColors.prediction('lstm'),
+          backgroundColor: getChartColors.prediction('lstm') + '20',
           borderWidth: 2,
           pointRadius: 3,
           borderDash: [5, 5],
@@ -188,8 +189,8 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
             const pastPred = data.pastPredictions.find(p => p.date === date);
             return pastPred ? { x: date, y: pastPred.vertexai_prediction } : null;
           }).filter(Boolean),
-          borderColor: 'rgb(168, 85, 247)',
-          backgroundColor: 'rgba(168, 85, 247, 0.1)',
+          borderColor: getChartColors.prediction('vertexai'),
+          backgroundColor: getChartColors.prediction('vertexai') + '20',
           borderWidth: 2,
           pointRadius: 3,
           borderDash: [5, 5],
@@ -204,8 +205,8 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
             const futurePred = data.futurePredictions.find(f => f.date === date);
             return futurePred ? { x: date, y: futurePred.lstm_prediction } : null;
           }).filter(Boolean),
-          borderColor: 'rgb(249, 115, 22)',
-          backgroundColor: 'rgba(249, 115, 22, 0.2)',
+          borderColor: CHART_COLORS.PREDICTIONS.ENSEMBLE,
+          backgroundColor: CHART_COLORS.PREDICTIONS.ENSEMBLE + '30',
           borderWidth: 3,
           pointRadius: 4,
           fill: false,
@@ -216,8 +217,8 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
             const futurePred = data.futurePredictions.find(f => f.date === date);
             return futurePred ? { x: date, y: futurePred.vertexai_prediction } : null;
           }).filter(Boolean),
-          borderColor: 'rgb(236, 72, 153)',
-          backgroundColor: 'rgba(236, 72, 153, 0.2)',
+          borderColor: getChartColors.prediction('vertexai'),
+          backgroundColor: getChartColors.prediction('vertexai') + '30',
           borderWidth: 3,
           pointRadius: 4,
           fill: false,
