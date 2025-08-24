@@ -39,7 +39,7 @@ export interface IndexData {
   futurePredictions: ChartDataPoint[];
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://miraikakaku-api-fastapi-465603676610.us-central1.run.app';
 
 // Major indices mapping
 const INDEX_SYMBOL_MAP = {

@@ -1,111 +1,266 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Star, TrendingUp, TrendingDown, Eye } from 'lucide-react';
-import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import { BookmarkCheck, TrendingUp, TrendingDown, Plus, ArrowRight } from 'lucide-react';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip
+} from 'chart.js';
 
-interface WatchlistItem {
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip
+);
+
+interface WatchlistStock {
   symbol: string;
-  name: string;
-  price: number;
+  company_name: string;
+  current_price: number;
   change: number;
-  changePercent: number;
+  change_percent: number;
+  sparklineData: number[];
 }
 
 export default function WatchlistWidget() {
-  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([
-    { symbol: '7203', name: 'トヨタ自動車', price: 2543.0, change: 45.5, changePercent: 1.82 },
-    { symbol: '6758', name: 'ソニーグループ', price: 3251.0, change: -23.0, changePercent: -0.70 },
-    { symbol: '9984', name: 'ソフトバンクG', price: 6834.0, change: 156.0, changePercent: 2.34 },
-  ]);
+  const [watchlist, setWatchlist] = useState<WatchlistStock[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Load watchlist from localStorage
   useEffect(() => {
-    const savedWatchlist = localStorage.getItem('watchlist');
-    if (savedWatchlist) {
-      try {
-        const parsed = JSON.parse(savedWatchlist);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setWatchlist(parsed.slice(0, 5)); // Show only top 5
-        }
-      } catch (e) {
-        console.error('Failed to load watchlist');
-      }
-    }
+    fetchWatchlist();
   }, []);
 
+  const fetchWatchlist = async () => {
+    setLoading(true);
+    try {
+      // LocalStorageからウォッチリスト取得（実際の実装では認証済みユーザーのAPI呼び出し）
+      const savedWatchlist = localStorage.getItem('user_watchlist');
+      if (savedWatchlist) {
+        const symbols = JSON.parse(savedWatchlist);
+        // 各銘柄の詳細データを取得（モック）
+        const stockData = symbols.slice(0, 5).map((symbol: string) => ({
+          symbol,
+          company_name: getCompanyName(symbol),
+          current_price: Math.random() * 3000 + 1000,
+          change: (Math.random() - 0.5) * 200,
+          change_percent: (Math.random() - 0.5) * 5,
+          sparklineData: generateSparklineData()
+        }));
+        setWatchlist(stockData);
+      } else {
+        // デフォルトのウォッチリスト
+        setWatchlist([
+          {
+            symbol: '7203',
+            company_name: 'トヨタ自動車',
+            current_price: 2850,
+            change: 45,
+            change_percent: 1.6,
+            sparklineData: generateSparklineData()
+          },
+          {
+            symbol: '6758',
+            company_name: 'ソニーグループ',
+            current_price: 13200,
+            change: -180,
+            change_percent: -1.3,
+            sparklineData: generateSparklineData()
+          },
+          {
+            symbol: '9984',
+            company_name: 'ソフトバンクG',
+            current_price: 8800,
+            change: 120,
+            change_percent: 1.4,
+            sparklineData: generateSparklineData()
+          },
+          {
+            symbol: 'AAPL',
+            company_name: 'Apple Inc.',
+            current_price: 175.50,
+            change: 2.30,
+            change_percent: 1.3,
+            sparklineData: generateSparklineData()
+          },
+          {
+            symbol: 'TSLA',
+            company_name: 'Tesla Inc.',
+            current_price: 245.80,
+            change: -5.20,
+            change_percent: -2.1,
+            sparklineData: generateSparklineData()
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch watchlist:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateSparklineData = (): number[] => {
+    const data = [];
+    let base = 100;
+    for (let i = 0; i < 24; i++) {
+      base += (Math.random() - 0.5) * 5;
+      data.push(base);
+    }
+    return data;
+  };
+
+  const getCompanyName = (symbol: string): string => {
+    const companyNames: { [key: string]: string } = {
+      '7203': 'トヨタ自動車',
+      '6758': 'ソニーグループ',
+      '9984': 'ソフトバンクG',
+      'AAPL': 'Apple Inc.',
+      'TSLA': 'Tesla Inc.',
+      'MSFT': 'Microsoft Corp.',
+      'GOOGL': 'Alphabet Inc.'
+    };
+    return companyNames[symbol] || symbol;
+  };
+
+  const handleStockClick = (symbol: string) => {
+    window.location.href = `/stock/${symbol}`;
+  };
+
   return (
-    <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-gray-800/50 p-6">
+    <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <Star className="w-5 h-5 text-yellow-400" />
-          <h3 className="text-xl font-bold text-white">ウォッチリスト</h3>
+        <h3 className="text-lg font-semibold text-white flex items-center">
+          <BookmarkCheck className="w-5 h-5 mr-2 text-blue-400" />
+          ウォッチリスト
+        </h3>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => window.location.href = '/watchlist'}
+            className="text-sm text-blue-400 hover:text-blue-300 transition-colors flex items-center"
+          >
+            すべて見る
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </button>
+          <button
+            onClick={() => window.location.href = '/search'}
+            className="p-1 text-gray-400 hover:text-white transition-colors"
+            title="銘柄を追加"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
         </div>
-        <Link 
-          href="/watchlist"
-          className="text-sm text-red-400 hover:text-red-300 transition-colors flex items-center space-x-1"
-        >
-          <span>すべて見る</span>
-          <Eye className="w-4 h-4" />
-        </Link>
       </div>
 
-      {watchlist.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-400"></div>
+        </div>
+      ) : watchlist.length === 0 ? (
         <div className="text-center py-8">
-          <Star className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-          <p className="text-gray-400 mb-3">ウォッチリストは空です</p>
-          <Link 
-            href="/rankings"
-            className="text-red-400 hover:text-red-300 text-sm"
+          <BookmarkCheck className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+          <div className="text-gray-400 text-sm mb-2">ウォッチリストが空です</div>
+          <button
+            onClick={() => window.location.href = '/search'}
+            className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
           >
-            銘柄を追加 →
-          </Link>
+            銘柄を追加する
+          </button>
         </div>
       ) : (
         <div className="space-y-3">
-          {watchlist.map((item) => (
-            <Link 
-              key={item.symbol}
-              href={`/realtime?symbol=${item.symbol}`}
-              className="flex items-center justify-between p-3 bg-black/30 rounded-lg hover:bg-black/50 transition-colors"
-            >
-              <div className="flex-1">
-                <div className="flex items-center space-x-2">
-                  <span className="text-white font-medium">{item.symbol}</span>
-                  <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                </div>
-                <div className="text-gray-400 text-sm truncate">{item.name}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-white font-medium">
-                  ¥{item.price.toLocaleString()}
-                </div>
-                <div className={`flex items-center justify-end space-x-1 text-sm ${
-                  item.change > 0 ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {item.change > 0 ? (
-                    <TrendingUp className="w-3 h-3" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3" />
-                  )}
-                  <span>{item.changePercent > 0 ? '+' : ''}{item.changePercent}%</span>
-                </div>
-              </div>
-            </Link>
+          {watchlist.map((stock) => (
+            <WatchlistItem
+              key={stock.symbol}
+              stock={stock}
+              onClick={() => handleStockClick(stock.symbol)}
+            />
           ))}
         </div>
       )}
+    </div>
+  );
+}
 
-      {watchlist.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-800/50">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-400">登録銘柄数</span>
-            <span className="text-white font-medium">{watchlist.length} 銘柄</span>
+interface WatchlistItemProps {
+  stock: WatchlistStock;
+  onClick: () => void;
+}
+
+function WatchlistItem({ stock, onClick }: WatchlistItemProps) {
+  const isPositive = stock.change_percent >= 0;
+  
+  // スパークラインチャート設定
+  const chartData = {
+    labels: Array(24).fill(''),
+    datasets: [{
+      data: stock.sparklineData,
+      borderColor: isPositive ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)',
+      borderWidth: 1,
+      tension: 0.4,
+      pointRadius: 0,
+    }]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: false }
+    },
+    scales: {
+      x: { display: false },
+      y: { display: false }
+    }
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className="w-full p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg transition-all text-left group"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-white group-hover:text-blue-400 transition-colors">
+            {stock.symbol}
+          </div>
+          <div className="text-xs text-gray-400 truncate">
+            {stock.company_name}
           </div>
         </div>
-      )}
-    </div>
+        
+        <div className="text-right">
+          <div className="font-medium text-white">
+            {stock.symbol.match(/^\d+$/) ? '¥' : '$'}
+            {stock.current_price.toLocaleString('ja-JP', {
+              minimumFractionDigits: stock.symbol.match(/^\d+$/) ? 0 : 2,
+              maximumFractionDigits: stock.symbol.match(/^\d+$/) ? 0 : 2
+            })}
+          </div>
+          <div className={`text-xs flex items-center justify-end ${
+            isPositive ? 'text-green-400' : 'text-red-400'
+          }`}>
+            {isPositive ? (
+              <TrendingUp className="w-3 h-3 mr-1" />
+            ) : (
+              <TrendingDown className="w-3 h-3 mr-1" />
+            )}
+            {isPositive ? '+' : ''}{stock.change_percent.toFixed(1)}%
+          </div>
+        </div>
+      </div>
+      
+      {/* スパークラインチャート */}
+      <div className="h-8">
+        <Line data={chartData} options={chartOptions} />
+      </div>
+    </button>
   );
 }

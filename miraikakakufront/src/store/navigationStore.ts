@@ -18,7 +18,9 @@ import {
   Upload,
   RefreshCw,
   HelpCircle,
-  DollarSign
+  DollarSign,
+  User,
+  Settings
 } from 'lucide-react';
 
 interface NavigationStore {
@@ -35,9 +37,9 @@ interface NavigationStore {
   toggleFavoritePage: (href: string) => void;
   
   // Navigation items
-  getPrimaryNavigation: (userMode: 'light' | 'pro') => NavigationItem[];
+  getPrimaryNavigation: () => NavigationItem[];
   getTabNavigation: () => TabNavigationItem[];
-  getCommandItems: (userMode: 'light' | 'pro') => CommandItem[];
+  getCommandItems: () => CommandItem[];
 }
 
 export const useNavigationStore = create<NavigationStore>()(
@@ -79,53 +81,74 @@ export const useNavigationStore = create<NavigationStore>()(
       getPrimaryNavigation: (): NavigationItem[] => {
         const baseNavigation: NavigationItem[] = [
           {
-            id: 'dashboard',
-            label: 'ダッシュボード',
+            id: 'home',
+            label: 'ホーム',
             href: '/',
             icon: Layout,
             category: 'primary',
             userLevel: ['beginner', 'intermediate', 'advanced'],
-            description: 'リアルタイムダッシュボード'
+            description: 'マーケット概況とサマリー'
           },
           {
-            id: 'market',
-            label: 'マーケット',
-            icon: PieChart,
+            id: 'discover',
+            label: '発見',
+            icon: Search,
             category: 'primary',
             userLevel: ['beginner', 'intermediate', 'advanced'],
             children: [
-              {
-                id: 'realtime',
-                label: 'リアルタイム',
-                href: '/realtime',
-                icon: Activity,
-                category: 'secondary',
-                userLevel: ['beginner', 'intermediate', 'advanced']
-              },
               {
                 id: 'rankings',
                 label: 'ランキング',
                 href: '/rankings',
                 icon: Trophy,
                 category: 'secondary',
-                userLevel: ['beginner', 'intermediate', 'advanced']
+                userLevel: ['beginner', 'intermediate', 'advanced'],
+                description: '値上がり・値下がり・出来高ランキング'
               },
               {
-                id: 'analysis',
-                label: '分析',
-                href: '/analysis',
-                icon: Brain,
+                id: 'search',
+                label: '銘柄検索',
+                href: '/search',
+                icon: Search,
                 category: 'secondary',
-                userLevel: ['intermediate', 'advanced']
+                userLevel: ['beginner', 'intermediate', 'advanced'],
+                description: 'キーワードや条件で銘柄を検索'
+              },
+              {
+                id: 'sectors',
+                label: 'セクター分析',
+                href: '/sectors',
+                icon: PieChart,
+                category: 'secondary',
+                userLevel: ['intermediate', 'advanced'],
+                description: '業種別パフォーマンス分析'
+              }
+            ]
+          },
+          {
+            id: 'ai-analysis',
+            label: 'AI分析',
+            icon: Brain,
+            category: 'primary',
+            userLevel: ['beginner', 'intermediate', 'advanced'],
+            children: [
+              {
+                id: 'predictions',
+                label: '個別銘柄予測',
+                href: '/predictions',
+                icon: Target,
+                category: 'secondary',
+                userLevel: ['intermediate', 'advanced'],
+                description: '個別銘柄のAI予測'
               },
               {
                 id: 'volume',
-                label: '出来高分析',
+                label: '出来高予測',
                 href: '/volume',
                 icon: BarChart3,
                 category: 'secondary',
                 userLevel: ['intermediate', 'advanced'],
-                description: '出来高の実測値・過去予測・未来予測'
+                description: '出来高のAI予測分析'
               },
               {
                 id: 'currency',
@@ -135,30 +158,42 @@ export const useNavigationStore = create<NavigationStore>()(
                 category: 'secondary',
                 userLevel: ['intermediate', 'advanced'],
                 description: '主要通貨ペアのAI予測'
-              },
+              }
+            ]
+          },
+          {
+            id: 'mypage',
+            label: 'マイページ',
+            icon: User,
+            category: 'primary',
+            userLevel: ['beginner', 'intermediate', 'advanced'],
+            children: [
               {
                 id: 'watchlist',
                 label: 'ウォッチリスト',
                 href: '/watchlist',
                 icon: BookmarkCheck,
                 category: 'secondary',
-                userLevel: ['beginner', 'intermediate', 'advanced']
+                userLevel: ['beginner', 'intermediate', 'advanced'],
+                description: 'お気に入り銘柄の管理'
               },
               {
-                id: 'predictions',
-                label: 'AI予測',
-                href: '/predictions',
-                icon: Brain,
+                id: 'portfolio',
+                label: 'ポートフォリオ',
+                href: '/portfolio',
+                icon: PieChart,
                 category: 'secondary',
-                userLevel: ['intermediate', 'advanced']
+                userLevel: ['intermediate', 'advanced'],
+                description: '保有資産の管理・分析'
               },
               {
-                id: 'tools',
-                label: '分析ツール',
-                href: '/tools',
-                icon: Target,
+                id: 'management',
+                label: 'アカウント設定',
+                href: '/management',
+                icon: Settings,
                 category: 'secondary',
-                userLevel: ['advanced']
+                userLevel: ['beginner', 'intermediate', 'advanced'],
+                description: 'ユーザー設定・通知管理'
               }
             ]
           }
@@ -224,7 +259,7 @@ export const useNavigationStore = create<NavigationStore>()(
         }
       ],
 
-      getCommandItems: (userMode: 'light' | 'pro'): CommandItem[] => {
+      getCommandItems: (): CommandItem[] => {
         const baseCommands: CommandItem[] = [
           // Navigation commands
           {
@@ -307,60 +342,58 @@ export const useNavigationStore = create<NavigationStore>()(
           }
         ];
 
-        // Add pro mode specific commands
-        if (userMode === 'pro') {
-          baseCommands.push(
-            {
-              id: 'edit-dashboard',
-              label: 'ダッシュボード編集',
-              description: 'ダッシュボードを編集モードに切り替え',
-              icon: Edit,
-              action: () => {
-                // This would trigger dashboard edit mode
-                console.log('Toggle dashboard edit mode');
-              },
-              category: 'action',
-              keywords: ['edit', '編集', 'ダッシュボード', 'レイアウト'],
-              userLevel: ['intermediate', 'advanced']
+        // Add dashboard management commands
+        baseCommands.push(
+          {
+            id: 'edit-dashboard',
+            label: 'ダッシュボード編集',
+            description: 'ダッシュボードを編集モードに切り替え',
+            icon: Edit,
+            action: () => {
+              // This would trigger dashboard edit mode
+              console.log('Toggle dashboard edit mode');
             },
-            {
-              id: 'add-widget',
-              label: 'ウィジェット追加',
-              description: 'ダッシュボードにウィジェットを追加',
-              icon: Plus,
-              action: () => {
-                console.log('Add widget to dashboard');
-              },
-              category: 'widget',
-              keywords: ['widget', 'ウィジェット', '追加', 'add'],
-              userLevel: ['intermediate', 'advanced']
+            category: 'action',
+            keywords: ['edit', '編集', 'ダッシュボード', 'レイアウト'],
+            userLevel: ['intermediate', 'advanced']
+          },
+          {
+            id: 'add-widget',
+            label: 'ウィジェット追加',
+            description: 'ダッシュボードにウィジェットを追加',
+            icon: Plus,
+            action: () => {
+              console.log('Add widget to dashboard');
             },
-            {
-              id: 'export-layout',
-              label: 'レイアウト出力',
-              description: 'ダッシュボードレイアウトをエクスポート',
-              icon: Download,
-              action: () => {
-                console.log('Export dashboard layout');
-              },
-              category: 'layout',
-              keywords: ['export', '出力', 'レイアウト', 'ダウンロード'],
-              userLevel: ['advanced']
+            category: 'widget',
+            keywords: ['widget', 'ウィジェット', '追加', 'add'],
+            userLevel: ['intermediate', 'advanced']
+          },
+          {
+            id: 'export-layout',
+            label: 'レイアウト出力',
+            description: 'ダッシュボードレイアウトをエクスポート',
+            icon: Download,
+            action: () => {
+              console.log('Export dashboard layout');
             },
-            {
-              id: 'import-layout',
-              label: 'レイアウト読み込み',
-              description: 'ダッシュボードレイアウトをインポート',
-              icon: Upload,
-              action: () => {
-                console.log('Import dashboard layout');
-              },
-              category: 'layout',
-              keywords: ['import', '読み込み', 'レイアウト', 'アップロード'],
-              userLevel: ['advanced']
-            }
-          );
-        }
+            category: 'layout',
+            keywords: ['export', '出力', 'レイアウト', 'ダウンロード'],
+            userLevel: ['advanced']
+          },
+          {
+            id: 'import-layout',
+            label: 'レイアウト読み込み',
+            description: 'ダッシュボードレイアウトをインポート',
+            icon: Upload,
+            action: () => {
+              console.log('Import dashboard layout');
+            },
+            category: 'layout',
+            keywords: ['import', '読み込み', 'レイアウト', 'アップロード'],
+            userLevel: ['advanced']
+          }
+        );
 
         baseCommands.push({
           id: 'help',

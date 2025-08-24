@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useNavigationStore } from '@/store/navigationStore';
-import { useUserModeStore } from '@/store/userModeStore';
 import { NavigationItem } from '@/types/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronRight, Star, BookmarkCheck } from 'lucide-react';
@@ -23,7 +22,6 @@ const NavigationItemComponent = ({ item, isCollapsed, depth = 0 }: NavigationIte
     addRecentPage,
     sidebarCollapsed
   } = useNavigationStore();
-  const { trackFeatureUsage } = useUserModeStore();
   const [isExpanded, setIsExpanded] = useState(false);
   
   const isActive = item.href ? pathname === item.href : false;
@@ -40,10 +38,8 @@ const NavigationItemComponent = ({ item, isCollapsed, depth = 0 }: NavigationIte
     if (hasChildren) {
       e.preventDefault();
       setIsExpanded(!isExpanded);
-      trackFeatureUsage('navigation-expand');
     } else if (item.href) {
       addRecentPage(item.href);
-      trackFeatureUsage('navigation-click');
     }
   };
 
@@ -52,7 +48,6 @@ const NavigationItemComponent = ({ item, isCollapsed, depth = 0 }: NavigationIte
     e.stopPropagation();
     if (item.href) {
       toggleFavoritePage(item.href);
-      trackFeatureUsage('navigation-favorite');
     }
   };
 
@@ -195,9 +190,7 @@ export default function Sidebar() {
     favoritePages, 
     recentPages 
   } = useNavigationStore();
-  const { config: userConfig } = useUserModeStore();
-
-  const primaryNavigation = getPrimaryNavigation('pro');
+  const primaryNavigation = getPrimaryNavigation();
   const favoriteNavigation = primaryNavigation
     .filter(item => item.href && favoritePages.includes(item.href))
     .slice(0, 5);

@@ -21,18 +21,22 @@ app = FastAPI(
     openapi_url="/api/v1/openapi.json"
 )
 
-# CORS設定
+# CORS設定 - 本番環境用
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3002",
-        "http://localhost:8080",
-        os.getenv("FRONTEND_URL", "http://localhost:3000")
+        "https://miraikakaku-front-465603676610.us-central1.run.app",
+        os.getenv("FRONTEND_URL", "https://miraikakaku-front-465603676610.us-central1.run.app"),
+        # 開発時のみ有効（環境変数でコントロール）
+        *([
+            "http://localhost:3000",
+            "http://localhost:3001", 
+            "http://localhost:3002",
+            "http://localhost:8080"
+        ] if os.getenv("ENVIRONMENT") == "development" else [])
     ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 

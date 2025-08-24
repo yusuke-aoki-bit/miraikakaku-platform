@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Clock, Hash, ArrowRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useNavigationStore } from '@/store/navigationStore';
-import { useUserModeStore } from '@/store/userModeStore';
 import { CommandItem } from '@/types/navigation';
 
 interface StockResult {
@@ -40,9 +39,8 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
   const pathname = usePathname();
   
   const { getCommandItems, recentPages, addRecentPage } = useNavigationStore();
-  const { config: userConfig, trackFeatureUsage } = useUserModeStore();
   
-  const allCommands = getCommandItems('pro');
+  const allCommands = getCommandItems();
 
   // Initialize recent items from navigation store
   useEffect(() => {
@@ -62,7 +60,6 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
       setFilteredCommands([]);
       setStockResults([]);
       setSelectedIndex(0);
-      trackFeatureUsage('command-palette-open');
     }
   }, [isOpen, trackFeatureUsage]);
 
@@ -103,9 +100,8 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
 
     // Filter commands by label or keywords
     const commandMatches = allCommands.filter(cmd => 
-      cmd.userLevel.includes(userConfig.experienceLevel) &&
-      (cmd.label.toLowerCase().includes(lowerCaseQuery) || 
-       cmd.keywords.some(keyword => keyword.toLowerCase().includes(lowerCaseQuery)))
+      cmd.label.toLowerCase().includes(lowerCaseQuery) || 
+      cmd.keywords.some(keyword => keyword.toLowerCase().includes(lowerCaseQuery))
     );
 
     setFilteredCommands(commandMatches);
@@ -137,7 +133,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
 
     setIsLoading(false);
     setSelectedIndex(0);
-  }, [allCommands, userConfig.experienceLevel]);
+  }, [allCommands]);
 
   const getTotalResults = () => {
     const totalCommands = filteredCommands.length;
@@ -174,7 +170,6 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
     // Check if it's a command
     if (index < filteredCommands.length) {
       const command = filteredCommands[index];
-      trackFeatureUsage('command-execute');
       command.action();
       onClose();
       return;
@@ -185,7 +180,6 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
     if (index < currentIndex + stockResults.length) {
       const stockIndex = index - currentIndex;
       const stock = stockResults[stockIndex];
-      trackFeatureUsage('stock-search-select');
       addRecentPage(stock.href);
       window.location.href = stock.href;
       onClose();
@@ -197,7 +191,6 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
     if (query.length === 0 && index < currentIndex + recentItems.length) {
       const recentIndex = index - currentIndex;
       const recent = recentItems[recentIndex];
-      trackFeatureUsage('recent-page-select');
       window.location.href = recent.href;
       onClose();
       return;

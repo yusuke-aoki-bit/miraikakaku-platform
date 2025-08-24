@@ -1,10 +1,28 @@
 'use client';
 
-import React from 'react';
-import CurrencyPrediction from '@/components/charts/CurrencyPrediction';
+import React, { useState } from 'react';
+import CurrencyPairSelector from '@/components/currency/CurrencyPairSelector';
+import CurrencyChart from '@/components/currency/CurrencyChart';
+import CurrencyAIPredictionPanel from '@/components/currency/CurrencyAIPredictionPanel';
+import EconomicCalendarWidget from '@/components/currency/EconomicCalendarWidget';
 import { DollarSign, Globe, TrendingUp, AlertCircle } from 'lucide-react';
 
 export default function CurrencyPage() {
+  const [selectedPair, setSelectedPair] = useState('USD/JPY');
+  const [selectedTimeframe, setSelectedTimeframe] = useState<'1H' | '4H' | '1D' | '1W'>('1D');
+
+  // モック通貨ペアデータ
+  const currencyPairs = [
+    { pair: 'USD/JPY', base: 'USD', quote: 'JPY', flag1: '🇺🇸', flag2: '🇯🇵', current: 150.23, change: 0.45, changePercent: 0.30 },
+    { pair: 'EUR/USD', base: 'EUR', quote: 'USD', flag1: '🇪🇺', flag2: '🇺🇸', current: 1.0852, change: -0.0023, changePercent: -0.21 },
+    { pair: 'GBP/JPY', base: 'GBP', quote: 'JPY', flag1: '🇬🇧', flag2: '🇯🇵', current: 190.45, change: 1.25, changePercent: 0.66 },
+    { pair: 'EUR/JPY', base: 'EUR', quote: 'JPY', flag1: '🇪🇺', flag2: '🇯🇵', current: 163.12, change: 0.89, changePercent: 0.55 },
+    { pair: 'AUD/USD', base: 'AUD', quote: 'USD', flag1: '🇦🇺', flag2: '🇺🇸', current: 0.6542, change: -0.0034, changePercent: -0.52 },
+    { pair: 'USD/CHF', base: 'USD', quote: 'CHF', flag1: '🇺🇸', flag2: '🇨🇭', current: 0.8823, change: 0.0012, changePercent: 0.14 },
+    { pair: 'GBP/USD', base: 'GBP', quote: 'USD', flag1: '🇬🇧', flag2: '🇺🇸', current: 1.2678, change: 0.0056, changePercent: 0.44 },
+    { pair: 'USD/CAD', base: 'USD', quote: 'CAD', flag1: '🇺🇸', flag2: '🇨🇦', current: 1.3612, change: -0.0023, changePercent: -0.17 },
+  ];
+
   return (
     <div className="p-6 space-y-6">
       {/* ヘッダー */}
@@ -65,41 +83,41 @@ export default function CurrencyPage() {
         </div>
       </div>
 
-      {/* メイン通貨予測コンポーネント */}
-      <CurrencyPrediction selectedPair="USD/JPY" />
+      {/* 通貨ペアセレクター */}
+      <CurrencyPairSelector
+        pairs={currencyPairs}
+        selectedPair={selectedPair}
+        onPairChange={setSelectedPair}
+      />
 
-      {/* 経済指標カレンダー */}
-      <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">重要経済指標</h2>
-        <div className="space-y-3">
-          {[
-            { time: '08:30', country: '🇺🇸', event: '米雇用統計', impact: 'high', actual: '---', forecast: '+195K', previous: '+187K' },
-            { time: '10:00', country: '🇪🇺', event: 'ECB政策金利', impact: 'high', actual: '---', forecast: '4.25%', previous: '4.25%' },
-            { time: '14:00', country: '🇯🇵', event: '日銀短観', impact: 'medium', actual: '---', forecast: '+12', previous: '+10' },
-            { time: '15:30', country: '🇬🇧', event: 'GDP成長率', impact: 'medium', actual: '---', forecast: '0.3%', previous: '0.2%' },
-            { time: '21:00', country: '🇺🇸', event: 'FOMC議事録', impact: 'high', actual: '---', forecast: '---', previous: '---' },
-          ].map((indicator, index) => (
-            <div key={index} className="flex items-center space-x-4 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
-              <div className="text-sm text-gray-400 w-12">{indicator.time}</div>
-              <div className="text-lg">{indicator.country}</div>
-              <div className="flex-1">
-                <div className="text-sm font-medium text-white">{indicator.event}</div>
-                <div className="flex items-center space-x-4 mt-1 text-xs">
-                  <span className="text-gray-400">予想: <span className="text-white">{indicator.forecast}</span></span>
-                  <span className="text-gray-400">前回: <span className="text-gray-500">{indicator.previous}</span></span>
-                </div>
-              </div>
-              <div className={`px-2 py-1 rounded text-xs font-medium ${
-                indicator.impact === 'high' ? 'bg-red-500/20 text-red-400' :
-                indicator.impact === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                'bg-green-500/20 text-green-400'
-              }`}>
-                {indicator.impact === 'high' ? '高' : indicator.impact === 'medium' ? '中' : '低'}
-              </div>
-            </div>
-          ))}
+      {/* メインコンテンツ：左カラム（チャート）+ 右カラム（AI予測パネル） */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 左カラム：チャート（幅 2/3） */}
+        <div className="lg:col-span-2">
+          <CurrencyChart
+            pair={selectedPair}
+            timeframe={selectedTimeframe}
+            height={500}
+            showControls={true}
+            onTimeframeChange={(tf) => setSelectedTimeframe(tf as '1H' | '4H' | '1D' | '1W')}
+          />
+        </div>
+
+        {/* 右カラム：AI予測パネル（幅 1/3） */}
+        <div className="lg:col-span-1">
+          <CurrencyAIPredictionPanel
+            pair={selectedPair}
+            timeframes={['1H', '1D', '1W']}
+          />
         </div>
       </div>
+
+      {/* 経済指標カレンダー */}
+      <EconomicCalendarWidget
+        limit={8}
+        showFilters={true}
+        selectedCurrencies={[selectedPair.split('/')[0], selectedPair.split('/')[1]]}
+      />
 
       {/* 為替戦略提案 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

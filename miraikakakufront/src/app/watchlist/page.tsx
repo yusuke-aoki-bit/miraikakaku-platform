@@ -1,152 +1,343 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Star, TrendingUp, TrendingDown, Plus } from 'lucide-react';
-import StockSearch from '@/components/StockSearch';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { Star, RefreshCw } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import WatchlistToolbar, { ViewMode, SortOption, SortOrder } from '@/components/watchlist/WatchlistToolbar';
+import WatchlistGridView from '@/components/watchlist/WatchlistGridView';
+import WatchlistListView from '@/components/watchlist/WatchlistListView';
+import WatchlistHeatmapView from '@/components/watchlist/WatchlistHeatmapView';
+import { apiClient } from '@/lib/api-client';
 
 interface WatchlistStock {
   symbol: string;
   company_name: string;
   current_price: number;
   change_percent: number;
-  last_updated: string;
+  market?: string;
+  sector?: string;
+  market_cap?: number;
+  volume?: number;
+  per?: number;
+  pbr?: number;
+  dividend_yield?: number;
+  ai_score?: number;
+  chart_data?: {
+    historical?: number[];
+    past_prediction?: number[];
+    future_prediction?: number[];
+  };
+  last_updated?: string;
 }
 
 export default function WatchlistPage() {
+  const router = useRouter();
   const [watchlist, setWatchlist] = useState<WatchlistStock[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showAddStock, setShowAddStock] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  // UI状態
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [editMode, setEditMode] = useState(false);
+  const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<SortOption>('symbol');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   useEffect(() => {
     loadWatchlist();
   }, []);
 
-  const loadWatchlist = async () => {
-    setLoading(true);
-    // デフォルトのウォッチリスト
-    const defaultStocks = ['AAPL', 'GOOGL', 'TSLA'];
+  const loadWatchlist = async (showLoading = true) => {
     try {
-      const promises = defaultStocks.map(async (symbol) => {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/finance/stocks/${symbol}/analysis`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch ${symbol}: ${response.status}`);
-        }
-        const data = await response.json();
-        
-        // データの検証
-        if (!data || !data.symbol) {
-          throw new Error(`Invalid data received for ${symbol}`);
-        }
-        
-        return {
-          symbol: data.symbol,
-          company_name: data.company_name || (symbol === 'AAPL' ? 'Apple Inc.' : symbol === 'GOOGL' ? 'Alphabet Inc.' : 'Tesla, Inc.'),
-          current_price: data.current_price || 0,
-          change_percent: data.change_percent || 0,
-          last_updated: new Date().toLocaleTimeString()
-        };
-      });
-      const stocks = await Promise.all(promises);
-      // 有効なデータのみをフィルター
-      const validStocks = stocks.filter(stock => stock && stock.symbol && typeof stock.symbol === 'string');
-      setWatchlist(validStocks);
+      if (showLoading) setLoading(true);
+      
+      // localStorageからウォッチリスト取得
+      const watchlistResponse = await apiClient.getWatchlist();
+      if (watchlistResponse.status !== 'success' || !watchlistResponse.data || watchlistResponse.data.length === 0) {
+        // デフォルトのウォッチリスト設定
+        const defaultStocks = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', '7203'];
+        localStorage.setItem('watchlist', JSON.stringify(defaultStocks));
+        await loadStockData(defaultStocks);
+        return;
+      }
+
+      await loadStockData(watchlistResponse.data);
     } catch (error) {
-      console.error('ウォッチリスト取得エラー:', error);
-      setWatchlist([]); // エラー時は空の配列
+      console.error('ウォッチリスト読み込みエラー:', error);
+      setWatchlist([]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const addToWatchlist = (symbol: string) => {
-    console.log('Adding to watchlist:', symbol);
-    // 実際の実装では銘柄データを取得して追加
-    setShowAddStock(false);
+  const loadStockData = async (symbols: string[]) => {
+    if (symbols.length === 0) {
+      setWatchlist([]);
+      return;
+    }
+
+    try {
+      // バッチで株式データを取得
+      const batchResponse = await apiClient.getBatchStockDetails(symbols);
+      if (batchResponse.status === 'success') {
+        const stocksData: WatchlistStock[] = symbols.map(symbol => {
+          const data = batchResponse.data[symbol];
+          if (data) {
+            return {
+              symbol: data.symbol,
+              company_name: data.company_name,
+              current_price: data.current_price || Math.random() * 200 + 50,
+              change_percent: data.change_percent || (Math.random() - 0.5) * 10,
+              market: data.market || (symbol.match(/^\d/) ? 'TSE' : 'NASDAQ'),
+              sector: data.sector || 'Technology',
+              market_cap: data.market_cap,
+              volume: data.volume,
+              per: data.per,
+              pbr: data.pbr,
+              dividend_yield: data.dividend_yield,
+              ai_score: data.ai_score,
+              chart_data: {
+                historical: data.prices?.slice(-30).map((p: any) => p.close_price) || generateMockChart(30),
+                past_prediction: data.predictions?.slice(-15).map((p: any) => p.predicted_price) || generateMockChart(15),
+                future_prediction: data.predictions?.slice(0, 15).map((p: any) => p.predicted_price) || generateMockChart(15)
+              },
+              last_updated: new Date().toLocaleTimeString()
+            };
+          }
+          // フォールバックデータ
+          return {
+            symbol,
+            company_name: `${symbol} Corporation`,
+            current_price: Math.random() * 200 + 50,
+            change_percent: (Math.random() - 0.5) * 10,
+            market: symbol.match(/^\d/) ? 'TSE' : 'NASDAQ',
+            sector: 'Technology',
+            market_cap: Math.random() * 1000000000000,
+            ai_score: Math.floor(Math.random() * 40) + 60,
+            chart_data: {
+              historical: generateMockChart(30),
+              past_prediction: generateMockChart(15),
+              future_prediction: generateMockChart(15)
+            },
+            last_updated: new Date().toLocaleTimeString()
+          };
+        });
+
+        setWatchlist(stocksData);
+      }
+    } catch (error) {
+      console.error('株式データ取得エラー:', error);
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="p-6 flex items-center justify-center h-96">
-        <LoadingSpinner type="default" size="lg" message="ウォッチリストを読み込み中..." />
-      </div>
-    );
-  }
+  const generateMockChart = (length: number): number[] => {
+    const data = [];
+    let current = 100;
+    for (let i = 0; i < length; i++) {
+      current += (Math.random() - 0.5) * 5;
+      data.push(Math.max(current, 10));
+    }
+    return data;
+  };
+
+  const handleAddStock = async (symbol: string) => {
+    try {
+      await apiClient.addToWatchlist(symbol.toUpperCase());
+      await loadWatchlist(false);
+    } catch (error) {
+      console.error('銘柄追加エラー:', error);
+    }
+  };
+
+  const handleRemoveStock = async (symbol: string) => {
+    try {
+      await apiClient.removeFromWatchlist(symbol);
+      setWatchlist(prev => prev.filter(stock => stock.symbol !== symbol));
+      setSelectedStocks(prev => prev.filter(s => s !== symbol));
+    } catch (error) {
+      console.error('銘柄削除エラー:', error);
+    }
+  };
+
+  const handleStockSelect = (symbol: string) => {
+    setSelectedStocks(prev => {
+      if (prev.includes(symbol)) {
+        return prev.filter(s => s !== symbol);
+      } else {
+        return [...prev, symbol];
+      }
+    });
+  };
+
+  const handleDeleteSelected = async () => {
+    try {
+      for (const symbol of selectedStocks) {
+        await apiClient.removeFromWatchlist(symbol);
+      }
+      setWatchlist(prev => prev.filter(stock => !selectedStocks.includes(stock.symbol)));
+      setSelectedStocks([]);
+    } catch (error) {
+      console.error('選択銘柄削除エラー:', error);
+    }
+  };
+
+  const handleSelectAll = () => {
+    setSelectedStocks(watchlist.map(stock => stock.symbol));
+  };
+
+  const handleClearSelection = () => {
+    setSelectedStocks([]);
+  };
+
+  const handleReorderStocks = async (newOrder: WatchlistStock[]) => {
+    setWatchlist(newOrder);
+    const symbols = newOrder.map(stock => stock.symbol);
+    try {
+      await apiClient.updateWatchlistOrder(symbols);
+    } catch (error) {
+      console.error('順序更新エラー:', error);
+    }
+  };
+
+  const handleStockClick = (symbol: string) => {
+    router.push(`/stock/${symbol}`);
+  };
+
+  const handleSortChange = (newSortBy: SortOption, newSortOrder: SortOrder) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    
+    const sortedWatchlist = [...watchlist].sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (newSortBy) {
+        case 'symbol':
+          aValue = a.symbol;
+          bValue = b.symbol;
+          break;
+        case 'price':
+          aValue = a.current_price;
+          bValue = b.current_price;
+          break;
+        case 'change':
+          aValue = a.change_percent;
+          bValue = b.change_percent;
+          break;
+        case 'volume':
+          aValue = a.volume || 0;
+          bValue = b.volume || 0;
+          break;
+        case 'marketCap':
+          aValue = a.market_cap || 0;
+          bValue = b.market_cap || 0;
+          break;
+        case 'aiScore':
+          aValue = a.ai_score || 0;
+          bValue = b.ai_score || 0;
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aValue === 'string') {
+        return newSortOrder === 'asc' 
+          ? aValue.localeCompare(bValue) 
+          : bValue.localeCompare(aValue);
+      } else {
+        return newSortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+    });
+
+    setWatchlist(sortedWatchlist);
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadWatchlist(false);
+  };
+
+  const handleEditModeToggle = () => {
+    setEditMode(!editMode);
+    if (editMode) {
+      setSelectedStocks([]);
+    }
+  };
+
+  const renderMainView = () => {
+    const commonProps = {
+      stocks: watchlist,
+      editMode,
+      selectedStocks,
+      onStockSelect: handleStockSelect,
+      onStockClick: handleStockClick,
+      onRemoveStock: handleRemoveStock,
+      onReorderStocks: handleReorderStocks,
+      loading
+    };
+
+    switch (viewMode) {
+      case 'list':
+        return (
+          <WatchlistListView
+            {...commonProps}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortChange={handleSortChange}
+          />
+        );
+      case 'heatmap':
+        return (
+          <WatchlistHeatmapView
+            stocks={watchlist}
+            onStockClick={handleStockClick}
+            loading={loading}
+          />
+        );
+      case 'grid':
+      default:
+        return <WatchlistGridView {...commonProps} />;
+    }
+  };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-6 space-y-6">
+      {/* ページヘッダー */}
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white flex items-center">
           <Star className="w-6 h-6 mr-2 text-yellow-400" />
           ウォッチリスト
         </h1>
+        
         <button
-          onClick={() => setShowAddStock(!showAddStock)}
-          className="youtube-button flex items-center space-x-2 px-4 py-2"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="flex items-center space-x-2 px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors disabled:opacity-50"
         >
-          <Plus className="w-4 h-4" />
-          <span>銘柄追加</span>
+          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+          <span className="text-sm">更新</span>
         </button>
       </div>
 
-      {showAddStock && (
-        <div className="youtube-card p-6 mb-6">
-          <h2 className="text-lg font-semibold text-white mb-4">銘柄を追加</h2>
-          <StockSearch onSymbolSelect={addToWatchlist} />
-        </div>
-      )}
+      {/* ツールバー */}
+      <WatchlistToolbar
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        editMode={editMode}
+        onEditModeToggle={handleEditModeToggle}
+        onAddStock={handleAddStock}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
+        watchlistCount={watchlist.length}
+        selectedCount={selectedStocks.length}
+        onDeleteSelected={handleDeleteSelected}
+        onSelectAll={handleSelectAll}
+        onClearSelection={handleClearSelection}
+      />
 
-      <div className="space-y-4">
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <LoadingSpinner />
-          </div>
-        ) : watchlist.length === 0 ? (
-          <div className="youtube-card p-8 text-center">
-            <Star className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-            <h3 className="text-white text-lg font-semibold mb-2">ウォッチリストは空です</h3>
-            <p className="text-gray-400 mb-4">
-              銘柄を追加して株価の変動を追跡しましょう
-            </p>
-            <button
-              onClick={() => setShowAddStock(true)}
-              className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all"
-            >
-              最初の銘柄を追加
-            </button>
-          </div>
-        ) : (
-          watchlist.map((stock) => (
-            <div key={stock.symbol} className="youtube-card p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">{stock.symbol?.slice(0, 2) || 'N/A'}</span>
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold">{stock.symbol}</h3>
-                    <p className="text-gray-400 text-sm">{stock.company_name}</p>
-                  </div>
-                </div>
-                
-                <div className="text-right">
-                  <p className="text-white font-semibold text-lg">${stock.current_price.toFixed(2)}</p>
-                  <div className={`flex items-center space-x-1 ${
-                    stock.change_percent >= 0 ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {stock.change_percent >= 0 ? 
-                      <TrendingUp className="w-4 h-4" /> : 
-                      <TrendingDown className="w-4 h-4" />
-                    }
-                    <span className="text-sm font-semibold">{stock.change_percent.toFixed(2)}%</span>
-                  </div>
-                  <p className="text-gray-500 text-xs">更新: {stock.last_updated}</p>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      {/* メインビュー */}
+      {renderMainView()}
     </div>
   );
 }

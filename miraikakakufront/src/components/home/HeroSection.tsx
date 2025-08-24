@@ -1,114 +1,106 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Activity, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, TrendingUp, Brain } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function HeroSection() {
-  const [marketStatus, setMarketStatus] = useState('OPEN');
-  const [animatedValue, setAnimatedValue] = useState(0);
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setAnimatedValue(prev => (prev + 1) % 100);
-    }, 50);
-    return () => clearInterval(interval);
-  }, []);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-950/20 via-black to-pink-950/20 p-8 mb-6 border border-red-900/20">
-      {/* Animated background effect */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-red-500 rounded-full filter blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-500 rounded-full filter blur-3xl animate-pulse animation-delay-2000" />
-      </div>
-      
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-2">
-              <span className="bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
-                Miraikakaku
-              </span>
-            </h1>
-            <p className="text-neutral-400 text-lg">
-              AIが市場を24時間監視中
-            </p>
-          </div>
-          
-          <div className="hidden md:flex items-center space-x-2 px-4 py-2 bg-success/10 border border-success/30 rounded-full">
-            <Activity className="w-4 h-4 text-success animate-pulse" />
-            <span className="text-success font-medium">マーケット: {marketStatus}</span>
-          </div>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatCard
-            title="日経平均"
-            value="¥39,283.12"
-            change="+1.23%"
-            trend="up"
-            icon={<TrendingUp className="w-5 h-5" />}
-          />
-          <StatCard
-            title="TOPIX"
-            value="2,781.45"
-            change="-0.45%"
-            trend="down"
-            icon={<TrendingDown className="w-5 h-5" />}
-          />
-          <StatCard
-            title="AI予測精度"
-            value="87.3%"
-            change="+2.1%"
-            trend="up"
-            icon={<Zap className="w-5 h-5" />}
-          />
-          <StatCard
-            title="アクティブ予測"
-            value="42"
-            change="本日の予測"
-            trend="neutral"
-            icon={<Activity className="w-5 h-5" />}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface StatCardProps {
-  title: string;
-  value: string;
-  change: string;
-  trend: 'up' | 'down' | 'neutral';
-  icon: React.ReactNode;
-}
-
-function StatCard({ title, value, change, trend, icon }: StatCardProps) {
-  const trendColors = {
-    up: 'text-success bg-success/10 border-success/30',
-    down: 'text-danger bg-danger/10 border-danger/30',
-    neutral: 'text-neutral-400 bg-neutral-400/10 border-neutral-400/30'
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
+    }
   };
 
-  const trendTextColors = {
-    up: 'text-success',
-    down: 'text-danger',
-    neutral: 'text-neutral-400'
-  }
-
   return (
-    <div className="bg-black/40 backdrop-blur-sm border border-neutral-800/50 rounded-xl p-4 hover:border-primary/30 transition-all duration-300 hover:transform hover:scale-105">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-neutral-400 text-sm">{title}</span>
-        <div className={`p-1.5 rounded-lg ${trendColors[trend]}`}>
-          {icon}
-        </div>
+    <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-blue-900/20 to-purple-900/20 rounded-2xl p-8 md:p-12">
+      {/* 背景アニメーション */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-green-500/10 to-blue-500/10 rounded-full blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [0, -90, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
       </div>
-      <div className="text-2xl font-bold text-white mb-1">{value}</div>
-      <div className={`text-sm ${trendTextColors[trend]}`}>
-        {change}
+
+      {/* コンテンツ */}
+      <div className="relative z-10">
+        {/* ロゴとタイトル */}
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+            <Brain className="w-7 h-7 text-white" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-white">
+            Miraikakaku
+          </h1>
+        </div>
+
+        {/* キャッチコピー */}
+        <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl">
+          AIがあなたの投資判断を加速させる
+        </p>
+
+        {/* グローバル検索バー */}
+        <form onSubmit={handleSearch} className="max-w-2xl">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur opacity-25 group-hover:opacity-40 transition-opacity" />
+            <div className="relative flex items-center bg-gray-800/90 backdrop-blur-sm rounded-xl border border-gray-700/50 hover:border-blue-500/50 transition-all">
+              <Search className="absolute left-4 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="銘柄コード、企業名で検索..."
+                className="w-full pl-12 pr-4 py-4 bg-transparent text-white placeholder-gray-400 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="px-6 py-2 m-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all"
+              >
+                検索
+              </button>
+            </div>
+          </div>
+        </form>
+
+        {/* クイックアクセス */}
+        <div className="flex flex-wrap gap-3 mt-6">
+          <button
+            onClick={() => window.location.href = '/rankings'}
+            className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg text-sm text-gray-300 hover:text-white transition-all flex items-center space-x-2"
+          >
+            <TrendingUp className="w-4 h-4" />
+            <span>ランキングを見る</span>
+          </button>
+          <button
+            onClick={() => window.location.href = '/predictions'}
+            className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg text-sm text-gray-300 hover:text-white transition-all flex items-center space-x-2"
+          >
+            <Brain className="w-4 h-4" />
+            <span>AI予測を見る</span>
+          </button>
+        </div>
       </div>
     </div>
   );

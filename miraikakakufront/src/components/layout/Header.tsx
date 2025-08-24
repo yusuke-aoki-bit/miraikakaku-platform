@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Search, Bell, Settings, User, Menu, X, Accessibility } from 'lucide-react';
-import UserModeToggle from '@/components/common/UserModeToggle';
 // import AccessibilitySettings from '@/components/accessibility/AccessibilitySettings';
 // import { useAccessibilityContext } from '@/components/accessibility/AccessibilityProvider';
 
@@ -101,7 +100,6 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 
       {/* Right Section */}
       <div className="flex items-center space-x-2 md:space-x-4 w-1/4 justify-end">
-        <UserModeToggle size="sm" showLabels={false} className="mr-2" />
         <button 
           onClick={() => {
             // Open notifications panel
