@@ -85,35 +85,22 @@ class APIClient {
     }
   }
 
-  // Enhanced stock search with currency filter
-  async searchStocks(query: string, limit: number = PAGINATION.DEFAULT_PAGE_SIZE, currency?: string) {
-    let url = `/api/finance/stocks/search?query=${encodeURIComponent(query)}&limit=${limit}`;
-    if (currency) {
-      url += `&currency=${currency}`;
-    }
+  // Enhanced stock search - align with production API
+  async searchStocks(query: string, limit: number = PAGINATION.DEFAULT_PAGE_SIZE) {
+    const url = `/api/finance/stocks/search?query=${encodeURIComponent(query)}&limit=${limit}`;
     return this.request(url);
   }
 
-  // Get all available sectors
-  async getSectors() {
-    return this.request('/api/finance/stocks/sectors');
+  // 株価履歴取得 - production API uses 'limit' not 'days'
+  async getStockPrice(symbol: string, limit: number = TIME_PERIODS.DEFAULT_PRICE_HISTORY_DAYS) {
+    return this.request(`/api/finance/stocks/${symbol}/price?limit=${limit}`);
   }
 
-  // Get stocks by sector
-  async getStocksBySector(sectorId: string, limit: number = PAGINATION.SECTOR_STOCKS_LIMIT, currency: string = 'JPY') {
-    return this.request(`/api/finance/stocks/sector/${encodeURIComponent(sectorId)}?limit=${limit}&currency=${currency}`);
-  }
-
-  // 株価履歴取得
-  async getStockPrice(symbol: string, days: number = TIME_PERIODS.DEFAULT_PRICE_HISTORY_DAYS) {
-    return this.request(`/api/finance/stocks/${symbol}/price?days=${days}`);
-  }
-
-  // 株価予測取得
-  async getStockPredictions(symbol: string, modelType?: string, days: number = TIME_PERIODS.DEFAULT_PREDICTION_DAYS) {
-    let url = `/api/finance/stocks/${symbol}/predictions?days=${days}`;
-    if (modelType) {
-      url += `&model_type=${encodeURIComponent(modelType)}`;
+  // 株価予測取得 - production API uses 'limit' and 'model_version' not 'model_type'
+  async getStockPredictions(symbol: string, modelVersion?: string, limit: number = TIME_PERIODS.DEFAULT_PREDICTION_DAYS) {
+    let url = `/api/finance/stocks/${symbol}/predictions?limit=${limit}`;
+    if (modelVersion) {
+      url += `&model_version=${encodeURIComponent(modelVersion)}`;
     }
     return this.request(url);
   }
@@ -125,7 +112,27 @@ class APIClient {
     });
   }
 
-  // 成長ポテンシャルランキング（動的生成）
+  // AI決定要因取得 - production API endpoint
+  async getAIFactors(limit: number = PAGINATION.DEFAULT_PAGE_SIZE, offset: number = 0) {
+    return this.request(`/api/ai-factors/all?limit=${limit}&offset=${offset}`);
+  }
+
+  // テーマ洞察取得 - production API endpoint  
+  async getThemeInsights() {
+    return this.request('/api/insights/themes');
+  }
+
+  // 特定テーマの洞察取得 - production API endpoint
+  async getThemeInsightByName(themeName: string, limit: number = PAGINATION.DEFAULT_PAGE_SIZE) {
+    return this.request(`/api/insights/themes/${encodeURIComponent(themeName)}?limit=${limit}`);
+  }
+
+  // ユーザープロファイル取得（モック実装）- production API endpoint
+  async getUserProfile(userId: string) {
+    return this.request(`/api/users/${userId}/profile`);
+  }
+
+  // 成長ポテンシャルランキング（動的生成）- updated for production API
   async getGrowthPotentialRankings(limit: number = PAGINATION.RANKING_LIMIT) {
     try {
       // まず人気銘柄のリストを取得
@@ -148,7 +155,7 @@ class APIClient {
               
               stocks.push({
                 symbol,
-                company_name: priceData.symbol,
+                company_name: priceData.symbol || symbol,
                 current_price: currentPrice,
                 predicted_price: predictedPrice,
                 growth_potential: growthPotential,
@@ -187,9 +194,28 @@ class APIClient {
     return this.getGrowthPotentialRankings(limit);
   }
 
-  // 過去予測データと実績の比較
-  async getHistoricalPredictions(symbol: string, days: number = TIME_PERIODS.HISTORICAL_PREDICTIONS_DAYS) {
-    return this.request(`/api/finance/stocks/${symbol}/historical-predictions?days=${days}`);
+  // 株式詳細情報取得（株価と予測を組み合わせ）
+  async getStockDetails(symbol: string) {
+    try {
+      const [priceResponse, predictionResponse] = await Promise.all([
+        this.getStockPrice(symbol, 30),
+        this.getStockPredictions(symbol, undefined, 10)
+      ]);
+      
+      return {
+        status: 'success' as const,
+        data: {
+          symbol,
+          prices: priceResponse.status === 'success' ? priceResponse.data : [],
+          predictions: predictionResponse.status === 'success' ? predictionResponse.data : []
+        }
+      };
+    } catch (error) {
+      return {
+        status: 'error' as const,
+        error: error instanceof Error ? error.message : '株式詳細取得エラー'
+      };
+    }
   }
 
   // マーケット概況（トレンド株）
@@ -231,242 +257,46 @@ class APIClient {
     return response;
   }
 
-  // 出来高ランキング（総合ランキングをベースに）
-  async getVolumeRankings(limit: number = PAGINATION.RANKING_LIMIT) {
-    return this.getCompositeRankings(limit);
+
+  // 出来高データ取得 - 実装済みエンドポイント
+  async getVolumeData(symbol: string, limit: number = TIME_PERIODS.DEFAULT_PRICE_HISTORY_DAYS) {
+    return this.request(`/api/finance/stocks/${symbol}/volume?limit=${limit}`);
   }
 
-  // 出来高データ取得
-  async getVolumeData(symbol: string, days: number = TIME_PERIODS.DEFAULT_PRICE_HISTORY_DAYS) {
-    try {
-      // 実際のAPIが実装されるまでモックデータを生成
-      const mockVolumeData = Array.from({ length: days }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (days - i - 1));
-        
-        const baseVolume = 10000000;
-        const actualVolume = baseVolume * (1 + (Math.random() - 0.5) * 0.4);
-        const predictedVolume = actualVolume * (1 + (Math.random() - 0.5) * 0.2);
-        
-        return {
-          date: date.toISOString().split('T')[0],
-          symbol,
-          actual_volume: actualVolume,
-          predicted_volume: i >= days * 0.7 ? predictedVolume : actualVolume,
-          average_volume: baseVolume,
-          volume_ratio: actualVolume / baseVolume
-        };
-      });
-
-      return {
-        status: 'success' as const,
-        data: mockVolumeData
-      };
-    } catch (error) {
-      return {
-        status: 'error' as const,
-        error: error instanceof Error ? error.message : '出来高データ取得エラー'
-      };
-    }
-  }
-
-  // 出来高予測
+  // 出来高予測 - 実装済みエンドポイント
   async getVolumePredictions(symbol: string, days: number = 7) {
-    try {
-      const mockPredictions = Array.from({ length: days }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() + i + 1);
-        
-        const baseVolume = 10000000;
-        const predictedVolume = baseVolume * (1 + (Math.random() - 0.5) * 0.3);
-        
-        return {
-          date: date.toISOString().split('T')[0],
-          symbol,
-          predicted_volume: predictedVolume,
-          confidence: 70 + Math.random() * 25,
-          factors: ['market_sentiment', 'technical_indicators', 'news_impact']
-        };
-      });
-
-      return {
-        status: 'success' as const,
-        data: mockPredictions
-      };
-    } catch (error) {
-      return {
-        status: 'error' as const,
-        error: error instanceof Error ? error.message : '出来高予測エラー'
-      };
-    }
+    return this.request(`/api/finance/stocks/${symbol}/volume-predictions?days=${days}`);
   }
 
-  // 通貨ペアリスト取得
+  // 出来高ランキング - 実装済みエンドポイント
+  async getVolumeRankings(limit: number = PAGINATION.RANKING_LIMIT) {
+    return this.request(`/api/finance/volume-rankings?limit=${limit}`);
+  }
+
+  // 為替・通貨関連API - 実装済み
   async getCurrencyPairs() {
-    try {
-      const mockPairs = [
-        { pair: 'USD/JPY', base: 'USD', quote: 'JPY', name: '米ドル/円' },
-        { pair: 'EUR/USD', base: 'EUR', quote: 'USD', name: 'ユーロ/米ドル' },
-        { pair: 'GBP/USD', base: 'GBP', quote: 'USD', name: '英ポンド/米ドル' },
-        { pair: 'EUR/JPY', base: 'EUR', quote: 'JPY', name: 'ユーロ/円' },
-        { pair: 'AUD/USD', base: 'AUD', quote: 'USD', name: '豪ドル/米ドル' },
-        { pair: 'USD/CHF', base: 'USD', quote: 'CHF', name: '米ドル/スイスフラン' },
-        { pair: 'USD/CAD', base: 'USD', quote: 'CAD', name: '米ドル/カナダドル' },
-        { pair: 'NZD/USD', base: 'NZD', quote: 'USD', name: 'NZドル/米ドル' },
-      ];
-
-      return {
-        status: 'success' as const,
-        data: mockPairs
-      };
-    } catch (error) {
-      return {
-        status: 'error' as const,
-        error: error instanceof Error ? error.message : '通貨ペア取得エラー'
-      };
-    }
+    return this.request('/api/forex/currency-pairs');
   }
 
-  // 通貨レート取得
   async getCurrencyRate(pair: string) {
-    try {
-      const baseRates = {
-        'USD/JPY': 150.25,
-        'EUR/USD': 1.0845,
-        'GBP/USD': 1.2715,
-        'EUR/JPY': 162.90,
-        'AUD/USD': 0.6523,
-        'USD/CHF': 0.8834,
-        'USD/CAD': 1.3598,
-        'NZD/USD': 0.6145
-      };
-
-      const baseRate = baseRates[pair as keyof typeof baseRates] || 1.0000;
-      const rate = baseRate * (1 + (Math.random() - 0.5) * 0.01);
-      const change = (Math.random() - 0.5) * 0.02;
-      
-      return {
-        status: 'success' as const,
-        data: {
-          pair,
-          rate,
-          change,
-          changePercent: (change / rate) * 100,
-          timestamp: new Date().toISOString(),
-          bid: rate - 0.0001,
-          ask: rate + 0.0001,
-          spread: 0.0002
-        }
-      };
-    } catch (error) {
-      return {
-        status: 'error' as const,
-        error: error instanceof Error ? error.message : '為替レート取得エラー'
-      };
-    }
+    return this.request(`/api/forex/currency-rate/${encodeURIComponent(pair)}`);
   }
 
-  // 通貨予測
-  async getCurrencyPredictions(pair: string, timeframe: string = '1D') {
-    try {
-      const hours = timeframe === '1H' ? 1 : 
-                   timeframe === '1D' ? 24 : 
-                   timeframe === '1W' ? 168 : 720;
-
-      const rateResponse = await this.getCurrencyRate(pair);
-      if (rateResponse.status !== 'success') {
-        throw new Error('Failed to get current rate');
-      }
-
-      const currentRate = (rateResponse as any).data.rate;
-      const predictions = [];
-
-      for (let i = 1; i <= Math.min(hours, 48); i++) {
-        const time = new Date();
-        time.setHours(time.getHours() + i);
-        
-        const trendFactor = (Math.random() - 0.5) * 0.002;
-        const volatility = Math.random() * 0.001;
-        const predictedRate = currentRate * (1 + trendFactor + (Math.random() - 0.5) * volatility);
-        
-        predictions.push({
-          timestamp: time.toISOString(),
-          predicted_rate: predictedRate,
-          confidence: 70 + Math.random() * 25,
-          upper_bound: predictedRate * 1.002,
-          lower_bound: predictedRate * 0.998,
-          factors: ['technical_analysis', 'market_sentiment', 'economic_indicators']
-        });
-      }
-
-      return {
-        status: 'success' as const,
-        data: {
-          pair,
-          timeframe,
-          current_rate: currentRate,
-          predictions
-        }
-      };
-    } catch (error) {
-      return {
-        status: 'error' as const,
-        error: error instanceof Error ? error.message : '通貨予測エラー'
-      };
-    }
+  async getCurrencyHistory(pair: string, days: number = 30) {
+    return this.request(`/api/forex/currency-history/${encodeURIComponent(pair)}?days=${days}`);
   }
 
-  // 経済指標カレンダー
-  async getEconomicCalendar(date?: string) {
-    try {
-      const targetDate = date ? new Date(date) : new Date();
-      
-      const mockEvents = [
-        {
-          time: '08:30',
-          country: 'US',
-          event: '米雇用統計',
-          impact: 'high',
-          actual: null,
-          forecast: '+195K',
-          previous: '+187K',
-          currency: 'USD'
-        },
-        {
-          time: '10:00',
-          country: 'EU',
-          event: 'ECB政策金利',
-          impact: 'high',
-          actual: null,
-          forecast: '4.25%',
-          previous: '4.25%',
-          currency: 'EUR'
-        },
-        {
-          time: '14:00',
-          country: 'JP',
-          event: '日銀短観',
-          impact: 'medium',
-          actual: null,
-          forecast: '+12',
-          previous: '+10',
-          currency: 'JPY'
-        }
-      ];
+  async getCurrencyPredictions(pair: string, timeframe: string = '1D', limit: number = 7) {
+    return this.request(`/api/forex/currency-predictions/${encodeURIComponent(pair)}?timeframe=${timeframe}&limit=${limit}`);
+  }
 
-      return {
-        status: 'success' as const,
-        data: {
-          date: targetDate.toISOString().split('T')[0],
-          events: mockEvents
-        }
-      };
-    } catch (error) {
-      return {
-        status: 'error' as const,
-        error: error instanceof Error ? error.message : '経済指標カレンダー取得エラー'
-      };
-    }
+  async getEconomicCalendar(date?: string, country?: string) {
+    let url = '/api/forex/economic-calendar';
+    const params = [];
+    if (date) params.push(`date=${date}`);
+    if (country) params.push(`country=${country}`);
+    if (params.length > 0) url += '?' + params.join('&');
+    return this.request(url);
   }
 
   // ヘルスチェック

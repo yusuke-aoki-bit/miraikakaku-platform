@@ -7,6 +7,11 @@ from api.models.finance_models import StockPriceResponse, StockPredictionRespons
 from services.finance_service import FinanceService
 from typing import List, Optional
 from datetime import datetime, timedelta
+import yfinance as yf
+import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -495,3 +500,209 @@ async def get_technical_indicators(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"テクニカル指標計算エラー: {str(e)}")
+
+@router.get("/stocks/{symbol}/volume")
+async def get_volume_data(
+    symbol: str,
+    limit: int = Query(30, ge=1, le=365, description="取得する日数"),
+    db: Session = Depends(get_db)
+):
+    """出来高データ取得API"""
+    try:
+        # データベースから出来高データを取得
+        prices = db.query(StockPriceHistory).filter(
+            StockPriceHistory.symbol == symbol.upper()
+        ).order_by(StockPriceHistory.date.desc()).limit(limit).all()
+        
+        if not prices:
+            # データベースにない場合は Yahoo Finance から取得
+            try:
+                ticker = yf.Ticker(symbol.upper())
+                hist = ticker.history(period=f"{limit}d")
+                
+                if hist.empty:
+                    raise HTTPException(status_code=404, detail="出来高データが見つかりません")
+                
+                volume_data = []
+                for date, row in hist.iterrows():
+                    volume_data.append({
+                        "date": date.strftime("%Y-%m-%d"),
+                        "symbol": symbol.upper(),
+                        "volume": int(row['Volume']) if pd.notna(row['Volume']) else 0,
+                        "close_price": float(row['Close']),
+                        "price_change": 0,  # 前日比は別途計算
+                        "source": "yahoo_finance"
+                    })
+                
+                return {
+                    "status": "success",
+                    "data": volume_data[:limit],
+                    "count": len(volume_data)
+                }
+            except Exception as yf_error:
+                logger.warning(f"Yahoo Finance error for {symbol}: {str(yf_error)}")
+                raise HTTPException(status_code=404, detail="出来高データを取得できませんでした")
+        
+        # データベースからのデータを整形
+        volume_data = []
+        for i, price in enumerate(prices):
+            prev_price = prices[i+1].close_price if i+1 < len(prices) else price.close_price
+            price_change = ((float(price.close_price) - float(prev_price)) / float(prev_price)) * 100 if float(prev_price) != 0 else 0
+            
+            volume_data.append({
+                "date": price.date.isoformat(),
+                "symbol": price.symbol,
+                "volume": int(price.volume) if price.volume else 0,
+                "close_price": float(price.close_price),
+                "price_change": round(price_change, 2),
+                "source": "database"
+            })
+        
+        # 日付順にソート（新しい順）
+        volume_data.sort(key=lambda x: x["date"], reverse=True)
+        
+        return {
+            "status": "success", 
+            "data": volume_data,
+            "count": len(volume_data)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Volume data error for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail="出来高データ取得エラー")
+
+@router.get("/stocks/{symbol}/volume-predictions")
+async def get_volume_predictions(
+    symbol: str,
+    days: int = Query(7, ge=1, le=30, description="予測する日数"),
+    db: Session = Depends(get_db)
+):
+    """出来高予測API（簡易実装）"""
+    try:
+        # 過去の出来高データを取得
+        historical_prices = db.query(StockPriceHistory).filter(
+            StockPriceHistory.symbol == symbol.upper()
+        ).order_by(StockPriceHistory.date.desc()).limit(30).all()
+        
+        if len(historical_prices) < 5:
+            raise HTTPException(status_code=404, detail="出来高予測に必要な履歴データが不足しています")
+        
+        # 平均出来高を計算
+        volumes = [int(p.volume) if p.volume else 0 for p in historical_prices]
+        avg_volume = sum(volumes) / len(volumes) if volumes else 0
+        
+        # 出来高のボラティリティを計算
+        volume_variance = sum((v - avg_volume) ** 2 for v in volumes) / len(volumes)
+        volume_std = volume_variance ** 0.5
+        
+        # 予測データを生成
+        predictions = []
+        base_date = datetime.now()
+        
+        for i in range(1, days + 1):
+            future_date = base_date + timedelta(days=i)
+            
+            # 簡易的な出来高予測（移動平均ベース）
+            trend_factor = 0.95 + (0.1 * (i % 3))  # 周期的な変動を想定
+            volatility_factor = 1 + ((volume_std / avg_volume) * (0.5 - abs(0.5 - (i / days))))
+            
+            predicted_volume = int(avg_volume * trend_factor * volatility_factor)
+            confidence = max(50, 90 - (i * 5))  # 日数が増えるほど信頼度低下
+            
+            predictions.append({
+                "date": future_date.strftime("%Y-%m-%d"),
+                "symbol": symbol.upper(),
+                "predicted_volume": predicted_volume,
+                "confidence": confidence,
+                "base_volume": int(avg_volume),
+                "factors": [
+                    "historical_average",
+                    "volume_volatility", 
+                    "market_trend"
+                ]
+            })
+        
+        return {
+            "status": "success",
+            "data": {
+                "symbol": symbol.upper(),
+                "predictions": predictions,
+                "base_statistics": {
+                    "average_volume": int(avg_volume),
+                    "volume_std": int(volume_std),
+                    "data_points": len(historical_prices)
+                },
+                "note": "これは統計的な出来高予測モデルです。実際の取引判断には使用しないでください。"
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Volume prediction error for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail="出来高予測エラー")
+
+@router.get("/volume-rankings")
+async def get_volume_rankings(
+    limit: int = Query(10, ge=1, le=50, description="結果数制限"),
+    db: Session = Depends(get_db)
+):
+    """出来高ランキング取得API"""
+    try:
+        # 最新の出来高データを取得
+        latest_date = db.query(StockPriceHistory.date).order_by(
+            StockPriceHistory.date.desc()
+        ).first()
+        
+        if not latest_date:
+            raise HTTPException(status_code=404, detail="出来高データが見つかりません")
+        
+        # 最新日の出来高ランキング
+        volume_rankings = db.execute(text("""
+            SELECT 
+                sp.symbol,
+                sm.name as company_name,
+                sp.volume,
+                sp.close_price,
+                LAG(sp.close_price) OVER (PARTITION BY sp.symbol ORDER BY sp.date) as prev_close,
+                sp.date
+            FROM stock_prices sp
+            JOIN stock_master sm ON sp.symbol = sm.symbol
+            WHERE sp.date = :latest_date
+            AND sp.volume > 0
+            ORDER BY sp.volume DESC
+            LIMIT :limit_val
+        """), {
+            "latest_date": latest_date[0], 
+            "limit_val": limit
+        }).fetchall()
+        
+        rankings = []
+        for row in volume_rankings:
+            price_change = 0
+            if row.prev_close and float(row.prev_close) != 0:
+                price_change = ((float(row.close_price) - float(row.prev_close)) / float(row.prev_close)) * 100
+            
+            rankings.append({
+                "symbol": row.symbol,
+                "company_name": row.company_name,
+                "volume": int(row.volume),
+                "close_price": float(row.close_price),
+                "price_change": round(price_change, 2),
+                "date": row.date.isoformat()
+            })
+        
+        return {
+            "status": "success",
+            "data": rankings,
+            "date": latest_date[0].isoformat(),
+            "count": len(rankings)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Volume rankings error: {str(e)}")
+        raise HTTPException(status_code=500, detail="出来高ランキング取得エラー")

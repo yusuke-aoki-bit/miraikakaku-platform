@@ -5,7 +5,7 @@
 
 // ===== API Configuration =====
 export const API_CONFIG = {
-  DEFAULT_BASE_URL: 'https://miraikakaku-api-465603676610.us-central1.run.app', // Google Cloud Run Deployed API
+  DEFAULT_BASE_URL: 'https://miraikakaku-api-fastapi-465603676610.us-central1.run.app', // Google Cloud Run Deployed API (正しいURL)
   DEFAULT_TIMEOUT: 30000, // 30 seconds
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000, // 1 second
