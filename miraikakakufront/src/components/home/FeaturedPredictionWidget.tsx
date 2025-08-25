@@ -40,7 +40,7 @@ export default function FeaturedPredictionWidget() {
           predicted_price: topStock.predicted_price || 1150,
           prediction_change: (topStock.predicted_price || 1150) - (topStock.current_price || 1000),
           prediction_percent: topStock.growth_potential || 15,
-          confidence: (topStock.confidence || 0.75) * 100,
+          confidence: (topStock.confidence_score || topStock.confidence || 0.75) * 100,
           prediction_days: 7,
           chart_data: generatePredictionChart(topStock.current_price || 1000, topStock.predicted_price || 1150),
           reason: generatePredictionReason(topStock.growth_potential || 15)

@@ -1,0 +1,110 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - button:
+    - img
+  - link "Miraikakaku Dashboard":
+    - /url: /
+  - img
+  - textbox "株式コード、銘柄名で検索..."
+  - button "通知":
+    - img
+  - button "アクセシビリティ設定":
+    - img
+  - link "設定":
+    - /url: /settings
+    - img
+  - button "ユーザーメニュー":
+    - img
+- link "ダッシュ":
+  - /url: /
+  - img
+  - text: ダッシュ
+- link "ランキン":
+  - /url: /rankings
+  - img
+  - text: ランキン
+- link "テーマ分":
+  - /url: /themes
+  - img
+  - text: テーマ分
+- button:
+  - img
+- button "新しいタブ":
+  - img
+- text: M
+- heading "Miraikakaku" [level=3]
+- button "サイドバーを折りたたむ":
+  - img
+- navigation:
+  - link "ダッシュボード":
+    - /url: /
+    - img
+    - text: ダッシュボード
+    - button:
+      - img
+  - button "マーケット":
+    - img
+    - text: マーケット
+    - img
+  - button "AI分析":
+    - img
+    - text: AI分析
+    - img
+  - button "コミュニティ":
+    - img
+    - text: コミュニティ
+    - img
+  - button "マイページ":
+    - img
+    - text: マイページ
+    - img
+- text: "最近のページ: 0 お気に入り: 0"
+- main:
+  - main:
+    - heading "株価予測ダッシュボード" [level=1]
+    - paragraph: AI予測による実際の市場データ分析
+    - button "更新":
+      - img
+      - text: 更新
+    - text: "最終更新: 3:28:06 AM"
+    - img
+    - text: 市場データを更新しました
+    - img
+    - text: 市場データを更新しました
+- link "ダッシュボ...":
+  - /url: /
+  - img
+  - text: ダッシュボ...
+- link "ランキング":
+  - /url: /rankings
+  - img
+  - text: ランキング
+- link "テーマ分析":
+  - /url: /themes
+  - img
+  - text: テーマ分析
+- link "AI予測":
+  - /url: /predictions
+  - img
+  - text: AI予測
+- link "出来高予測":
+  - /url: /volume
+  - img
+  - text: 出来高予測
+- button "パフォーマンス状態"
+- status
+- link "メインコンテンツにスキップ":
+  - /url: "#main-content"
+- img
+- text: 2 errors
+- button "Hide Errors":
+  - img
+- status:
+  - img
+  - text: Static route
+  - button "Hide static indicator":
+    - img
+- alert
+```

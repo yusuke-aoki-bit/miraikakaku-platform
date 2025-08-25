@@ -73,10 +73,10 @@ export default function RankingsPage() {
           change: stock.change,
           change_percent: stock.change_percent || stock.growth_potential,
           volume_change: stock.volume_change,
-          ai_score: stock.composite_score || stock.confidence * 100 || 75,
+          ai_score: stock.composite_score || (stock.confidence_score || stock.confidence) * 100 || 75,
           growth_potential: stock.growth_potential,
-          confidence: stock.confidence,
-          sparkline_data: generateSparklineData()
+          confidence: stock.confidence_score || stock.confidence,
+          sparkline_data: generateSparklineFromData(stock)
         }));
         
         setRankings(formattedData);
@@ -88,12 +88,23 @@ export default function RankingsPage() {
     }
   };
   
-  const generateSparklineData = (): number[] => {
+  const generateSparklineFromData = (stock: any): number[] => {
+    // 実際の価格データがあれば使用、なければ成長ポテンシャルベースで生成
+    if (stock.price_history && stock.price_history.length > 0) {
+      return stock.price_history.slice(-24).map((p: any) => p.close_price || p.price);
+    }
+    
+    // フォールバック: 成長ポテンシャルやchangePercentに基づいて現実的なチャートを生成
     const data = [];
-    let base = 100;
+    const basePrice = stock.current_price || 100;
+    const trend = (stock.change_percent || stock.growth_potential || 0) / 100;
+    
     for (let i = 0; i < 24; i++) {
-      base += (Math.random() - 0.5) * 5;
-      data.push(base);
+      const progress = i / 23;
+      const trendEffect = basePrice * trend * progress;
+      const noise = basePrice * (Math.random() - 0.5) * 0.02; // 2%のノイズ
+      const price = basePrice + trendEffect + noise;
+      data.push(Math.max(price, 0));
     }
     return data;
   };

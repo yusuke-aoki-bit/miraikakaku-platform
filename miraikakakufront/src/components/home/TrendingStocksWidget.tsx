@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { TrendingUp, Fire, Volume2, Zap, ArrowRight } from 'lucide-react';
+import { TrendingUp, Volume2, Zap, ArrowRight } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 interface TrendingStock {
@@ -27,15 +27,18 @@ export default function TrendingStocksWidget() {
     try {
       const response = await apiClient.getTrendingStocks(5);
       if (response.status === 'success' && response.data) {
-        const enhancedData = response.data.map((stock: any, index: number) => ({
-          symbol: stock.symbol,
-          company_name: stock.company_name || stock.symbol,
-          rank: index + 1,
-          reason: generateTrendReason(),
-          reasonType: generateReasonType(),
-          change_percent: stock.change_percent || (Math.random() - 0.5) * 10,
-          volume_change: Math.random() * 200 + 50
-        }));
+        const enhancedData = response.data.map((stock: any, index: number) => {
+          const reasonInfo = generateReasonFromStock(stock);
+          return {
+            symbol: stock.symbol,
+            company_name: stock.company_name || stock.symbol,
+            rank: index + 1,
+            reason: reasonInfo.reason,
+            reasonType: reasonInfo.type,
+            change_percent: stock.change_percent || stock.growth_potential || 0,
+            volume_change: stock.volume_change || (stock.growth_potential ? Math.abs(stock.growth_potential) * 20 : 100)
+          };
+        });
         setTrendingStocks(enhancedData);
       }
     } catch (error) {
@@ -93,6 +96,26 @@ export default function TrendingStocksWidget() {
     }
   };
 
+  const generateReasonFromStock = (stock: any): { reason: string, type: 'volume' | 'prediction' | 'momentum' | 'breakout' } => {
+    const growthPotential = stock.growth_potential || stock.change_percent || 0;
+    const confidence = stock.confidence || 0.75;
+    
+    // 成長ポテンシャルと信頼度に基づいて理由を決定
+    if (growthPotential > 5) {
+      return confidence > 0.8 
+        ? { reason: 'AI予測大幅上昇', type: 'prediction' }
+        : { reason: 'ブレイクアウト期待', type: 'breakout' };
+    } else if (growthPotential > 2) {
+      return confidence > 0.7
+        ? { reason: 'モメンタム強化', type: 'momentum' }
+        : { reason: '機関投資家注目', type: 'volume' };
+    } else if (growthPotential > 0) {
+      return { reason: '出来高急増', type: 'volume' };
+    } else {
+      return { reason: 'テクニカル分析好転', type: 'momentum' };
+    }
+  };
+
   const generateTrendReason = (): string => {
     const reasons = [
       '出来高急増', 'AI予測上昇', 'モメンタム強化', 'ブレイクアウト',
@@ -112,7 +135,7 @@ export default function TrendingStocksWidget() {
       case 'volume': return <Volume2 className="w-3 h-3" />;
       case 'prediction': return <Zap className="w-3 h-3" />;
       case 'momentum': return <TrendingUp className="w-3 h-3" />;
-      case 'breakout': return <Fire className="w-3 h-3" />;
+      case 'breakout': return <TrendingUp className="w-3 h-3" />;
       default: return <TrendingUp className="w-3 h-3" />;
     }
   };
@@ -142,7 +165,7 @@ export default function TrendingStocksWidget() {
     <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white flex items-center">
-          <Fire className="w-5 h-5 mr-2 text-orange-400" />
+          <TrendingUp className="w-5 h-5 mr-2 text-orange-400" />
           トレンド銘柄
         </h3>
         <button

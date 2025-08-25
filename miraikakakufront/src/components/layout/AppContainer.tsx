@@ -6,7 +6,6 @@ import Sidebar from './Sidebar';
 import Footer from './Footer';
 import { ToastContainer } from '@/components/common/ToastNotification';
 import CommandPalette from '@/components/common/CommandPalette';
-import ModeSwitchSuggestion from '@/components/common/ModeSwitchSuggestion';
 import TabNavigation, { MobileBottomTabBar } from '@/components/navigation/TabNavigation';
 import { useResponsive, useResponsiveNavigation } from '@/hooks/useResponsive';
 import ResponsiveContainer from './ResponsiveContainer';
@@ -123,7 +122,6 @@ export default function AppContainer({ children }: AppContainerProps) {
       {/* Global Components */}
       <ToastContainer />
       <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
-      <ModeSwitchSuggestion />
     </div>
   );
 }

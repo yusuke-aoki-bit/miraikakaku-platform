@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -35,8 +36,52 @@ export default function MarketIndexSummary() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // モックデータの生成（実際はAPIから取得）
-    const mockIndices: IndexData[] = [
+    const fetchMarketData = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.request('/api/analytics/market-overview');
+        
+        if (response.status === 'success' && response.data) {
+          const marketData = response.data;
+          
+          // APIデータを変換
+          const transformedIndices: IndexData[] = marketData.market_indices?.map((index: any) => ({
+            name: getJapaneseName(index.index),
+            value: index.current_value,
+            change: index.daily_change,
+            changePercent: index.daily_change_percent,
+            sparklineData: generateSparklineData(index.current_value, index.daily_change_percent)
+          })) || [];
+          
+          setIndices(transformedIndices);
+        } else {
+          // API失敗時のフォールバック
+          setIndices(getFallbackData());
+        }
+      } catch (error) {
+        console.error('市場データ取得エラー:', error);
+        setIndices(getFallbackData());
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchMarketData();
+  }, []);
+
+  function getJapaneseName(indexSymbol: string): string {
+    const nameMap: { [key: string]: string } = {
+      'SP500': 'S&P 500',
+      'NASDAQ': 'NASDAQ',
+      'DOW': 'NYダウ',
+      'NIKKEI': '日経平均225',
+      'FTSE': 'FTSE 100'
+    };
+    return nameMap[indexSymbol] || indexSymbol;
+  }
+
+  function getFallbackData(): IndexData[] {
+    return [
       {
         name: '日経平均225',
         value: 39123.45,
@@ -66,10 +111,7 @@ export default function MarketIndexSummary() {
         sparklineData: generateSparklineData(15200, 0.30)
       }
     ];
-    
-    setIndices(mockIndices);
-    setLoading(false);
-  }, []);
+  }
 
   function generateSparklineData(base: number, changePercent: number): number[] {
     const data = [];

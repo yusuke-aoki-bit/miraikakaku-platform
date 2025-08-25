@@ -5,6 +5,7 @@ import AppContainer from '@/components/layout/AppContainer'
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider'
 import KeyboardShortcuts from '@/components/accessibility/KeyboardShortcuts'
 import { PerformanceIndicator } from '@/components/performance/PerformanceMonitor'
+import { AuthModalProvider } from '@/contexts/AuthModalContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -38,13 +39,15 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <AccessibilityProvider>
-          <AppContainer>
-            <main id="main-content" role="main">
-              {children}
-            </main>
-          </AppContainer>
-          <KeyboardShortcuts />
-          <PerformanceIndicator />
+          <AuthModalProvider>
+            <AppContainer>
+              <main id="main-content" role="main">
+                {children}
+              </main>
+            </AppContainer>
+            <KeyboardShortcuts />
+            <PerformanceIndicator />
+          </AuthModalProvider>
         </AccessibilityProvider>
       </body>
     </html>

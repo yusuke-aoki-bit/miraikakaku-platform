@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Cloud SQL用システム依存関係をインストール（SQLite削除）
+# Cloud SQL用システム依存関係をインストール
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
@@ -17,8 +17,13 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# アプリケーションコードをコピー
+# アプリケーションコードを完全にコピー
 COPY functions/ ./
+
+# 環境変数でPythonパスを設定
+ENV PYTHONPATH=/app:$PYTHONPATH
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # 非rootユーザーを作成
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -33,4 +38,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
 # アプリケーション起動
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]
+CMD ["sh", "-c", "uvicorn production_main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]

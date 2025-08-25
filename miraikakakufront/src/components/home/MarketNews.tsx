@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Clock, TrendingUp, Globe, DollarSign, Newspaper, ArrowRight } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 interface NewsItem {
   id: string;
@@ -18,8 +19,43 @@ export default function MarketNews() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // モックニュースデータ（実際はAPIから取得）
-    const mockNews: NewsItem[] = [
+    const fetchNews = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.getNews({ 
+          limit: 8,
+          sort: 'latest'
+        });
+        
+        if (response.status === 'success' && response.data) {
+          const transformedNews: NewsItem[] = response.data.map((article: any, index: number) => ({
+            id: article.id || `news-${index}`,
+            title: article.title || article.headline || 'ニュース見出し',
+            publishedAt: formatTimeAgo(article.published_at || article.created_at),
+            category: getCategoryName(article.category),
+            categoryColor: getCategoryColor(article.category),
+            icon: getCategoryIcon(article.category),
+            summary: article.summary || article.description?.slice(0, 100)
+          }));
+          
+          setNews(transformedNews);
+        } else {
+          // API失敗時のフォールバック
+          setNews(getFallbackNews());
+        }
+      } catch (error) {
+        console.error('ニュース取得エラー:', error);
+        setNews(getFallbackNews());
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchNews();
+  }, []);
+
+  function getFallbackNews(): NewsItem[] {
+    return [
       {
         id: '1',
         title: '米FRB、利下げ観測強まる - 市場は年内2回の利下げを織り込み',
@@ -84,10 +120,67 @@ export default function MarketNews() {
         summary: '供給懸念から原油先物が急騰。エネルギー関連株にも買いが入る。'
       }
     ];
+  }
+
+  function formatTimeAgo(dateString: string): string {
+    if (!dateString) return '不明';
     
-    setNews(mockNews);
-    setLoading(false);
-  }, []);
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    
+    if (diffMinutes < 60) {
+      return `${diffMinutes}分前`;
+    } else if (diffHours < 24) {
+      return `${diffHours}時間前`;
+    } else {
+      return date.toLocaleDateString('ja-JP');
+    }
+  }
+
+  function getCategoryName(category: string): string {
+    const categoryMap: { [key: string]: string } = {
+      'international': '海外',
+      'domestic': '国内',
+      'forex': '為替',
+      'corporate': '企業',
+      'crypto': '暗号資産',
+      'commodity': '商品',
+      'tech': 'テック',
+      'market': '市場'
+    };
+    return categoryMap[category] || category || '一般';
+  }
+
+  function getCategoryColor(category: string): string {
+    const colorMap: { [key: string]: string } = {
+      'international': 'text-blue-400 bg-blue-400/10',
+      'domestic': 'text-green-400 bg-green-400/10',
+      'forex': 'text-purple-400 bg-purple-400/10',
+      'corporate': 'text-orange-400 bg-orange-400/10',
+      'crypto': 'text-yellow-400 bg-yellow-400/10',
+      'commodity': 'text-red-400 bg-red-400/10',
+      'tech': 'text-cyan-400 bg-cyan-400/10',
+      'market': 'text-pink-400 bg-pink-400/10'
+    };
+    return colorMap[category] || 'text-gray-400 bg-gray-400/10';
+  }
+
+  function getCategoryIcon(category: string): React.ReactNode {
+    const iconMap: { [key: string]: React.ReactNode } = {
+      'international': <Globe className="w-3 h-3" />,
+      'domestic': <TrendingUp className="w-3 h-3" />,
+      'forex': <DollarSign className="w-3 h-3" />,
+      'corporate': <Newspaper className="w-3 h-3" />,
+      'crypto': <DollarSign className="w-3 h-3" />,
+      'commodity': <TrendingUp className="w-3 h-3" />,
+      'tech': <Newspaper className="w-3 h-3" />,
+      'market': <Globe className="w-3 h-3" />
+    };
+    return iconMap[category] || <Newspaper className="w-3 h-3" />;
+  }
 
   const handleNewsClick = (newsId: string) => {
     // ニュース詳細ページへの遷移（実装予定）

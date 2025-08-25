@@ -96,13 +96,13 @@ test.describe('Comprehensive API Integration Tests', () => {
     if (predictionData.length > 0) {
       const prediction = predictionData[0];
       expect(prediction).toHaveProperty('predicted_price');
-      expect(prediction).toHaveProperty('confidence');
-      expect(prediction).toHaveProperty('date');
+      expect(prediction).toHaveProperty('confidence_score');
+      expect(prediction).toHaveProperty('prediction_date');
       
       // 予測価格が合理的な範囲内であることを確認
       expect(prediction.predicted_price).toBeGreaterThan(0);
-      expect(prediction.confidence).toBeGreaterThanOrEqual(0);
-      expect(prediction.confidence).toBeLessThanOrEqual(1);
+      expect(prediction.confidence_score).toBeGreaterThanOrEqual(0);
+      expect(prediction.confidence_score).toBeLessThanOrEqual(1);
     }
   });
 

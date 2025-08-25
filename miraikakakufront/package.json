@@ -20,6 +20,7 @@
     "generate:pwa-screenshots": "node generate-pwa-screenshots.js"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@testing-library/jest-dom": "^6.7.0",
     "@testing-library/react": "^16.3.0",
     "@types/bcryptjs": "^2.4.6",

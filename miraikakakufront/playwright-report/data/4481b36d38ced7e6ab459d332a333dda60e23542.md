@@ -1,0 +1,94 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "Miraikakaku Dashboard":
+    - /url: /
+  - img
+  - textbox "株式コード、銘柄名で検索..."
+  - button "通知":
+    - img
+  - button "アクセシビリティ設定":
+    - img
+  - link "設定":
+    - /url: /settings
+    - img
+  - button "ユーザーメニュー":
+    - img
+- text: M
+- heading "Miraikakaku" [level=3]
+- button "サイドバーを折りたたむ":
+  - img
+- navigation:
+  - link "ダッシュボード":
+    - /url: /
+    - img
+    - text: ダッシュボード
+    - button:
+      - img
+  - button "マーケット":
+    - img
+    - text: マーケット
+    - img
+  - button "AI分析":
+    - img
+    - text: AI分析
+    - img
+  - button "コミュニティ":
+    - img
+    - text: コミュニティ
+    - img
+  - button "マイページ":
+    - img
+    - text: マイページ
+    - img
+- text: "最近のページ: 0 お気に入り: 0"
+- main:
+  - main:
+    - heading "銘柄ランキング" [level=1]:
+      - img
+      - text: 銘柄ランキング
+    - paragraph: 様々な切り口から市場で注目される銘柄を発見しよう
+    - heading "フィルター" [level=3]:
+      - img
+      - text: フィルター
+    - button "詳細表示"
+    - text: 集計期間
+    - button "デイリー"
+    - button "週間"
+    - button "月間"
+    - text: 市場
+    - button "日本株"
+    - button "米国株"
+    - button "すべて"
+    - button "フィルターを適用"
+    - button "値上がり率":
+      - img
+      - text: 値上がり率
+    - button "値下がり率":
+      - img
+      - text: 値下がり率
+    - button "出来高":
+      - img
+      - text: 出来高
+    - button "AIスコア":
+      - img
+      - text: AIスコア
+    - button "成長ポテンシャル":
+      - img
+      - text: 成長ポテンシャル
+    - img
+    - text: 最も上昇している銘柄
+- contentinfo:
+  - paragraph: © 2025 Miraikakaku Inc. All rights reserved.
+  - link "利用規約":
+    - /url: /terms-of-service
+  - link "プライバシーポリシー":
+    - /url: /privacy-policy
+  - link "免責事項":
+    - /url: /disclaimer
+- button "パフォーマンス状態"
+- status
+- link "メインコンテンツにスキップ":
+  - /url: "#main-content"
+```

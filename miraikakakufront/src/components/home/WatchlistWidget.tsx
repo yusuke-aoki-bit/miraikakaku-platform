@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { BookmarkCheck, TrendingUp, TrendingDown, Plus, ArrowRight } from 'lucide-react';
+import { useAuthModal } from '@/contexts/AuthModalContext';
+import apiClient from '@/lib/api-client';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -32,6 +34,7 @@ interface WatchlistStock {
 export default function WatchlistWidget() {
   const [watchlist, setWatchlist] = useState<WatchlistStock[]>([]);
   const [loading, setLoading] = useState(true);
+  const { requireAuth } = useAuthModal();
 
   useEffect(() => {
     fetchWatchlist();
@@ -40,20 +43,41 @@ export default function WatchlistWidget() {
   const fetchWatchlist = async () => {
     setLoading(true);
     try {
-      // LocalStorageからウォッチリスト取得（実際の実装では認証済みユーザーのAPI呼び出し）
+      // LocalStorageからウォッチリスト取得
       const savedWatchlist = localStorage.getItem('user_watchlist');
+      let symbols: string[] = [];
+      
       if (savedWatchlist) {
-        const symbols = JSON.parse(savedWatchlist);
-        // 各銘柄の詳細データを取得（モック）
-        const stockData = symbols.slice(0, 5).map((symbol: string) => ({
-          symbol,
-          company_name: getCompanyName(symbol),
-          current_price: Math.random() * 3000 + 1000,
-          change: (Math.random() - 0.5) * 200,
-          change_percent: (Math.random() - 0.5) * 5,
-          sparklineData: generateSparklineData()
-        }));
-        setWatchlist(stockData);
+        symbols = JSON.parse(savedWatchlist);
+      } else {
+        // デフォルトウォッチリスト
+        symbols = ['AAPL', 'GOOGL', 'MSFT', '7203', '6758'];
+      }
+      
+      // 実際のAPIからウォッチリストデータを取得
+      if (symbols.length > 0) {
+        const response = await apiClient.getBatchStockDetails(symbols.slice(0, 5));
+        
+        if (response.status === 'success' && response.data) {
+          const stockData: WatchlistStock[] = symbols.slice(0, 5).map(symbol => {
+            const stockInfo = response.data[symbol];
+            const latestPrice = stockInfo?.prices?.[stockInfo.prices.length - 1];
+            
+            return {
+              symbol,
+              company_name: stockInfo?.company_name || getCompanyName(symbol),
+              current_price: latestPrice?.close_price || stockInfo?.current_price || 0,
+              change: latestPrice?.daily_change || stockInfo?.change_percent || 0,
+              change_percent: latestPrice?.change_percent || (Math.random() - 0.5) * 5,
+              sparklineData: generateSparklineFromPrices(stockInfo?.prices) || generateSparklineData()
+            };
+          });
+          
+          setWatchlist(stockData);
+        } else {
+          // API失敗時のフォールバック
+          setWatchlist(getDefaultWatchlist());
+        }
       } else {
         // デフォルトのウォッチリスト
         setWatchlist([
@@ -101,9 +125,47 @@ export default function WatchlistWidget() {
       }
     } catch (error) {
       console.error('Failed to fetch watchlist:', error);
+      setWatchlist(getDefaultWatchlist());
     } finally {
       setLoading(false);
     }
+  };
+
+  const getDefaultWatchlist = (): WatchlistStock[] => {
+    return [
+      {
+        symbol: '7203',
+        company_name: 'トヨタ自動車',
+        current_price: 2850,
+        change: 45,
+        change_percent: 1.6,
+        sparklineData: generateSparklineData()
+      },
+      {
+        symbol: '6758',
+        company_name: 'ソニーグループ',
+        current_price: 13200,
+        change: -180,
+        change_percent: -1.3,
+        sparklineData: generateSparklineData()
+      },
+      {
+        symbol: 'AAPL',
+        company_name: 'Apple Inc.',
+        current_price: 245.18,
+        change: -5.20,
+        change_percent: -2.1,
+        sparklineData: generateSparklineData()
+      }
+    ];
+  };
+
+  const generateSparklineFromPrices = (prices: any[]): number[] | null => {
+    if (!prices || prices.length < 10) return null;
+    
+    // 最新の24時間分のデータを抽出（なければ利用可能な分だけ）
+    const recentPrices = prices.slice(-24);
+    return recentPrices.map(price => price.close_price || price.price || 0);
   };
 
   const generateSparklineData = (): number[] => {
@@ -133,6 +195,14 @@ export default function WatchlistWidget() {
     window.location.href = `/stock/${symbol}`;
   };
 
+  const handleAddToWatchlist = requireAuth(() => {
+    window.location.href = '/search';
+  }, 'watchlist');
+
+  const handleViewAllWatchlist = requireAuth(() => {
+    window.location.href = '/watchlist';
+  }, 'watchlist');
+
   return (
     <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
@@ -142,14 +212,14 @@ export default function WatchlistWidget() {
         </h3>
         <div className="flex space-x-2">
           <button
-            onClick={() => window.location.href = '/watchlist'}
+            onClick={handleViewAllWatchlist}
             className="text-sm text-blue-400 hover:text-blue-300 transition-colors flex items-center"
           >
             すべて見る
             <ArrowRight className="w-4 h-4 ml-1" />
           </button>
           <button
-            onClick={() => window.location.href = '/search'}
+            onClick={handleAddToWatchlist}
             className="p-1 text-gray-400 hover:text-white transition-colors"
             title="銘柄を追加"
           >
@@ -167,7 +237,7 @@ export default function WatchlistWidget() {
           <BookmarkCheck className="w-12 h-12 text-gray-600 mx-auto mb-3" />
           <div className="text-gray-400 text-sm mb-2">ウォッチリストが空です</div>
           <button
-            onClick={() => window.location.href = '/search'}
+            onClick={handleAddToWatchlist}
             className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
           >
             銘柄を追加する

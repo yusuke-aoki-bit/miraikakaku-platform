@@ -172,124 +172,128 @@ export default function SectorsPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* ページヘッダー */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <Activity className="w-8 h-8 mr-3 text-blue-400" />
-          <div>
-            <h1 className="text-2xl font-bold text-white">セクター分析</h1>
-            <p className="text-sm text-gray-400 mt-1">
-              市場セクター別のパフォーマンス分析と投資機会の発見
-            </p>
-          </div>
-        </div>
-        
-        {!loading && (
-          <div className="text-right">
-            <div className="text-sm text-gray-400">総銘柄数</div>
-            <div className="text-2xl font-bold text-white">
-              {sectors.reduce((sum, s) => sum + s.stock_count, 0).toLocaleString()}
+    <div className="min-h-screen bg-surface-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* ページヘッダー */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center">
+            <Activity className="w-8 h-8 mr-3 text-accent-primary" />
+            <div>
+              <h1 className="text-3xl font-bold text-text-primary">セクター分析</h1>
+              <p className="text-text-secondary mt-1">
+                市場をセクター（業種）単位で俯瞰し、マクロな視点から投資機会を探る
+              </p>
             </div>
           </div>
-        )}
-      </div>
-
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
+          
+          {!loading && (
+            <div className="text-right">
+              <div className="text-sm text-text-secondary">総銘柄数</div>
+              <div className="text-2xl font-bold text-text-primary">
+                {sectors.reduce((sum, s) => sum + s.stock_count, 0).toLocaleString()}
+              </div>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="grid grid-cols-12 gap-6">
-          {/* 左カラム - ヒートマップ */}
-          <div className="col-span-12 lg:col-span-7">
-            <SectorHeatmap
-              sectors={sectors}
-              selectedSector={selectedSector}
-              onSectorSelect={handleSectorSelect}
-              timeframe={timeframe}
-              onTimeframeChange={handleTimeframeChange}
-            />
-          </div>
 
-          {/* 右カラム - セクター詳細 */}
-          <div className="col-span-12 lg:col-span-5">
-            <SectorDetails
-              sectorId={selectedSector}
-              sectorName={getSelectedSectorName()}
-              timeframe={timeframe}
-            />
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-primary"></div>
           </div>
+        ) : (
+          <div className="space-y-8">
+            {/* メインレイアウト: ヒートマップ + 詳細エリア（設計書通り） */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* ヒートマップ */}
+              <div className="space-y-6">
+                <SectorHeatmap
+                  sectors={sectors}
+                  selectedSector={selectedSector}
+                  onSectorSelect={handleSectorSelect}
+                  timeframe={timeframe}
+                  onTimeframeChange={handleTimeframeChange}
+                />
+              </div>
 
-          {/* 下部 - 選択されたセクターの銘柄一覧 */}
-          <div className="col-span-12">
+              {/* 2カラム詳細エリア */}
+              <div className="space-y-6">
+                <SectorDetails
+                  sectorId={selectedSector}
+                  sectorName={getSelectedSectorName()}
+                  timeframe={timeframe}
+                />
+              </div>
+            </div>
+
+            {/* 下部 - 選択されたセクターのトップパフォーマー */}
             <TopStocksInSector
               sectorId={selectedSector}
               sectorName={getSelectedSectorName()}
             />
           </div>
-        </div>
-      )}
+        )}
 
-      {/* パフォーマンスサマリー */}
-      {!loading && sectors.length > 0 && (
-        <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <BarChart3 className="w-5 h-5 mr-2 text-green-400" />
-            セクター別パフォーマンス ランキング
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sectors
-              .sort((a, b) => {
-                const aChange = timeframe === 'daily' ? a.daily_change 
-                              : timeframe === 'weekly' ? a.weekly_change 
-                              : a.monthly_change;
-                const bChange = timeframe === 'daily' ? b.daily_change 
-                              : timeframe === 'weekly' ? b.weekly_change 
-                              : b.monthly_change;
-                return bChange - aChange;
-              })
-              .slice(0, 6)
-              .map((sector, index) => {
-                const change = timeframe === 'daily' ? sector.daily_change 
-                             : timeframe === 'weekly' ? sector.weekly_change 
-                             : sector.monthly_change;
-                
-                return (
-                  <button
-                    key={sector.id}
-                    onClick={() => handleSectorSelect(sector.id)}
-                    className={`p-4 rounded-lg border transition-all hover:scale-[1.02] ${
-                      selectedSector === sector.id
-                        ? 'bg-blue-900/20 border-blue-500/50'
-                        : 'bg-gray-800/30 border-gray-700/50 hover:bg-gray-800/50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-sm font-medium text-gray-300">
-                        #{index + 1}
+        {/* パフォーマンスサマリー */}
+        {!loading && sectors.length > 0 && (
+          <div className="bg-surface-elevated border border-border-primary rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center">
+              <BarChart3 className="w-5 h-5 mr-2 text-accent-primary" />
+              セクター別パフォーマンス ランキング
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sectors
+                .sort((a, b) => {
+                  const aChange = timeframe === 'daily' ? a.daily_change 
+                                : timeframe === 'weekly' ? a.weekly_change 
+                                : a.monthly_change;
+                  const bChange = timeframe === 'daily' ? b.daily_change 
+                                : timeframe === 'weekly' ? b.weekly_change 
+                                : b.monthly_change;
+                  return bChange - aChange;
+                })
+                .slice(0, 6)
+                .map((sector, index) => {
+                  const change = timeframe === 'daily' ? sector.daily_change 
+                               : timeframe === 'weekly' ? sector.weekly_change 
+                               : sector.monthly_change;
+                  
+                  return (
+                    <button
+                      key={sector.id}
+                      onClick={() => handleSectorSelect(sector.id)}
+                      className={`p-4 rounded-lg border transition-all hover:scale-[1.02] ${
+                        selectedSector === sector.id
+                          ? 'bg-accent-primary/10 border-accent-primary/50'
+                          : 'bg-surface-background border-border-primary hover:bg-surface-elevated'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm font-medium text-text-secondary">
+                          #{index + 1}
+                        </div>
+                        <div className={`text-lg font-bold ${
+                          change >= 0 ? 'text-green-500' : 'text-red-500'
+                        }`}>
+                          {change >= 0 ? '+' : ''}{change.toFixed(2)}%
+                        </div>
                       </div>
-                      <div className={`text-lg font-bold ${
-                        change >= 0 ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        {change >= 0 ? '+' : ''}{change.toFixed(2)}%
+                      <div className="text-left">
+                        <div className="font-semibold text-text-primary mb-1">
+                          {sector.name}
+                        </div>
+                        <div className="text-sm text-text-secondary">
+                          {sector.stock_count}銘柄 • {sector.top_performers}社注目
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-left">
-                      <div className="font-semibold text-white mb-1">
-                        {sector.name}
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        {sector.stock_count}銘柄 • {sector.top_performers}社注目
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+    </div>
     </div>
   );
 }

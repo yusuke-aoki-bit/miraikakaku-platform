@@ -5,6 +5,7 @@ import { BarChart3, Info, TrendingUp } from 'lucide-react';
 import StockSelector from '@/components/predictions/StockSelector';
 import VolumeAnalysisChart from '@/components/volume/VolumeAnalysisChart';
 import VolumeInsightsPanel from '@/components/volume/VolumeInsightsPanel';
+import apiClient from '@/lib/api-client';
 
 interface Stock {
   symbol: string;
@@ -124,13 +125,35 @@ export default function VolumePage() {
               ].map((stock) => (
                 <button
                   key={stock.symbol}
-                  onClick={() => setSelectedStock({
-                    symbol: stock.symbol,
-                    company_name: stock.name,
-                    market: stock.symbol.match(/^[A-Z]+$/) ? 'NASDAQ' : 'TSE',
-                    current_price: Math.random() * 2000 + 500,
-                    change_percent: (Math.random() - 0.5) * 6
-                  })}
+                  onClick={async () => {
+                    // 実際のAPIから株式データを取得
+                    try {
+                      const response = await apiClient.request(`/api/finance/stocks/${stock.symbol}/price?limit=1`);
+                      const priceData = response.data?.[0];
+                      setSelectedStock({
+                        symbol: stock.symbol,
+                        company_name: stock.name,
+                        market: stock.symbol.match(/^[A-Z]+$/) ? 'NASDAQ' : 'TSE',
+                        current_price: priceData?.close_price || priceData?.price || 1000,
+                        change_percent: priceData?.change_percent || 0
+                      });
+                    } catch (error) {
+                      // API失敗時のフォールバック（固定値）
+                      const defaultPrices: { [key: string]: number } = {
+                        'TSLA': 245.80,
+                        '9984': 8800,
+                        'NVDA': 890.50,
+                        '7203': 2850
+                      };
+                      setSelectedStock({
+                        symbol: stock.symbol,
+                        company_name: stock.name,
+                        market: stock.symbol.match(/^[A-Z]+$/) ? 'NASDAQ' : 'TSE',
+                        current_price: defaultPrices[stock.symbol] || 1000,
+                        change_percent: 0
+                      });
+                    }
+                  }}
                   className="p-3 bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/50 rounded-lg transition-all text-left"
                 >
                   <div className="font-medium text-white text-sm">{stock.symbol}</div>

@@ -2,6 +2,61 @@
 
 import { API_CONFIG, PAGINATION, TIME_PERIODS } from '@/config/constants';
 
+// User Management Types
+interface UserProfile {
+  id: string;
+  email: string;
+  nickname: string;
+  avatar_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface NotificationSettings {
+  email: {
+    enabled: boolean;
+    news_updates: boolean;
+    weekly_reports: boolean;
+    watchlist_news: boolean;
+    security_alerts: boolean;
+  };
+  push: {
+    enabled: boolean;
+    price_alerts: boolean;
+    ai_signals: boolean;
+    volume_alerts: boolean;
+    market_hours: boolean;
+  };
+}
+
+interface LoginHistoryItem {
+  id: string;
+  ip_address: string;
+  location: string;
+  device: string;
+  browser: string;
+  login_time: string;
+  is_current: boolean;
+}
+
+interface Subscription {
+  plan: 'free' | 'pro';
+  status: 'active' | 'cancelled' | 'past_due';
+  next_billing_date?: string;
+  amount?: number;
+  currency: string;
+}
+
+interface BillingHistory {
+  id: string;
+  date: string;
+  amount: number;
+  currency: string;
+  status: 'paid' | 'pending' | 'failed';
+  invoice_url?: string;
+  description: string;
+}
+
 interface APIResponse<T = any> {
   data?: T;
   error?: string;
@@ -865,7 +920,725 @@ class APIClient {
     return this.request('/health', {}, false); // ヘルスチェックはキャッシュしない
   }
   
+  // User Management API Methods
+  
+  // プロフィール取得
+  async getUserProfile(): Promise<APIResponse<UserProfile>> {
+    return this.request('/api/user/profile');
+  }
+
+  // プロフィール更新
+  async updateUserProfile(data: Partial<UserProfile>): Promise<APIResponse<UserProfile>> {
+    return this.request('/api/user/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    }, false);
+  }
+
+  // アバター画像アップロード
+  async uploadAvatar(file: File): Promise<APIResponse<{ avatar_url: string }>> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    return this.request('/api/user/avatar', {
+      method: 'POST',
+      body: formData,
+      headers: {} // Content-Typeを自動設定させる
+    }, false);
+  }
+
+  // メールアドレス変更
+  async changeEmail(newEmail: string, password: string): Promise<APIResponse<{ email: string }>> {
+    return this.request('/api/user/email', {
+      method: 'PUT',
+      body: JSON.stringify({
+        new_email: newEmail,
+        password: password
+      })
+    }, false);
+  }
+
+  // パスワード変更
+  async changePassword(currentPassword: string, newPassword: string): Promise<APIResponse<void>> {
+    return this.request('/api/user/password', {
+      method: 'PUT',
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword
+      })
+    }, false);
+  }
+
+  // 二要素認証有効化
+  async enable2FA(): Promise<APIResponse<{ qr_code: string; backup_codes: string[] }>> {
+    return this.request('/api/user/2fa/enable', {
+      method: 'POST'
+    }, false);
+  }
+
+  // 二要素認証確認
+  async verify2FA(code: string): Promise<APIResponse<{ enabled: boolean }>> {
+    return this.request('/api/user/2fa/verify', {
+      method: 'POST',
+      body: JSON.stringify({ code })
+    }, false);
+  }
+
+  // 二要素認証無効化
+  async disable2FA(): Promise<APIResponse<{ disabled: boolean }>> {
+    return this.request('/api/user/2fa/disable', {
+      method: 'POST'
+    }, false);
+  }
+
+  // ログイン履歴取得
+  async getLoginHistory(): Promise<APIResponse<LoginHistoryItem[]>> {
+    return this.request('/api/user/login-history');
+  }
+
+  // 通知設定取得
+  async getNotificationSettings(): Promise<APIResponse<NotificationSettings>> {
+    return this.request('/api/user/notifications');
+  }
+
+  // 通知設定更新
+  async updateNotificationSettings(settings: NotificationSettings): Promise<APIResponse<NotificationSettings>> {
+    return this.request('/api/user/notifications', {
+      method: 'PUT',
+      body: JSON.stringify(settings)
+    }, false);
+  }
+
+  // サブスクリプション情報取得
+  async getSubscriptionPlan(): Promise<APIResponse<Subscription>> {
+    return this.request('/api/user/subscription');
+  }
+
+  // プロプランにアップグレード
+  async upgradeToProPlan(): Promise<APIResponse<{ checkout_url: string }>> {
+    return this.request('/api/user/upgrade', {
+      method: 'POST'
+    }, false);
+  }
+
+  // 請求履歴取得
+  async getBillingHistory(): Promise<APIResponse<BillingHistory[]>> {
+    return this.request('/api/user/billing-history');
+  }
+
+  // Stripe顧客ポータルURL取得
+  async getBillingPortalUrl(): Promise<APIResponse<{ portal_url: string }>> {
+    return this.request('/api/user/billing-portal', {
+      method: 'POST'
+    }, false);
+  }
+
+  // アカウント削除
+  async deleteAccount(password: string, confirmation: string): Promise<APIResponse<{ deleted: boolean }>> {
+    return this.request('/api/user/delete', {
+      method: 'DELETE',
+      body: JSON.stringify({
+        password,
+        confirmation
+      })
+    }, false);
+  }
+
+  // ゲストデータ移行
+  async migrateGuestData(watchlist: any[], settings: any): Promise<APIResponse<{ migrated: boolean }>> {
+    return this.request('/api/user/migrate-guest-data', {
+      method: 'POST',
+      body: JSON.stringify({
+        watchlist,
+        settings
+      })
+    }, false);
+  }
+
+  // Portfolio Management API Methods
+
+  // ポートフォリオ一覧取得
+  async listPortfolios(): Promise<APIResponse<any[]>> {
+    return this.request('/api/portfolios');
+  }
+
+  // ポートフォリオ作成
+  async createPortfolio(name: string): Promise<APIResponse<any>> {
+    return this.request('/api/portfolios', {
+      method: 'POST',
+      body: JSON.stringify({ name })
+    }, false);
+  }
+
+  // ポートフォリオ詳細取得
+  async getPortfolio(portfolioId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/portfolios/${portfolioId}`);
+  }
+
+  // ポートフォリオ更新
+  async updatePortfolio(portfolioId: string, data: any): Promise<APIResponse<any>> {
+    return this.request(`/api/portfolios/${portfolioId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    }, false);
+  }
+
+  // ポートフォリオ削除
+  async deletePortfolio(portfolioId: string): Promise<APIResponse<{ deleted: boolean }>> {
+    return this.request(`/api/portfolios/${portfolioId}`, {
+      method: 'DELETE'
+    }, false);
+  }
+
+  // 取引追加
+  async addTransaction(portfolioId: string, transactionData: {
+    type: 'buy' | 'sell';
+    symbol: string;
+    quantity: number;
+    price: number;
+    date: string;
+    fees?: number;
+  }): Promise<APIResponse<any>> {
+    return this.request(`/api/portfolios/${portfolioId}/transactions`, {
+      method: 'POST',
+      body: JSON.stringify(transactionData)
+    }, false);
+  }
+
+  // 取引履歴取得
+  async getTransactionHistory(portfolioId: string, symbol?: string): Promise<APIResponse<any[]>> {
+    const endpoint = symbol 
+      ? `/api/portfolios/${portfolioId}/transactions?symbol=${encodeURIComponent(symbol)}`
+      : `/api/portfolios/${portfolioId}/transactions`;
+    return this.request(endpoint);
+  }
+
+  // 取引更新
+  async updateTransaction(portfolioId: string, transactionId: string, data: any): Promise<APIResponse<any>> {
+    return this.request(`/api/portfolios/${portfolioId}/transactions/${transactionId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    }, false);
+  }
+
+  // 取引削除
+  async deleteTransaction(portfolioId: string, transactionId: string): Promise<APIResponse<{ deleted: boolean }>> {
+    return this.request(`/api/portfolios/${portfolioId}/transactions/${transactionId}`, {
+      method: 'DELETE'
+    }, false);
+  }
+
+  // ポートフォリオパフォーマンス履歴取得
+  async getPortfolioPerformanceHistory(portfolioId: string, period: string = '6M'): Promise<APIResponse<any[]>> {
+    return this.request(`/api/portfolios/${portfolioId}/performance?period=${period}`);
+  }
+
+  // ポートフォリオサマリー取得
+  async getPortfolioSummary(portfolioId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/portfolios/${portfolioId}/summary`);
+  }
+
+  // 保有銘柄一覧取得
+  async getPortfolioHoldings(portfolioId: string): Promise<APIResponse<any[]>> {
+    return this.request(`/api/portfolios/${portfolioId}/holdings`);
+  }
+
+  // ポートフォリオ分析取得
+  async getPortfolioAnalysis(portfolioId: string): Promise<APIResponse<{
+    risk_metrics: any;
+    diversification_score: number;
+    sector_allocation: any[];
+    recommendations: string[];
+  }>> {
+    return this.request(`/api/portfolios/${portfolioId}/analysis`);
+  }
+
+  // ポートフォリオリバランス提案取得
+  async getRebalanceRecommendations(portfolioId: string, targetAllocation?: any): Promise<APIResponse<{
+    current_allocation: any[];
+    target_allocation: any[];
+    rebalance_actions: any[];
+  }>> {
+    const body = targetAllocation ? JSON.stringify({ target_allocation: targetAllocation }) : undefined;
+    return this.request(`/api/portfolios/${portfolioId}/rebalance`, {
+      method: 'POST',
+      body
+    }, false);
+  }
+
+  // ポートフォリオベンチマーク比較
+  async compareWithBenchmark(portfolioId: string, benchmarkId: string, period: string = '1Y'): Promise<APIResponse<{
+    portfolio_return: number;
+    benchmark_return: number;
+    alpha: number;
+    beta: number;
+    sharpe_ratio: number;
+    performance_data: any[];
+  }>> {
+    return this.request(`/api/portfolios/${portfolioId}/benchmark/${benchmarkId}?period=${period}`);
+  }
+
+  // 保有銘柄更新（数量・平均取得価格の手動調整）
+  async updateHolding(portfolioId: string, symbol: string, data: {
+    quantity?: number;
+    average_cost?: number;
+  }): Promise<APIResponse<any>> {
+    return this.request(`/api/portfolios/${portfolioId}/holdings/${encodeURIComponent(symbol)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    }, false);
+  }
+
+  // 保有銘柄削除
+  async deleteHolding(portfolioId: string, symbol: string): Promise<APIResponse<{ deleted: boolean }>> {
+    return this.request(`/api/portfolios/${portfolioId}/holdings/${encodeURIComponent(symbol)}`, {
+      method: 'DELETE'
+    }, false);
+  }
+
+  // Market Index API Methods - for Home screen
+  async getMarketIndices(): Promise<APIResponse<any[]>> {
+    return this.request('/api/market/indices', {
+      method: 'GET'
+    });
+  }
+
+  async getFeaturedPredictions(limit: number = 3): Promise<APIResponse<any[]>> {
+    return this.request(`/api/predictions/featured?limit=${limit}`, {
+      method: 'GET'
+    });
+  }
+
+  // Rankings API Methods - Complete set
+  async getGainersRankings(params?: {
+    market?: string;
+    sector?: string;
+    market_cap?: string;
+    period?: string;
+    limit?: number;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.market) queryParams.append('market', params.market);
+    if (params?.sector) queryParams.append('sector', params.sector);
+    if (params?.market_cap) queryParams.append('market_cap', params.market_cap);
+    if (params?.period) queryParams.append('period', params.period);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const endpoint = `/api/rankings/gainers${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  async getLosersRankings(params?: {
+    market?: string;
+    sector?: string;
+    market_cap?: string;
+    period?: string;
+    limit?: number;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.market) queryParams.append('market', params.market);
+    if (params?.sector) queryParams.append('sector', params.sector);
+    if (params?.market_cap) queryParams.append('market_cap', params.market_cap);
+    if (params?.period) queryParams.append('period', params.period);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const endpoint = `/api/rankings/losers${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  async getCompositeRankings(params?: {
+    ranking_type?: string;
+    market?: string;
+    sector?: string;
+    market_cap?: string;
+    period?: string;
+    limit?: number;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.ranking_type) queryParams.append('ranking_type', params.ranking_type);
+    if (params?.market) queryParams.append('market', params.market);
+    if (params?.sector) queryParams.append('sector', params.sector);
+    if (params?.market_cap) queryParams.append('market_cap', params.market_cap);
+    if (params?.period) queryParams.append('period', params.period);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const endpoint = `/api/rankings/composite${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  // Enhanced Search API Methods - with filter support
+  async searchStocks(params: {
+    query?: string;
+    market?: string;
+    sector?: string;
+    market_cap_min?: number;
+    market_cap_max?: number;
+    per_min?: number;
+    per_max?: number;
+    pbr_min?: number;
+    pbr_max?: number;
+    ai_score_min?: number;
+    ai_score_max?: number;
+    dividend_yield_min?: number;
+    dividend_yield_max?: number;
+    limit?: number;
+    offset?: number;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
+
+    const endpoint = `/api/stocks/search${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  // Sectors API Methods - Complete specification compliance
+  async getSectors(): Promise<APIResponse<any[]>> {
+    return this.request('/api/sectors', {
+      method: 'GET'
+    });
+  }
+
+  async getStocksBySector(sectorId: string, params?: {
+    limit?: number;
+    sort_by?: string;
+    sort_order?: 'asc' | 'desc';
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.sort_by) queryParams.append('sort_by', params.sort_by);
+    if (params?.sort_order) queryParams.append('sort_order', params.sort_order);
+
+    const endpoint = `/api/sectors/${sectorId}/stocks${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  // News API Methods
+  async getNewsArticle(articleId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/news/${articleId}`, {
+      method: 'GET'
+    });
+  }
+
+  async getRelatedNews(articleId: string, limit: number = 5): Promise<APIResponse<any[]>> {
+    return this.request(`/api/news/${articleId}/related?limit=${limit}`, {
+      method: 'GET'
+    });
+  }
+
+  async getNewsArticles(params?: {
+    category?: string;
+    source?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.category) queryParams.append('category', params.category);
+    if (params?.source) queryParams.append('source', params.source);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.offset) queryParams.append('offset', params.offset.toString());
+
+    const endpoint = `/api/news${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
   // キャッシュクリア
+  // Password Reset API Methods
+  async sendPasswordResetLink(email: string): Promise<APIResponse<any>> {
+    return this.request('/api/auth/password-reset/request', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    }, false);
+  }
+
+  async validatePasswordResetToken(token: string): Promise<APIResponse<any>> {
+    return this.request(`/api/auth/password-reset/validate/${token}`, {
+      method: 'GET'
+    }, false);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<APIResponse<any>> {
+    return this.request('/api/auth/password-reset/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        token, 
+        new_password: newPassword 
+      })
+    }, false);
+  }
+
+  // AI Decision Factors API Methods
+  async getAIDecisionFactors(predictionId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/predictions/${predictionId}/factors`, {
+      method: 'GET'
+    });
+  }
+
+  async getAllAIFactors(): Promise<APIResponse<any[]>> {
+    return this.request('/api/ai-factors/all', {
+      method: 'GET'
+    });
+  }
+
+  async getAIFactorsBySymbol(symbol: string): Promise<APIResponse<any[]>> {
+    return this.request(`/api/ai-factors/symbol/${symbol}`, {
+      method: 'GET'
+    });
+  }
+
+  async getEnhancedPredictions(symbol: string, params?: {
+    days?: number;
+    model_type?: string;
+    include_factors?: boolean;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.days) queryParams.append('days', params.days.toString());
+    if (params?.model_type) queryParams.append('model_type', params.model_type);
+    if (params?.include_factors) queryParams.append('include_factors', 'true');
+
+    const endpoint = `/api/stocks/${symbol}/predictions/enhanced${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  // Theme Insights API Methods
+  async getThemeInsights(): Promise<APIResponse<string[]>> {
+    return this.request('/api/insights/themes', {
+      method: 'GET'
+    });
+  }
+
+  async getThemeInsightsByName(themeName: string): Promise<APIResponse<any[]>> {
+    return this.request(`/api/insights/themes/${themeName}`, {
+      method: 'GET'
+    });
+  }
+
+  // Themes API - Extended Methods
+  async getThemes(): Promise<APIResponse<any[]>> {
+    return this.request('/api/insights/themes', {
+      method: 'GET'
+    });
+  }
+
+  async getThemeDetails(themeId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/insights/themes/${themeId}`, {
+      method: 'GET'
+    });
+  }
+
+  async getThemeNews(themeId: string): Promise<APIResponse<any[]>> {
+    return this.request(`/api/insights/themes/${themeId}/news`, {
+      method: 'GET'
+    });
+  }
+
+  async getThemeAIInsights(themeId: string): Promise<APIResponse<any[]>> {
+    return this.request(`/api/insights/themes/${themeId}/ai-insights`, {
+      method: 'GET'
+    });
+  }
+
+  async followTheme(themeId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/insights/themes/${themeId}/follow`, {
+      method: 'POST'
+    }, false);
+  }
+
+  async unfollowTheme(themeId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/insights/themes/${themeId}/follow`, {
+      method: 'DELETE'
+    }, false);
+  }
+
+  async getAllInsights(): Promise<APIResponse<any[]>> {
+    return this.request('/api/insights/all', {
+      method: 'GET'
+    });
+  }
+
+  async getLatestInsights(): Promise<APIResponse<any[]>> {
+    return this.request('/api/insights/latest', {
+      method: 'GET'
+    });
+  }
+
+  async getInsightsByCategory(category: string): Promise<APIResponse<any[]>> {
+    return this.request(`/api/insights/categories/${category}`, {
+      method: 'GET'
+    });
+  }
+
+  // Contests API Methods
+  async getContestStats(): Promise<APIResponse<any>> {
+    return this.request('/api/contests/stats', {
+      method: 'GET'
+    });
+  }
+
+  async getActiveContests(): Promise<APIResponse<any[]>> {
+    return this.request('/api/contests/active', {
+      method: 'GET'
+    });
+  }
+
+  async getPastContests(): Promise<APIResponse<any[]>> {
+    return this.request('/api/contests/past', {
+      method: 'GET'
+    });
+  }
+
+  async getLeaderboard(timeFrame: string = 'all_time'): Promise<APIResponse<any[]>> {
+    return this.request(`/api/contests/leaderboard?time_frame=${timeFrame}`, {
+      method: 'GET'
+    });
+  }
+
+  async getContestDetails(contestId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/contests/${contestId}`, {
+      method: 'GET'
+    });
+  }
+
+  async getContestRanking(contestId: string): Promise<APIResponse<any[]>> {
+    return this.request(`/api/contests/${contestId}/ranking`, {
+      method: 'GET'
+    });
+  }
+
+  async submitPrediction(contestId: string, prediction: number, confidence?: number): Promise<APIResponse<any>> {
+    return this.request(`/api/contests/${contestId}/predict`, {
+      method: 'POST',
+      body: JSON.stringify({ 
+        prediction,
+        confidence 
+      })
+    }, false);
+  }
+
+  async updatePrediction(contestId: string, prediction: number, confidence?: number): Promise<APIResponse<any>> {
+    return this.request(`/api/contests/${contestId}/predict`, {
+      method: 'PUT',
+      body: JSON.stringify({ 
+        prediction,
+        confidence 
+      })
+    }, false);
+  }
+
+  async getUserContestHistory(userId?: string): Promise<APIResponse<any[]>> {
+    const endpoint = userId ? `/api/users/${userId}/contests` : '/api/user/contests';
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  async getUserProfile(userId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/users/${userId}`, {
+      method: 'GET'
+    });
+  }
+
+  async getUserBadges(userId: string): Promise<APIResponse<any[]>> {
+    return this.request(`/api/users/${userId}/badges`, {
+      method: 'GET'
+    });
+  }
+
+  async getUserRankingHistory(userId: string): Promise<APIResponse<any[]>> {
+    return this.request(`/api/users/${userId}/ranking-history`, {
+      method: 'GET'
+    });
+  }
+
+  // News API Methods
+  async getNews(params?: {
+    category?: string;
+    search?: string;
+    sort?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.category && params.category !== 'all') queryParams.append('category', params.category);
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.sort) queryParams.append('sort', params.sort);
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const endpoint = `/api/news${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  async getNewsDetails(newsId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/news/${newsId}`, {
+      method: 'GET'
+    });
+  }
+
+  async toggleNewsBookmark(newsId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/news/${newsId}/bookmark`, {
+      method: 'POST'
+    }, false);
+  }
+
+  async getBookmarkedNews(): Promise<APIResponse<any[]>> {
+    return this.request('/api/news/bookmarked', {
+      method: 'GET'
+    });
+  }
+
+  // User Rankings API Methods
+  async getUserRankings(params?: {
+    period?: string;
+    category?: string;
+    level?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.period) queryParams.append('period', params.period);
+    if (params?.category) queryParams.append('category', params.category);
+    if (params?.level && params.level !== 'all') queryParams.append('level', params.level);
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const endpoint = `/api/user-rankings${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  async getUserRankingStats(): Promise<APIResponse<any>> {
+    return this.request('/api/user-rankings/stats', {
+      method: 'GET'
+    });
+  }
+
+  async getUserDetailedRanking(userId: string): Promise<APIResponse<any>> {
+    return this.request(`/api/user-rankings/users/${userId}`, {
+      method: 'GET'
+    });
+  }
+
   clearCache() {
     this.cache.clear();
   }

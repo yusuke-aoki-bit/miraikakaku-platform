@@ -10,7 +10,8 @@ import {
   Download,
   Eye,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Brain
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
@@ -34,12 +35,13 @@ interface PredictionRow {
 
 interface PredictionDataTableProps {
   stock: Stock | null;
+  onShowAIFactors?: (predictionId: string, symbol: string, companyName: string) => void;
 }
 
 type SortField = 'date' | 'predicted_price' | 'confidence' | 'change_percent';
 type SortOrder = 'asc' | 'desc';
 
-export default function PredictionDataTable({ stock }: PredictionDataTableProps) {
+export default function PredictionDataTable({ stock, onShowAIFactors }: PredictionDataTableProps) {
   const [predictions, setPredictions] = useState<PredictionRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [sortField, setSortField] = useState<SortField>('date');
@@ -321,6 +323,7 @@ export default function PredictionDataTable({ stock }: PredictionDataTableProps)
                     <th className="text-right p-3">価格差</th>
                   </>
                 )}
+                <th className="text-center p-3">判断根拠</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800/30">
@@ -400,6 +403,21 @@ export default function PredictionDataTable({ stock }: PredictionDataTableProps)
                       </td>
                     </>
                   )}
+
+                  <td className="p-3 text-center">
+                    <button
+                      onClick={() => onShowAIFactors?.(
+                        `${stock?.symbol}-${prediction.date}`, 
+                        stock?.symbol || '', 
+                        stock?.company_name || ''
+                      )}
+                      className="flex items-center space-x-1 px-3 py-1 bg-purple-600/20 text-purple-400 rounded-md hover:bg-purple-600/30 transition-colors text-sm"
+                      title="AI判断根拠を表示"
+                    >
+                      <Brain className="w-3 h-3" />
+                      <span>判断根拠</span>
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

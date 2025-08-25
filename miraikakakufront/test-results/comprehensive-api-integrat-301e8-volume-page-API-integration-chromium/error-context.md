@@ -1,0 +1,112 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "Miraikakaku Dashboard":
+    - /url: /
+  - img
+  - textbox "株式コード、銘柄名で検索..."
+  - button "通知":
+    - img
+  - button "アクセシビリティ設定":
+    - img
+  - link "設定":
+    - /url: /settings
+    - img
+  - button "ユーザーメニュー":
+    - img
+- text: M
+- heading "Miraikakaku" [level=3]
+- button "サイドバーを折りたたむ":
+  - img
+- navigation:
+  - link "ダッシュボード":
+    - /url: /
+    - img
+    - text: ダッシュボード
+    - button:
+      - img
+  - button "マーケット":
+    - img
+    - text: マーケット
+    - img
+  - button "AI分析":
+    - img
+    - text: AI分析
+    - img
+  - link "個別銘柄予測":
+    - /url: /predictions
+    - img
+    - text: 個別銘柄予測
+    - button:
+      - img
+  - link "出来高予測":
+    - /url: /volume
+    - img
+    - text: 出来高予測
+    - button:
+      - img
+  - link "為替予測":
+    - /url: /currency
+    - img
+    - text: 為替予測
+    - button:
+      - img
+  - button "コミュニティ":
+    - img
+    - text: コミュニティ
+    - img
+  - button "マイページ":
+    - img
+    - text: マイページ
+    - img
+- text: "最近のページ: 0 お気に入り: 0"
+- main:
+  - main:
+    - img
+    - heading "出来高予測分析" [level=1]
+    - paragraph: AIによる出来高パターン分析と未来予測で価格変動の前兆を捉える
+    - img
+    - heading "出来高分析の重要性" [level=3]
+    - img
+    - text: 価格変動の先行指標
+    - paragraph: 出来高の急増は大きな価格変動の前兆となることが多く、投資タイミングの重要な判断材料となります。
+    - img
+    - text: 機関投資家の動向
+    - paragraph: 大口取引による出来高変化を分析することで、機関投資家の売買動向を把握できます。
+    - img
+    - text: 市場センチメント
+    - paragraph: 出来高パターンから市場参加者の関心度や投資意欲の変化を読み取ることができます。
+    - heading "銘柄選択" [level=2]:
+      - img
+      - text: 銘柄選択
+    - img
+    - 'textbox "銘柄コードまたは企業名で検索 (例: AAPL, 7203, トヨタ)"'
+    - img
+    - img
+    - heading "出来高分析を開始してください" [level=3]
+    - paragraph: 上の検索バーから分析したい銘柄を選択すると、 価格と出来高の詳細な関係性分析が開始されます。 AI予測で投資機会を見つけましょう。
+    - text: 出来高分析におすすめの銘柄
+    - button "TSLA Tesla Inc."
+    - button "9984 ソフトバンクグループ"
+    - button "NVDA NVIDIA Corp."
+    - button "7203 トヨタ自動車"
+- contentinfo:
+  - paragraph: © 2025 Miraikakaku Inc. All rights reserved.
+  - link "利用規約":
+    - /url: /terms-of-service
+  - link "プライバシーポリシー":
+    - /url: /privacy-policy
+  - link "免責事項":
+    - /url: /disclaimer
+- button "パフォーマンス状態"
+- status
+- link "メインコンテンツにスキップ":
+  - /url: "#main-content"
+- status:
+  - img
+  - text: Static route
+  - button "Hide static indicator":
+    - img
+- alert
+```

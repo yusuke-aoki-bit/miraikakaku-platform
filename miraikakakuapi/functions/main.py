@@ -1,15 +1,18 @@
+import os
+import sys
+
+# CRITICAL: Set Python path BEFORE any other imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, current_dir)
+sys.path.insert(0, os.path.join(current_dir, 'shared'))
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
-import os
-import sys
 from dotenv import load_dotenv
 
 load_dotenv()
-
-# Add shared directory to path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'shared'))
 
 # Import auth middleware (comment out for now to fix deployment)
 # from middleware.auth_middleware import AuthMiddleware
@@ -196,22 +199,34 @@ async def test_index_predictions(symbol: str, days: int = 30):
     except Exception as e:
         return {"error": str(e)}
 
-# API Routes
-from api.finance.routes import router as finance_router
-from api.finance.routes_v2 import router as finance_v2_router
-from api.forex.routes import router as forex_router
-from api.websocket.routes import router as websocket_router
-from api.user.routes import router as user_router
-# from api.auth.routes import router as auth_router
-# from api.admin.routes import router as admin_router
+# API Routes - Import after app initialization
+def register_routes():
+    """Register all API routes - called after app initialization"""
+    try:
+        from api.finance.routes import router as finance_router
+        from api.finance.routes_v2 import router as finance_v2_router
+        from api.forex.routes import router as forex_router
+        from api.websocket.routes import router as websocket_router
+        from api.user.routes import router as user_router
+        # from api.auth.routes import router as auth_router
+        # from api.admin.routes import router as admin_router
+        
+        # app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
+        app.include_router(finance_router, prefix="/api/finance", tags=["finance"])
+        app.include_router(finance_v2_router, prefix="/api/finance", tags=["finance_v2"])
+        app.include_router(forex_router, prefix="/api/forex", tags=["forex"])
+        app.include_router(user_router, prefix="/api", tags=["users"])
+        # app.include_router(admin_router, prefix="/api/admin", tags=["administration"])
+        app.include_router(websocket_router, prefix="", tags=["websocket"])
+        
+        print("✅ All routes registered successfully")
+    except ImportError as e:
+        print(f"❌ Failed to register routes: {e}")
+        import traceback
+        traceback.print_exc()
 
-# app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
-app.include_router(finance_router, prefix="/api/finance", tags=["finance"])
-app.include_router(finance_v2_router, prefix="/api/finance", tags=["finance_v2"])
-app.include_router(forex_router, prefix="/api/forex", tags=["forex"])
-app.include_router(user_router, prefix="/api", tags=["users"])
-# app.include_router(admin_router, prefix="/api/admin", tags=["administration"])
-app.include_router(websocket_router, prefix="", tags=["websocket"])
+# Register routes after everything is set up
+register_routes()
 
 if __name__ == "__main__":
     uvicorn.run(

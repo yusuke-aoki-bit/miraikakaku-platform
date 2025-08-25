@@ -1,0 +1,30 @@
+# Include only what we need, exclude everything else that might cause issues
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache/
+.mypy_cache/
+.idea/
+.vscode/
+*.log
+.env
+.env.*
+venv/
+env/
+ENV/
+node_modules/
+*.tmp
+*.bak
+*.swp
+
+# Explicitly include our source directories
+!miraikakakuapi/
+!miraikakakuapi/functions/
+!miraikakakuapi/functions/database/
+!miraikakakuapi/functions/database/models/
+!miraikakakuapi/functions/api/
+!scripts/

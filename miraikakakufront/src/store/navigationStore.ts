@@ -20,7 +20,12 @@ import {
   HelpCircle,
   DollarSign,
   User,
-  Settings
+  Settings,
+  TrendingUp,
+  Lightbulb,
+  Newspaper,
+  Users,
+  Crown
 } from 'lucide-react';
 
 interface NavigationStore {
@@ -81,18 +86,18 @@ export const useNavigationStore = create<NavigationStore>()(
       getPrimaryNavigation: (): NavigationItem[] => {
         const baseNavigation: NavigationItem[] = [
           {
-            id: 'home',
-            label: 'ホーム',
+            id: 'dashboard',
+            label: 'ダッシュボード',
             href: '/',
             icon: Layout,
             category: 'primary',
             userLevel: ['beginner', 'intermediate', 'advanced'],
-            description: 'マーケット概況とサマリー'
+            description: 'メインダッシュボード・市場概況'
           },
           {
-            id: 'discover',
-            label: '発見',
-            icon: Search,
+            id: 'market',
+            label: 'マーケット',
+            icon: TrendingUp,
             category: 'primary',
             userLevel: ['beginner', 'intermediate', 'advanced'],
             children: [
@@ -106,13 +111,13 @@ export const useNavigationStore = create<NavigationStore>()(
                 description: '値上がり・値下がり・出来高ランキング'
               },
               {
-                id: 'search',
-                label: '銘柄検索',
-                href: '/search',
-                icon: Search,
+                id: 'themes',
+                label: 'テーマ別分析',
+                href: '/themes',
+                icon: Lightbulb,
                 category: 'secondary',
-                userLevel: ['beginner', 'intermediate', 'advanced'],
-                description: 'キーワードや条件で銘柄を検索'
+                userLevel: ['intermediate', 'advanced'],
+                description: 'テーマ・関連銘柄の分析'
               },
               {
                 id: 'sectors',
@@ -122,6 +127,24 @@ export const useNavigationStore = create<NavigationStore>()(
                 category: 'secondary',
                 userLevel: ['intermediate', 'advanced'],
                 description: '業種別パフォーマンス分析'
+              },
+              {
+                id: 'search',
+                label: '銘柄検索',
+                href: '/search',
+                icon: Search,
+                category: 'secondary',
+                userLevel: ['beginner', 'intermediate', 'advanced'],
+                description: 'キーワードや条件で銘柄を検索'
+              },
+              {
+                id: 'news',
+                label: 'マーケットニュース',
+                href: '/news',
+                icon: Newspaper,
+                category: 'secondary',
+                userLevel: ['beginner', 'intermediate', 'advanced'],
+                description: '最新の市場ニュース・分析'
               }
             ]
           },
@@ -130,7 +153,7 @@ export const useNavigationStore = create<NavigationStore>()(
             label: 'AI分析',
             icon: Brain,
             category: 'primary',
-            userLevel: ['beginner', 'intermediate', 'advanced'],
+            userLevel: ['intermediate', 'advanced'],
             children: [
               {
                 id: 'predictions',
@@ -162,21 +185,39 @@ export const useNavigationStore = create<NavigationStore>()(
             ]
           },
           {
+            id: 'community',
+            label: 'コミュニティ',
+            icon: Users,
+            category: 'primary',
+            userLevel: ['beginner', 'intermediate', 'advanced'],
+            children: [
+              {
+                id: 'contests',
+                label: '予測コロシアム',
+                href: '/contests',
+                icon: Crown,
+                category: 'secondary',
+                userLevel: ['intermediate', 'advanced'],
+                description: '予測コンテストとランキング'
+              },
+              {
+                id: 'user-rankings',
+                label: 'ユーザーランキング',
+                href: '/user-rankings',
+                icon: Trophy,
+                category: 'secondary',
+                userLevel: ['beginner', 'intermediate', 'advanced'],
+                description: 'ユーザー別パフォーマンスランキング'
+              }
+            ]
+          },
+          {
             id: 'mypage',
             label: 'マイページ',
             icon: User,
             category: 'primary',
             userLevel: ['beginner', 'intermediate', 'advanced'],
             children: [
-              {
-                id: 'watchlist',
-                label: 'ウォッチリスト',
-                href: '/watchlist',
-                icon: BookmarkCheck,
-                category: 'secondary',
-                userLevel: ['beginner', 'intermediate', 'advanced'],
-                description: 'お気に入り銘柄の管理'
-              },
               {
                 id: 'portfolio',
                 label: 'ポートフォリオ',
@@ -185,6 +226,15 @@ export const useNavigationStore = create<NavigationStore>()(
                 category: 'secondary',
                 userLevel: ['intermediate', 'advanced'],
                 description: '保有資産の管理・分析'
+              },
+              {
+                id: 'watchlist',
+                label: 'ウォッチリスト',
+                href: '/watchlist',
+                icon: BookmarkCheck,
+                category: 'secondary',
+                userLevel: ['beginner', 'intermediate', 'advanced'],
+                description: 'お気に入り銘柄の管理'
               },
               {
                 id: 'management',
@@ -210,40 +260,16 @@ export const useNavigationStore = create<NavigationStore>()(
           icon: Layout
         },
         {
-          id: 'realtime',
-          label: 'リアルタイム',
-          href: '/realtime',
-          icon: Activity
-        },
-        {
           id: 'rankings',
           label: 'ランキング',
           href: '/rankings',
           icon: Trophy
         },
         {
-          id: 'analysis',
-          label: '分析',
-          href: '/analysis',
-          icon: BarChart3
-        },
-        {
-          id: 'volume',
-          label: '出来高',
-          href: '/volume',
-          icon: BarChart3
-        },
-        {
-          id: 'currency',
-          label: '為替',
-          href: '/currency',
-          icon: DollarSign
-        },
-        {
-          id: 'watchlist',
-          label: 'ウォッチリスト',
-          href: '/watchlist',
-          icon: BookmarkCheck
+          id: 'themes',
+          label: 'テーマ分析',
+          href: '/themes',
+          icon: Lightbulb
         },
         {
           id: 'predictions',
@@ -252,10 +278,34 @@ export const useNavigationStore = create<NavigationStore>()(
           icon: Brain
         },
         {
-          id: 'tools',
-          label: 'ツール',
-          href: '/tools',
-          icon: Calculator
+          id: 'volume',
+          label: '出来高予測',
+          href: '/volume',
+          icon: BarChart3
+        },
+        {
+          id: 'currency',
+          label: '為替予測',
+          href: '/currency',
+          icon: DollarSign
+        },
+        {
+          id: 'contests',
+          label: 'コロシアム',
+          href: '/contests',
+          icon: Crown
+        },
+        {
+          id: 'watchlist',
+          label: 'ウォッチリスト',
+          href: '/watchlist',
+          icon: BookmarkCheck
+        },
+        {
+          id: 'portfolio',
+          label: 'ポートフォリオ',
+          href: '/portfolio',
+          icon: PieChart
         }
       ],
 
@@ -267,19 +317,49 @@ export const useNavigationStore = create<NavigationStore>()(
             label: 'ダッシュボードに移動',
             description: 'メインダッシュボードを表示',
             icon: Layout,
-            action: () => window.location.href = '/dashboard',
+            action: () => window.location.href = '/',
             category: 'navigation',
             keywords: ['dashboard', 'ダッシュボード', 'メイン'],
             userLevel: ['beginner', 'intermediate', 'advanced']
           },
           {
+            id: 'go-rankings',
+            label: 'ランキングに移動',
+            description: '値上がり・値下がりランキングを表示',
+            icon: Trophy,
+            action: () => window.location.href = '/rankings',
+            category: 'navigation',
+            keywords: ['rankings', 'ランキング', '値上がり', '値下がり'],
+            userLevel: ['beginner', 'intermediate', 'advanced']
+          },
+          {
+            id: 'go-themes',
+            label: 'テーマ分析に移動',
+            description: 'テーマ別銘柄分析を表示',
+            icon: Lightbulb,
+            action: () => window.location.href = '/themes',
+            category: 'navigation',
+            keywords: ['themes', 'テーマ', '分析', '銘柄'],
+            userLevel: ['intermediate', 'advanced']
+          },
+          {
             id: 'go-predictions',
             label: 'AI予測に移動',
-            description: '株価予測ページを表示',
+            description: '個別銘柄のAI予測を表示',
             icon: Brain,
             action: () => window.location.href = '/predictions',
             category: 'navigation',
             keywords: ['predictions', '予測', 'AI', '株価'],
+            userLevel: ['intermediate', 'advanced']
+          },
+          {
+            id: 'go-contests',
+            label: '予測コロシアムに移動',
+            description: '予測コンテストに参加',
+            icon: Crown,
+            action: () => window.location.href = '/contests',
+            category: 'navigation',
+            keywords: ['contests', 'コロシアム', '予測', 'コンテスト'],
             userLevel: ['intermediate', 'advanced']
           },
           {
@@ -293,14 +373,14 @@ export const useNavigationStore = create<NavigationStore>()(
             userLevel: ['beginner', 'intermediate', 'advanced']
           },
           {
-            id: 'go-realtime',
-            label: 'リアルタイムデータに移動',
-            description: 'リアルタイム株価を表示',
-            icon: Activity,
-            action: () => window.location.href = '/realtime',
+            id: 'go-portfolio',
+            label: 'ポートフォリオに移動',
+            description: '保有資産の管理・分析を表示',
+            icon: PieChart,
+            action: () => window.location.href = '/portfolio',
             category: 'navigation',
-            keywords: ['realtime', 'リアルタイム', '株価', 'ライブ'],
-            userLevel: ['beginner', 'intermediate', 'advanced']
+            keywords: ['portfolio', 'ポートフォリオ', '資産', '管理'],
+            userLevel: ['intermediate', 'advanced']
           },
           
           // Action commands

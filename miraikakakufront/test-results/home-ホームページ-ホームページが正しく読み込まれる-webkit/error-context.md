@@ -1,0 +1,96 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "Miraikakaku Dashboard":
+    - /url: /
+  - img
+  - textbox "株式コード、銘柄名で検索..."
+  - button "通知":
+    - img
+  - button "アクセシビリティ設定":
+    - img
+  - link "設定":
+    - /url: /settings
+    - img
+  - button "ユーザーメニュー":
+    - img
+- text: M
+- heading "Miraikakaku" [level=3]
+- button "サイドバーを折りたたむ":
+  - img
+- navigation:
+  - link "ダッシュボード":
+    - /url: /
+    - img
+    - text: ダッシュボード
+    - button:
+      - img
+  - button "マーケット":
+    - img
+    - text: マーケット
+    - img
+  - button "AI分析":
+    - img
+    - text: AI分析
+    - img
+  - button "コミュニティ":
+    - img
+    - text: コミュニティ
+    - img
+  - button "マイページ":
+    - img
+    - text: マイページ
+    - img
+- text: "最近のページ: 0 お気に入り: 0"
+- main:
+  - main:
+    - img
+    - heading "Miraikakaku" [level=1]
+    - paragraph: AIがあなたの投資判断を加速させる
+    - img
+    - textbox "銘柄コード、企業名で検索..."
+    - button "検索"
+    - button "ランキングを見る":
+      - img
+      - text: ランキングを見る
+    - button "AI予測を見る":
+      - img
+      - text: AI予測を見る
+    - heading "主要指数サマリー" [level=2]:
+      - img
+      - text: 主要指数サマリー
+    - heading "マーケットニュース" [level=2]:
+      - img
+      - text: マーケットニュース
+    - button "すべて見る":
+      - text: すべて見る
+      - img
+    - heading "ウォッチリスト" [level=3]:
+      - img
+      - text: ウォッチリスト
+    - button "すべて見る":
+      - text: すべて見る
+      - img
+    - button "銘柄を追加":
+      - img
+    - heading "トレンド銘柄" [level=3]:
+      - img
+      - text: トレンド銘柄
+    - button "ランキング":
+      - text: ランキング
+      - img
+    - text: 🔥 注目度の高い銘柄をAIが自動選出
+- contentinfo:
+  - paragraph: © 2025 Miraikakaku Inc. All rights reserved.
+  - link "利用規約":
+    - /url: /terms-of-service
+  - link "プライバシーポリシー":
+    - /url: /privacy-policy
+  - link "免責事項":
+    - /url: /disclaimer
+- button "パフォーマンス状態"
+- status
+- link "メインコンテンツにスキップ":
+  - /url: "#main-content"
+```

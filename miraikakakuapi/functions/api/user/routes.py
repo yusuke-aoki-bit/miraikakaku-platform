@@ -5,11 +5,11 @@ from datetime import datetime, date
 import logging
 
 from database.database import get_db
-from database.models.user_models import (
+from database.models import (
     UserProfiles, UserWatchlists, UserPortfolios, 
-    AiDecisionFactors, PredictionContests, UserContestPredictions, ThemeInsights
+    AiDecisionFactors, PredictionContests, UserContestPredictions, ThemeInsights,
+    StockPredictions
 )
-from database.models.stock_predictions import StockPredictions
 from .models import *
 
 logger = logging.getLogger(__name__)

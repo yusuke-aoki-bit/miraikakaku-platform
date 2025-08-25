@@ -6,6 +6,8 @@ import StockSelector from '@/components/predictions/StockSelector';
 import InteractivePredictionChart from '@/components/predictions/InteractivePredictionChart';
 import ModelPerformanceDashboard from '@/components/predictions/ModelPerformanceDashboard';
 import PredictionDataTable from '@/components/predictions/PredictionDataTable';
+import AIDecisionFactorsModal from '@/components/ai/AIDecisionFactorsModal';
+import apiClient from '@/lib/api-client';
 
 interface Stock {
   symbol: string;
@@ -17,6 +19,30 @@ interface Stock {
 
 export default function PredictionsPage() {
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+  const [aiFactorsModal, setAiFactorsModal] = useState({
+    isOpen: false,
+    predictionId: '',
+    symbol: '',
+    companyName: ''
+  });
+
+  const handleShowAIFactors = (predictionId: string, symbol: string, companyName: string) => {
+    setAiFactorsModal({
+      isOpen: true,
+      predictionId,
+      symbol,
+      companyName
+    });
+  };
+
+  const closeAIFactorsModal = () => {
+    setAiFactorsModal({
+      isOpen: false,
+      predictionId: '',
+      symbol: '',
+      companyName: ''
+    });
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -103,7 +129,10 @@ export default function PredictionsPage() {
 
             {/* 予測データテーブル */}
             <div className="xl:col-span-5">
-              <PredictionDataTable stock={selectedStock} />
+              <PredictionDataTable 
+                stock={selectedStock} 
+                onShowAIFactors={handleShowAIFactors}
+              />
             </div>
           </div>
 
@@ -155,13 +184,35 @@ export default function PredictionsPage() {
               ].map((stock) => (
                 <button
                   key={stock.symbol}
-                  onClick={() => setSelectedStock({
-                    symbol: stock.symbol,
-                    company_name: stock.name,
-                    market: stock.symbol.match(/^[A-Z]+$/) ? 'NASDAQ' : 'TSE',
-                    current_price: Math.random() * 2000 + 500,
-                    change_percent: (Math.random() - 0.5) * 6
-                  })}
+                  onClick={async () => {
+                    // 実際のAPIから株式データを取得
+                    try {
+                      const response = await apiClient.request(`/api/finance/stocks/${stock.symbol}/price?limit=1`);
+                      const priceData = response.data?.[0];
+                      setSelectedStock({
+                        symbol: stock.symbol,
+                        company_name: stock.name,
+                        market: stock.symbol.match(/^[A-Z]+$/) ? 'NASDAQ' : 'TSE',
+                        current_price: priceData?.close_price || priceData?.price || 1000,
+                        change_percent: priceData?.change_percent || 0
+                      });
+                    } catch (error) {
+                      // API失敗時のフォールバック（固定値）
+                      const defaultPrices: { [key: string]: number } = {
+                        'AAPL': 175.50,
+                        '7203': 2850,
+                        'GOOGL': 142.50,
+                        '6758': 13200
+                      };
+                      setSelectedStock({
+                        symbol: stock.symbol,
+                        company_name: stock.name,
+                        market: stock.symbol.match(/^[A-Z]+$/) ? 'NASDAQ' : 'TSE',
+                        current_price: defaultPrices[stock.symbol] || 1000,
+                        change_percent: 0
+                      });
+                    }
+                  }}
                   className="p-3 bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/50 rounded-lg transition-all text-left"
                 >
                   <div className="font-medium text-white text-sm">{stock.symbol}</div>
@@ -172,6 +223,15 @@ export default function PredictionsPage() {
           </div>
         </div>
       )}
+
+      {/* AI判断根拠モーダル */}
+      <AIDecisionFactorsModal
+        predictionId={aiFactorsModal.predictionId}
+        symbol={aiFactorsModal.symbol}
+        companyName={aiFactorsModal.companyName}
+        isOpen={aiFactorsModal.isOpen}
+        onClose={closeAIFactorsModal}
+      />
     </div>
   );
 }

@@ -1,0 +1,167 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - button:
+    - img
+  - link "Miraikakaku Dashboard":
+    - /url: /
+  - img
+  - textbox "株式コード、銘柄名で検索..."
+  - button "通知":
+    - img
+  - button "アクセシビリティ設定":
+    - img
+  - link "設定":
+    - /url: /settings
+    - img
+  - button "ユーザーメニュー":
+    - img
+- link "ダッシュ":
+  - /url: /
+  - img
+  - text: ダッシュ
+- link "ランキン":
+  - /url: /rankings
+  - img
+  - text: ランキン
+- link "テーマ分":
+  - /url: /themes
+  - img
+  - text: テーマ分
+- button:
+  - img
+- button "新しいタブ":
+  - img
+- text: M
+- heading "Miraikakaku" [level=3]
+- button "サイドバーを折りたたむ":
+  - img
+- navigation:
+  - link "ダッシュボード":
+    - /url: /
+    - img
+    - text: ダッシュボード
+    - button:
+      - img
+  - button "マーケット":
+    - img
+    - text: マーケット
+    - img
+  - link "ランキング":
+    - /url: /rankings
+    - img
+    - text: ランキング
+    - button:
+      - img
+  - link "テーマ別分析":
+    - /url: /themes
+    - img
+    - text: テーマ別分析
+    - button:
+      - img
+  - link "セクター分析":
+    - /url: /sectors
+    - img
+    - text: セクター分析
+    - button:
+      - img
+  - link "銘柄検索":
+    - /url: /search
+    - img
+    - text: 銘柄検索
+    - button:
+      - img
+  - link "マーケットニュース":
+    - /url: /news
+    - img
+    - text: マーケットニュース
+    - button:
+      - img
+  - button "AI分析":
+    - img
+    - text: AI分析
+    - img
+  - button "コミュニティ":
+    - img
+    - text: コミュニティ
+    - img
+  - button "マイページ":
+    - img
+    - text: マイページ
+    - img
+- text: "最近のページ: 0 お気に入り: 0"
+- main:
+  - main:
+    - heading "銘柄ランキング" [level=1]:
+      - img
+      - text: 銘柄ランキング
+    - paragraph: 様々な切り口から市場で注目される銘柄を発見しよう
+    - heading "フィルター" [level=3]:
+      - img
+      - text: フィルター
+    - button "詳細表示"
+    - text: 集計期間
+    - button "デイリー"
+    - button "週間"
+    - button "月間"
+    - text: 市場
+    - button "日本株"
+    - button "米国株"
+    - button "すべて"
+    - button "フィルターを適用"
+    - button "値上がり率":
+      - img
+      - text: 値上がり率
+    - button "値下がり率":
+      - img
+      - text: 値下がり率
+    - button "出来高":
+      - img
+      - text: 出来高
+    - button "AIスコア":
+      - img
+      - text: AIスコア
+    - button "成長ポテンシャル":
+      - img
+      - text: 成長ポテンシャル
+    - img
+    - text: 最も上昇している銘柄
+    - img
+    - paragraph: 表示するデータがありません
+    - paragraph: フィルター条件を変更してお試しください
+- link "ダッシュボ...":
+  - /url: /
+  - img
+  - text: ダッシュボ...
+- link "ランキング":
+  - /url: /rankings
+  - img
+  - text: ランキング
+- link "テーマ分析":
+  - /url: /themes
+  - img
+  - text: テーマ分析
+- link "AI予測":
+  - /url: /predictions
+  - img
+  - text: AI予測
+- link "出来高予測":
+  - /url: /volume
+  - img
+  - text: 出来高予測
+- button "パフォーマンス状態"
+- status
+- link "メインコンテンツにスキップ":
+  - /url: "#main-content"
+- img
+- text: 1 error
+- button "Hide Errors":
+  - img
+- status:
+  - img
+  - text: Static route
+  - button "Hide static indicator":
+    - img
+- alert
+```

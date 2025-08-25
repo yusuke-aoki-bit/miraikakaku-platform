@@ -61,7 +61,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
       setStockResults([]);
       setSelectedIndex(0);
     }
-  }, [isOpen, trackFeatureUsage]);
+  }, [isOpen]);
 
   useEffect(() => {
     // Close palette if route changes
