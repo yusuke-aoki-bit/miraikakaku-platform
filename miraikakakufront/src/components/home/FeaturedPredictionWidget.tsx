@@ -31,8 +31,9 @@ export default function FeaturedPredictionWidget() {
     try {
       // 成長ポテンシャルランキングから最も注目すべき銘柄を選択
       const response = await apiClient.getGrowthPotentialRankings(10);
-      if (response.status === 'success' && response.data && response.data.length > 0) {
-        const topStock = response.data[0];
+      const dataArray = Array.isArray(response.data) ? response.data : [];
+      if (response.status === 'success' && response.data && dataArray.length > 0) {
+        const topStock = dataArray[0];
         const enhanced: FeaturedPrediction = {
           symbol: topStock.symbol,
           company_name: topStock.company_name || topStock.symbol,

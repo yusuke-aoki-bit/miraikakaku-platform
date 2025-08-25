@@ -48,6 +48,9 @@ export default function HeroSection() {
       <div className="relative z-10">
         {/* ロゴとタイトル */}
         <div className="flex items-center space-x-3 mb-4">
+          <h1 className="text-2xl font-bold text-white">リアルタイムダッシュボード</h1>
+        </div>
+        <div className="flex items-center space-x-3 mb-4">
           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
             <Brain className="w-7 h-7 text-white" />
           </div>

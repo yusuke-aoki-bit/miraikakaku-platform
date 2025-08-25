@@ -53,15 +53,13 @@ export default function WatchlistPage() {
       
       // localStorageからウォッチリスト取得
       const watchlistResponse = await apiClient.getWatchlist();
-      if (watchlistResponse.status !== 'success' || !watchlistResponse.data || watchlistResponse.data.length === 0) {
-        // デフォルトのウォッチリスト設定
-        const defaultStocks = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', '7203'];
-        localStorage.setItem('watchlist', JSON.stringify(defaultStocks));
-        await loadStockData(defaultStocks);
-        return;
+      const watchlistData = Array.isArray(watchlistResponse.data) ? watchlistResponse.data : [];
+      if (watchlistResponse.status === 'success' && watchlistData.length > 0) {
+        await loadStockData(watchlistData);
+      } else {
+        // APIにデータがない場合は空のウォッチリストを表示
+        setWatchlist([]);
       }
-
-      await loadStockData(watchlistResponse.data);
     } catch (error) {
       console.error('ウォッチリスト読み込みエラー:', error);
       setWatchlist([]);

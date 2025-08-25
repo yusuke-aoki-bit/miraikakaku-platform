@@ -45,27 +45,28 @@ export default function RankingsPage() {
       // タブに応じて適切なAPIを呼び出し
       switch (activeTab) {
         case 'gainers':
-          response = await apiClient.getGainersRankings(limit);
+          response = await apiClient.getGainersRankings({ limit });
           break;
         case 'losers':
-          response = await apiClient.getLosersRankings(limit);
+          response = await apiClient.getLosersRankings({ limit });
           break;
         case 'volume':
           response = await apiClient.getVolumeRankings(limit);
           break;
         case 'ai-score':
-          response = await apiClient.getCompositeRankings(limit);
+          response = await apiClient.getCompositeRankings({ limit });
           break;
         case 'growth':
           response = await apiClient.getGrowthPotentialRankings(limit);
           break;
         default:
-          response = await apiClient.getGainersRankings(limit);
+          response = await apiClient.getGainersRankings({ limit });
       }
       
       if (response.status === 'success' && response.data) {
         // データをRankingStock形式に変換
-        const formattedData: RankingStock[] = response.data.map((stock: any, index: number) => ({
+        const dataArray = Array.isArray(response.data) ? response.data : [];
+        const formattedData: RankingStock[] = dataArray.map((stock: any, index: number) => ({
           rank: index + 1,
           symbol: stock.symbol,
           company_name: stock.company_name || stock.symbol,
@@ -89,24 +90,13 @@ export default function RankingsPage() {
   };
   
   const generateSparklineFromData = (stock: any): number[] => {
-    // 実際の価格データがあれば使用、なければ成長ポテンシャルベースで生成
-    if (stock.price_history && stock.price_history.length > 0) {
-      return stock.price_history.slice(-24).map((p: any) => p.close_price || p.price);
+    // APIから実際の価格履歴データがある場合のみ使用
+    if (stock.price_history && Array.isArray(stock.price_history) && stock.price_history.length > 0) {
+      return stock.price_history.slice(-24).map((p: any) => p.close_price || p.price || 0);
     }
     
-    // フォールバック: 成長ポテンシャルやchangePercentに基づいて現実的なチャートを生成
-    const data = [];
-    const basePrice = stock.current_price || 100;
-    const trend = (stock.change_percent || stock.growth_potential || 0) / 100;
-    
-    for (let i = 0; i < 24; i++) {
-      const progress = i / 23;
-      const trendEffect = basePrice * trend * progress;
-      const noise = basePrice * (Math.random() - 0.5) * 0.02; // 2%のノイズ
-      const price = basePrice + trendEffect + noise;
-      data.push(Math.max(price, 0));
-    }
-    return data;
+    // データがない場合は空配列を返す（チャートは表示されない）
+    return [];
   };
 
   const handleTabChange = (tabId: string) => {

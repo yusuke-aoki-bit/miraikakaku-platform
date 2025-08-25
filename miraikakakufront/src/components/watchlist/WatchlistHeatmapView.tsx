@@ -130,6 +130,7 @@ export default function WatchlistHeatmapView({
 
       items.push({
         ...stock,
+        market_cap: stock.market_cap || 100000000,
         width: finalWidth,
         height: finalHeight,
         x: currentX,

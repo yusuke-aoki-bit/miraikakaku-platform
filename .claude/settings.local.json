@@ -85,7 +85,13 @@
       "Bash(git push:*)",
       "Bash(gcloud logging read:*)",
       "Bash(gcloud topic:*)",
-      "Bash(./venv_batch/bin/pip install:*)"
+      "Bash(./venv_batch/bin/pip install:*)",
+      "Bash(PLAYWRIGHT_REUSE_EXISTING_SERVER=true npx playwright test --project=chromium --reporter=list)",
+      "Bash(gcloud projects list:*)",
+      "Bash(find:*)",
+      "Bash(gcloud beta run domain-mappings list:*)",
+      "Bash(gcloud beta run domain-mappings delete:*)",
+      "Bash(gcloud beta run domain-mappings create:*)"
     ],
     "deny": [],
     "ask": []

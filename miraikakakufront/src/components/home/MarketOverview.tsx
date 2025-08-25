@@ -47,13 +47,13 @@ export default function MarketOverview() {
           response = await apiClient.getTrendingStocks(10);
           break;
         case 'gainers':
-          response = await apiClient.getGainersRankings(10);
+          response = await apiClient.getGainersRankings({ limit: 10 });
           break;
         case 'losers':
-          response = await apiClient.getLosersRankings(10);
+          response = await apiClient.getLosersRankings({ limit: 10 });
           break;
         case 'volume':
-          response = await apiClient.getCompositeRankings(10);
+          response = await apiClient.getCompositeRankings({ limit: 10 });
           break;
         default:
           response = await apiClient.getTrendingStocks(10);

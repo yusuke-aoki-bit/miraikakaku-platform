@@ -85,16 +85,16 @@ export default function InteractivePredictionChart({ stock }: InteractivePredict
         apiClient.getHistoricalPredictions(stock.symbol, periodDays)
       ]);
 
-      // 実際の価格データ
-      const priceData = priceResponse.status === 'success' ? priceResponse.data : [];
-      const predictionData = predictionResponse.status === 'success' ? predictionResponse.data : [];
-      const historicalPredictions = historicalResponse.status === 'success' ? historicalResponse.data : [];
+      // 実際の価格データ（型安全）
+      const priceData: any[] = (priceResponse.status === 'success' && Array.isArray(priceResponse.data)) ? priceResponse.data : [];
+      const predictionData: any[] = (predictionResponse.status === 'success' && Array.isArray(predictionResponse.data)) ? predictionResponse.data : [];
+      const historicalPredictions: any[] = (historicalResponse.status === 'success' && Array.isArray(historicalResponse.data)) ? historicalResponse.data : [];
 
       // チャートデータを構築
       const combinedData: ChartDataPoint[] = [];
 
       // 過去の実際の価格データ
-      if (priceData && priceData.length > 0) {
+      if (priceData.length > 0) {
         priceData.forEach((point: any, index: number) => {
           const historical = historicalPredictions.find((h: any) => h.date === point.date);
           combinedData.push({
@@ -110,22 +110,18 @@ export default function InteractivePredictionChart({ stock }: InteractivePredict
       }
 
       // 未来の予測データ
-      if (predictionData && predictionData.length > 0) {
+      if (predictionData.length > 0) {
         const basePrice = stock.current_price;
-        predictionData.forEach((point: any, index: number) => {
-          const date = new Date();
-          date.setDate(date.getDate() + index + 1);
-          
-          const variation = (Math.random() - 0.5) * 0.1;
+        predictionData.forEach((point: any) => {
           combinedData.push({
-            date: date.toISOString().split('T')[0],
+            date: point.date,
             actual_price: undefined,
-            lstm_prediction: basePrice * (1 + (index * 0.002) + variation),
-            vertexai_prediction: basePrice * (1 + (index * 0.0015) + variation * 0.8),
-            randomforest_prediction: basePrice * (1 + (index * 0.0018) + variation * 1.2),
-            xgboost_prediction: basePrice * (1 + (index * 0.0022) + variation * 0.9),
-            confidence_upper: basePrice * (1 + (index * 0.002) + variation + 0.05),
-            confidence_lower: basePrice * (1 + (index * 0.002) + variation - 0.05),
+            lstm_prediction: point.lstm_prediction,
+            vertexai_prediction: point.vertexai_prediction,
+            randomforest_prediction: point.randomforest_prediction,
+            xgboost_prediction: point.xgboost_prediction,
+            confidence_upper: point.confidence_upper,
+            confidence_lower: point.confidence_lower,
             is_future: true
           });
         });

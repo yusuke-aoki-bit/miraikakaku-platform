@@ -91,7 +91,7 @@ export default function ContestDetailPage() {
 
       const response = await apiClient.getContestDetails(contestId);
       
-      if (response.success && response.data) {
+      if (response.status === 'success' && response.data) {
         setContest(response.data.contest);
         setDistribution(response.data.distribution);
       } else {

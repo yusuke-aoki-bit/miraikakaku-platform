@@ -74,11 +74,11 @@ export default function SectorDetails({ sectorId, sectorName, timeframe }: Secto
       ]);
 
       if (historicalResponse.status === 'success') {
-        setHistoricalData(historicalResponse.data);
+        setHistoricalData(historicalResponse.data as any);
       }
 
       if (outlookResponse.status === 'success') {
-        setAiOutlook(outlookResponse.data);
+        setAiOutlook(outlookResponse.data as any);
       }
     } catch (error) {
       console.error('Failed to fetch sector details:', error);

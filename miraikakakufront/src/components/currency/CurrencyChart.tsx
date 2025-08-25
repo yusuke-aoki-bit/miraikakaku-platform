@@ -74,7 +74,7 @@ export default function CurrencyChart({
   const [showPredictions, setShowPredictions] = useState(true);
   const [showConfidenceBand, setShowConfidenceBand] = useState(true);
   const [showTechnicalLevels, setShowTechnicalLevels] = useState(true);
-  const chartRef = useRef<ChartJS>(null);
+  const chartRef = useRef<any>(null);
 
   const fetchChartData = async () => {
     try {
@@ -90,8 +90,9 @@ export default function CurrencyChart({
       let labels: string[] = [];
       
       if (historyResponse.status === 'success' && historyResponse.data) {
-        historicalData = historyResponse.data.map((d: any) => d.rate);
-        labels = historyResponse.data.map((d: any) => {
+        const historyArray = Array.isArray(historyResponse.data) ? historyResponse.data : [];
+        historicalData = historyArray.map((d: any) => d.rate);
+        labels = historyArray.map((d: any) => {
           const date = new Date(d.timestamp);
           if (selectedTimeframe === '1H' || selectedTimeframe === '4H') {
             return date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
@@ -138,9 +139,10 @@ export default function CurrencyChart({
       const lastHistoricalRate = historicalData[historicalData.length - 1];
       
       if (predictionsResponse.status === 'success' && predictionsResponse.data) {
-        predictionsData = predictionsResponse.data.map((d: any) => d.predicted_rate);
-        upperBoundData = predictionsResponse.data.map((d: any) => d.upper_bound || d.predicted_rate * 1.002);
-        lowerBoundData = predictionsResponse.data.map((d: any) => d.lower_bound || d.predicted_rate * 0.998);
+        const predictionsArray = Array.isArray(predictionsResponse.data) ? predictionsResponse.data : [];
+        predictionsData = predictionsArray.map((d: any) => d.predicted_rate);
+        upperBoundData = predictionsArray.map((d: any) => d.upper_bound || d.predicted_rate * 1.002);
+        lowerBoundData = predictionsArray.map((d: any) => d.lower_bound || d.predicted_rate * 0.998);
       } else {
         // モック予測データ
         const trendStrength = (Math.random() - 0.5) * 0.02; // -1% to +1% trend

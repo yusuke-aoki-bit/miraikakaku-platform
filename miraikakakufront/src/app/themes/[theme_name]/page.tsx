@@ -74,7 +74,7 @@ export default function ThemeDetailPage() {
 
       const response = await apiClient.getThemeDetails(themeId);
       
-      if (response.success && response.data) {
+      if (response.status === 'success' && response.data) {
         setTheme(response.data.theme);
         setStocks(response.data.stocks);
         setPerformanceData(response.data.performance_data);

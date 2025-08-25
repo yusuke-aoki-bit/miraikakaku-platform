@@ -78,13 +78,13 @@ export default function VolumeAnalysisChart({ stock }: VolumeAnalysisChartProps)
       const combinedData: VolumeAnalysisDataPoint[] = [];
       
       // 過去のデータ処理
-      if (priceResponse.status === 'success' && priceResponse.data) {
+      if (priceResponse.status === 'success' && Array.isArray(priceResponse.data)) {
         const priceData = priceResponse.data;
-        const volumeData = volumeResponse.status === 'success' ? volumeResponse.data : [];
+        const volumeData = (volumeResponse.status === 'success' && Array.isArray(volumeResponse.data)) ? volumeResponse.data : [];
         
         priceData.forEach((pricePoint: any, index: number) => {
           const volumePoint = volumeData.find((v: any) => v.date === pricePoint.date);
-          const volume = volumePoint?.volume || Math.floor(Math.random() * 5000000) + 1000000;
+          const volume = volumePoint?.volume || 1000000;
           
           // 20日移動平均計算（簡易版）
           const startIndex = Math.max(0, index - 19);
@@ -113,8 +113,8 @@ export default function VolumeAnalysisChart({ stock }: VolumeAnalysisChartProps)
       }
 
       // 未来の予測データ処理
-      if (volumePredictionResponse.status === 'success' && volumePredictionResponse.data) {
-        const lastPrice = combinedData[combinedData.length - 1]?.close_price || stock.current_price;
+      if (volumePredictionResponse.status === 'success' && Array.isArray(volumePredictionResponse.data)) {
+        const lastPrice = combinedData[combinedData.length - 1]?.close_price || (stock as any).current_price;
         const avgVolume = combinedData.slice(-20).reduce((sum, item) => sum + item.volume, 0) / 20;
         
         volumePredictionResponse.data.forEach((prediction: any, index: number) => {
@@ -450,7 +450,7 @@ export default function VolumeAnalysisChart({ stock }: VolumeAnalysisChartProps)
                 {/* 実績出来高 */}
                 <Bar
                   dataKey="volume"
-                  fill={(entry: any) => entry?.is_up_day ? '#10b981' : '#ef4444'}
+                  fill="#10b981"
                   opacity={0.7}
                 />
 
@@ -458,7 +458,7 @@ export default function VolumeAnalysisChart({ stock }: VolumeAnalysisChartProps)
                 {showPredictions && (
                   <Bar
                     dataKey="predicted_volume"
-                    fill={(entry: any) => entry?.is_up_day ? '#8b5cf6' : '#f97316'}
+                    fill="#8b5cf6"
                     opacity={0.5}
                   />
                 )}

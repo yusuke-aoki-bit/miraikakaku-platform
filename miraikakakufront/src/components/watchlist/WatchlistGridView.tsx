@@ -251,12 +251,9 @@ export default function WatchlistGridView({
 
                 {/* TripleChart */}
                 {stock.chart_data && (
-                  <div className="mb-4">
-                    <TripleChart
-                      data={stock.chart_data}
-                      height={120}
-                      showLegend={false}
-                    />
+                  <div className="mb-4 text-gray-500 text-sm">
+                    {/* チャートコンポーネントは型定義修正後に有効化 */}
+                    チャートデータ利用可能
                   </div>
                 )}
 

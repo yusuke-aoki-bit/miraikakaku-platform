@@ -187,8 +187,8 @@ export default function PredictionsPage() {
                   onClick={async () => {
                     // 実際のAPIから株式データを取得
                     try {
-                      const response = await apiClient.request(`/api/finance/stocks/${stock.symbol}/price?limit=1`);
-                      const priceData = response.data?.[0];
+                      const response = await apiClient.getStockPrice(stock.symbol, 1);
+                      const priceData = response.status === 'success' ? (response.data as any)?.[0] : null;
                       setSelectedStock({
                         symbol: stock.symbol,
                         company_name: stock.name,

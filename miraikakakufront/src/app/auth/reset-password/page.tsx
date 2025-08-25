@@ -31,10 +31,10 @@ function ResetPasswordContent() {
     try {
       const response = await apiClient.validatePasswordResetToken(tokenParam);
       
-      if (response.success) {
+      if (response.status === 'success') {
         setToken(tokenParam);
       } else {
-        setValidationError(response.message || 'パスワード再設定トークンが無効または期限切れです。');
+        setValidationError(response.error || 'パスワード再設定トークンが無効または期限切れです。');
       }
     } catch (error) {
       console.error('Token validation failed:', error);

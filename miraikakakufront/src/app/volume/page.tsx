@@ -17,15 +17,36 @@ interface Stock {
 
 export default function VolumePage() {
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState('1D');
 
   return (
     <div className="p-6 space-y-6">
+      {/* ページタイトル */}
+      <h1 className="text-3xl font-bold text-white">Volume Analysis</h1>
+      
+      {/* 期間選択ボタン */}
+      <div className="flex space-x-2">
+        {['1D', '1W', '1M', '3M', '6M', '1Y'].map((period) => (
+          <button
+            key={period}
+            onClick={() => setSelectedPeriod(period)}
+            className={`px-4 py-2 rounded-lg transition-all ${
+              selectedPeriod === period
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+            }`}
+          >
+            {period}
+          </button>
+        ))}
+      </div>
+      
       {/* ページヘッダー */}
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <BarChart3 className="w-8 h-8 mr-3 text-green-400" />
           <div>
-            <h1 className="text-2xl font-bold text-white">出来高予測分析</h1>
+            <h2 className="text-2xl font-bold text-white">出来高予測分析</h2>
             <p className="text-sm text-gray-400 mt-1">
               AIによる出来高パターン分析と未来予測で価格変動の前兆を捉える
             </p>
@@ -128,8 +149,8 @@ export default function VolumePage() {
                   onClick={async () => {
                     // 実際のAPIから株式データを取得
                     try {
-                      const response = await apiClient.request(`/api/finance/stocks/${stock.symbol}/price?limit=1`);
-                      const priceData = response.data?.[0];
+                      const response = await apiClient.getStockPrice(stock.symbol, 1);
+                      const priceData = response.status === 'success' ? (response.data as any)?.[0] : null;
                       setSelectedStock({
                         symbol: stock.symbol,
                         company_name: stock.name,

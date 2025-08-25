@@ -64,7 +64,7 @@ export default function SearchPage() {
       const response = await apiClient.searchStocksAdvanced(query, searchFilters);
       
       if (response.status === 'success' && response.data) {
-        const results = Array.isArray(response.data) ? response.data : response.data.stocks || [];
+        const results = Array.isArray(response.data) ? response.data : (response.data as any)?.stocks || [];
         const formattedResults: SearchResult[] = results.map((stock: any) => ({
           symbol: stock.symbol,
           company_name: stock.company_name || stock.name || stock.symbol,
@@ -81,7 +81,7 @@ export default function SearchPage() {
         }));
         
         setSearchResults(formattedResults);
-        setTotalCount(response.data.total || formattedResults.length);
+        setTotalCount((response.data as any)?.total || formattedResults.length);
         
         if (formattedResults.length > 0) {
           fetchBatchChartData(formattedResults.map(s => s.symbol));
@@ -105,33 +105,18 @@ export default function SearchPage() {
       if (response.status === 'success' && response.data) {
         setSearchResults(prev => prev.map(stock => ({
           ...stock,
-          chart_data: response.data[stock.symbol] || generateMockChartData()
+          chart_data: (response.data as any)?.[stock.symbol] || { historical: [], past_prediction: [], future_prediction: [] }
         })));
       }
     } catch (error) {
       console.error('Failed to fetch batch chart data:', error);
       setSearchResults(prev => prev.map(stock => ({
         ...stock,
-        chart_data: generateMockChartData()
+        chart_data: { historical: [], past_prediction: [], future_prediction: [] }
       })));
     }
   };
   
-  const generateMockChartData = () => ({
-    historical: generateMockData(100, 30),
-    past_prediction: generateMockData(95, 30),
-    future_prediction: generateMockData(105, 30)
-  });
-  
-  const generateMockData = (base: number, length: number): number[] => {
-    const data = [];
-    let current = base;
-    for (let i = 0; i < length; i++) {
-      current += (Math.random() - 0.5) * 5;
-      data.push(current);
-    }
-    return data;
-  };
 
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);

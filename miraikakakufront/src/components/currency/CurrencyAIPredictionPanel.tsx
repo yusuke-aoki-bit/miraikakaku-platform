@@ -67,7 +67,7 @@ export default function CurrencyAIPredictionPanel({
 
       // 現在レート設定
       if (rateResponse.status === 'success' && rateResponse.data) {
-        setCurrentRate(rateResponse.data);
+        setCurrentRate(rateResponse.data as CurrencyRate);
       } else {
         // モックデータ
         const mockRate = pair === 'USD/JPY' ? 150 : 
@@ -85,12 +85,13 @@ export default function CurrencyAIPredictionPanel({
       // 各タイムフレームの予測を取得
       const predictionPromises = timeframes.map(async (timeframe) => {
         const response = await apiClient.getCurrencyPredictions(pair, timeframe, 1);
-        if (response.status === 'success' && response.data?.[0]) {
+        const dataArray = Array.isArray(response.data) ? response.data : [];
+        if (response.status === 'success' && dataArray[0]) {
           return {
             timeframe,
-            predicted_rate: response.data[0].predicted_rate,
-            confidence: response.data[0].confidence,
-            change_percent: response.data[0].change_percent || 0
+            predicted_rate: dataArray[0].predicted_rate,
+            confidence: dataArray[0].confidence,
+            change_percent: dataArray[0].change_percent || 0
           };
         }
         
@@ -110,8 +111,9 @@ export default function CurrencyAIPredictionPanel({
 
       // AIインサイトの処理
       if (insightsResponse.status === 'success' && insightsResponse.data) {
-        setAISignal(insightsResponse.data.ai_signal);
-        setKeyDrivers(insightsResponse.data.key_drivers);
+        const insights = insightsResponse.data as any;
+        setAISignal(insights.ai_signal);
+        setKeyDrivers(insights.key_drivers);
       } else {
         // モックAIシグナル
         const signals: (keyof typeof SIGNAL_CONFIG)[] = ['strong_buy', 'buy', 'neutral', 'sell', 'strong_sell'];

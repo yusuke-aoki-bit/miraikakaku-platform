@@ -27,7 +27,7 @@ export default function MarketNews() {
           sort: 'latest'
         });
         
-        if (response.status === 'success' && response.data) {
+        if (response.status === 'success' && Array.isArray(response.data)) {
           const transformedNews: NewsItem[] = response.data.map((article: any, index: number) => ({
             id: article.id || `news-${index}`,
             title: article.title || article.headline || 'ニュース見出し',

@@ -2,8 +2,8 @@
 
 import { 
   CurrencyDollarIcon, 
-  TrendingUpIcon, 
-  TrendingDownIcon,
+  ArrowTrendingUpIcon as TrendingUpIcon, 
+  ArrowTrendingDownIcon as TrendingDownIcon,
   GiftIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline';

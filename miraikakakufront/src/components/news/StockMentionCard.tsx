@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { 
-  TrendingUpIcon, 
-  TrendingDownIcon,
+  ArrowTrendingUpIcon as TrendingUpIcon, 
+  ArrowTrendingDownIcon as TrendingDownIcon,
   EyeIcon,
   PlusIcon,
   CheckIcon

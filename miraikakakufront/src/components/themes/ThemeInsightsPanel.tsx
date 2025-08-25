@@ -82,7 +82,7 @@ export default function ThemeInsightsPanel({ theme }: ThemeInsightsPanelProps) {
       setLoadingNews(true);
       const response = await apiClient.getThemeNews(theme.id);
       
-      if (response.success && response.data) {
+      if (response.status === 'success' && response.data) {
         setNews(response.data);
       } else {
         // Generate mock news data
@@ -101,7 +101,7 @@ export default function ThemeInsightsPanel({ theme }: ThemeInsightsPanelProps) {
       setLoadingInsights(true);
       const response = await apiClient.getThemeAIInsights(theme.id);
       
-      if (response.success && response.data) {
+      if (response.status === 'success' && response.data) {
         setAIInsights(response.data);
       } else {
         // Generate mock AI insights

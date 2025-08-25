@@ -32,7 +32,7 @@ export default function ContestsPage() {
       setLoading(true);
       const response = await apiClient.getContestStats();
       
-      if (response.success && response.data) {
+      if (response.status === 'success' && response.data) {
         setStats(response.data);
       } else {
         // Generate mock stats for development

@@ -232,7 +232,7 @@ export default function ModelPerformanceDashboard({ stock }: ModelPerformanceDas
     try {
       const response = await apiClient.getModelPerformance(stock.symbol);
       if (response.status === 'success' && response.data) {
-        setPerformanceData(response.data);
+        setPerformanceData(response.data as ModelPerformanceData);
       }
     } catch (error) {
       console.error('Failed to fetch model performance:', error);

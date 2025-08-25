@@ -27,7 +27,8 @@ export default function TrendingStocksWidget() {
     try {
       const response = await apiClient.getTrendingStocks(5);
       if (response.status === 'success' && response.data) {
-        const enhancedData = response.data.map((stock: any, index: number) => {
+        const dataArray = Array.isArray(response.data) ? response.data : [];
+        const enhancedData = dataArray.map((stock: any, index: number) => {
           const reasonInfo = generateReasonFromStock(stock);
           return {
             symbol: stock.symbol,

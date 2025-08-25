@@ -325,7 +325,7 @@ export default function PastContests() {
       setLoading(true);
       const response = await apiClient.getPastContests();
       
-      if (response.success && response.data) {
+      if (response.status === 'success' && response.data) {
         setContests(response.data);
       } else {
         // Generate mock past contests for development

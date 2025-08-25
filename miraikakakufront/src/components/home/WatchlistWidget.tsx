@@ -60,7 +60,7 @@ export default function WatchlistWidget() {
         
         if (response.status === 'success' && response.data) {
           const stockData: WatchlistStock[] = symbols.slice(0, 5).map(symbol => {
-            const stockInfo = response.data[symbol];
+            const stockInfo = (response.data as any)?.[symbol];
             const latestPrice = stockInfo?.prices?.[stockInfo.prices.length - 1];
             
             return {

@@ -64,11 +64,10 @@ export default function AdvancedStockSearch() {
 
     setLoading(true);
     try {
-      const response = await apiClient.searchStocks(
-        searchQuery,
-        20,
-        currencyFilter
-      );
+      const response = await apiClient.searchStocks({
+        query: searchQuery,
+        limit: 20
+      });
 
       if (response.status === 'success' && response.data) {
         setSearchResults(Array.isArray(response.data) ? response.data : []);
@@ -89,7 +88,7 @@ export default function AdvancedStockSearch() {
 
     setLoading(true);
     try {
-      const response = await apiClient.getStocksBySector(sectorId, 20, currencyFilter);
+      const response = await apiClient.getStocksBySector(sectorId, { limit: 20 });
       if (response.status === 'success' && response.data) {
         setSearchResults(Array.isArray(response.data) ? response.data : []);
       } else {

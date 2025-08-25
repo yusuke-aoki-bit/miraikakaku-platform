@@ -53,7 +53,7 @@ interface ThemeStockTableProps {
   stocks: Stock[];
 }
 
-type SortField = 'theme_weight' | 'current_price' | 'change_percent' | 'market_cap' | 'ai_score' | 'symbol';
+type SortField = 'theme_weight' | 'current_price' | 'change_percent' | 'market_cap' | 'ai_score' | 'symbol' | 'company_name';
 type SortOrder = 'asc' | 'desc';
 
 export default function ThemeStockTable({ theme, stocks }: ThemeStockTableProps) {

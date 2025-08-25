@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useDashboardStore } from '@/store/dashboardStore';
-import { useUserModeStore } from '@/store/userModeStore';
 import { Widget, WidgetPosition, WidgetSize } from '@/types/dashboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -45,7 +44,13 @@ export default function GridDashboard({ className = '' }: GridDashboardProps) {
     gridConfig
   } = useDashboardStore();
 
-  const { config: userConfig, trackFeatureUsage } = useUserModeStore();
+  // Removed userModeStore dependency
+  const trackFeatureUsage = (feature: string) => {
+    // Stub for feature tracking - could be implemented later
+    console.debug('Feature used:', feature);
+  };
+  
+  const userConfig = { mode: 'light' as const }; // Default user config
   
   const [showWidgetSelector, setShowWidgetSelector] = useState(false);
   const [draggedWidget, setDraggedWidget] = useState<Widget | null>(null);

@@ -110,7 +110,7 @@ export default function SocialShare({ title, url }: SocialShareProps) {
           </button>
 
           {/* ネイティブシェア（モバイル端末） */}
-          {typeof navigator !== 'undefined' && navigator.share && (
+          {typeof navigator !== 'undefined' && 'share' in navigator && (
             <button
               onClick={handleNativeShare}
               className="flex items-center justify-center w-10 h-10 rounded-full bg-accent-primary hover:bg-accent-primary/90 text-white transition-colors md:hidden"

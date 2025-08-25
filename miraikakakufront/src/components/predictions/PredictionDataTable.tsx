@@ -63,77 +63,43 @@ export default function PredictionDataTable({ stock, onShowAIFactors }: Predicti
       const days = selectedPeriod === '1W' ? 7 : selectedPeriod === '1M' ? 30 : 90;
       const response = await apiClient.getStockPredictions(stock.symbol, undefined, days);
       
-      if (response.status === 'success' && response.data) {
+      if (response.status === 'success' && Array.isArray(response.data)) {
         // APIデータを変換
         const transformedData: PredictionRow[] = response.data.map((item: any, index: number) => {
-          const basePrice = 1000 + Math.random() * 2000; // モックベース価格
-          const trend = (Math.random() - 0.5) * 0.1; // -5% to +5% trend
-          const predictedPrice = basePrice * (1 + trend + (index * 0.001));
-          const confidence = Math.random() * 30 + 70; // 70-100%
-          const range = predictedPrice * (confidence / 100) * 0.1; // 信頼度に基づく範囲
+          const predictedPrice = item.predicted_price || (stock as any).current_price * 1.05;
+          const confidence = (item.confidence || 0.75) * 100;
+          const range = predictedPrice * 0.05;
           
           const date = new Date();
           date.setDate(date.getDate() + index + 1);
 
           return {
-            date: date.toISOString().split('T')[0],
+            date: item.date || new Date(Date.now() + index * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             predicted_price: predictedPrice,
             confidence: confidence,
             prediction_range: {
-              min: predictedPrice - range,
-              max: predictedPrice + range
+              min: item.prediction_range?.min || predictedPrice - range,
+              max: item.prediction_range?.max || predictedPrice + range
             },
-            change_from_current: predictedPrice - basePrice,
-            change_percent: ((predictedPrice - basePrice) / basePrice) * 100,
+            change_from_current: predictedPrice - (stock as any).current_price,
+            change_percent: ((predictedPrice - (stock as any).current_price) / (stock as any).current_price) * 100,
             model_consensus: getConsensusLabel(confidence)
           };
         });
 
         setPredictions(transformedData);
       } else {
-        // モックデータで代替
-        generateMockData();
+        // APIデータが無い場合は空配列
+        setPredictions([]);
       }
     } catch (error) {
       console.error('Failed to fetch prediction data:', error);
-      generateMockData();
+      setPredictions([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const generateMockData = () => {
-    if (!stock) return;
-    
-    const days = selectedPeriod === '1W' ? 7 : selectedPeriod === '1M' ? 30 : 90;
-    const basePrice = 1000 + Math.random() * 2000;
-    const mockData: PredictionRow[] = [];
-
-    for (let i = 0; i < days; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() + i + 1);
-      
-      const trend = (Math.random() - 0.5) * 0.05 + (i / days) * 0.02;
-      const predictedPrice = basePrice * (1 + trend);
-      const confidence = Math.random() * 25 + 75;
-      const range = predictedPrice * 0.05 * (confidence / 100);
-
-      mockData.push({
-        date: date.toISOString().split('T')[0],
-        predicted_price: predictedPrice,
-        confidence: confidence,
-        prediction_range: {
-          min: predictedPrice - range,
-          max: predictedPrice + range
-        },
-        change_from_current: predictedPrice - basePrice,
-        change_percent: ((predictedPrice - basePrice) / basePrice) * 100,
-        model_consensus: getConsensusLabel(confidence)
-      });
-    }
-
-    setPredictions(mockData);
-  };
 
   const getConsensusLabel = (confidence: number): string => {
     if (confidence >= 90) return '強い一致';

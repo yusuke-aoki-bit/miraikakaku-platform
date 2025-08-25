@@ -202,7 +202,8 @@ export default function WatchlistListView({
           )}
 
           {TABLE_COLUMNS.map((column) => {
-            const isSortable = column.key && ['symbol', 'price', 'change', 'volume', 'marketCap', 'aiScore'].includes(column.key);
+            const sortableKeys: SortOption[] = ['symbol', 'price', 'change', 'volume', 'marketCap', 'aiScore'];
+            const isSortable = column.key && sortableKeys.includes(column.key as SortOption);
             
             return (
               <div
@@ -210,14 +211,14 @@ export default function WatchlistListView({
                 className={`${column.width} flex items-center ${
                   isSortable ? 'cursor-pointer hover:text-blue-400' : ''
                 } transition-colors`}
-                onClick={() => isSortable && column.key && handleSort(column.key)}
+                onClick={() => isSortable && column.key && handleSort(column.key as SortOption)}
               >
                 <span className="text-sm font-medium text-gray-300">
                   {column.label}
                 </span>
                 {isSortable && column.key && (
                   <span className="ml-2">
-                    {getSortIcon(column.key)}
+                    {getSortIcon(column.key as SortOption)}
                   </span>
                 )}
               </div>

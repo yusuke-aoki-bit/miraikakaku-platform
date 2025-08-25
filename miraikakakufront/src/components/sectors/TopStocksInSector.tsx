@@ -52,20 +52,20 @@ export default function TopStocksInSector({ sectorId, sectorName }: TopStocksInS
     
     setLoading(true);
     try {
-      const response = await apiClient.getStocksBySector(sectorId, 50);
+      const response = await apiClient.getStocksBySector(sectorId, { limit: 50 });
       
-      if (response.status === 'success' && response.data) {
+      if (response.status === 'success' && Array.isArray(response.data)) {
         // ウォッチリスト情報を取得
         const watchlist = JSON.parse(localStorage.getItem('user_watchlist') || '[]');
         
         const enhancedStocks: StockInSector[] = response.data.map((stock: any) => ({
           symbol: stock.symbol,
           company_name: stock.company_name || stock.name || stock.symbol,
-          current_price: stock.current_price || Math.random() * 3000 + 100,
-          change_percent: stock.change_percent || (Math.random() - 0.5) * 10,
-          ai_score: stock.ai_score || Math.floor(Math.random() * 40) + 60,
-          market_cap: stock.market_cap || Math.random() * 1000000000000,
-          volume: stock.volume || Math.floor(Math.random() * 10000000) + 100000,
+          current_price: stock.current_price || 1000,
+          change_percent: stock.change_percent || 0,
+          ai_score: stock.ai_score || 75,
+          market_cap: stock.market_cap || 1000000000,
+          volume: stock.volume || 1000000,
           isWatched: watchlist.includes(stock.symbol)
         }));
 

@@ -205,8 +205,6 @@ export default function WatchlistToolbar({
           
           <StockSearch 
             onSymbolSelect={handleAddStock}
-            placeholder="銘柄名またはシンボルを入力..."
-            showRecentSearches={true}
           />
         </div>
       )}

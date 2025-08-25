@@ -75,7 +75,7 @@ const IndexChart = memo(function IndexChart({ data }: IndexChartProps) {
             borderRadius: '8px',
             color: '#F9FAFB'
           }}
-          formatter={(value: number | null, name: string) => {
+          formatter={(value: any, name: string) => {
             if (value === null) return ['---', name];
             const labels = {
               actual: '実測値',

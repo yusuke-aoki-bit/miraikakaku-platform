@@ -41,7 +41,7 @@ export default function ThemesPage() {
       
       const response = await apiClient.getThemes();
       
-      if (response.success && response.data) {
+      if (response.status === 'success' && response.data) {
         const allThemes = response.data;
         setThemes(allThemes);
         setFeaturedThemes(allThemes.filter((theme: Theme) => theme.is_featured));

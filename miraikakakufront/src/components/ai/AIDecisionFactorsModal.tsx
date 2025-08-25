@@ -50,7 +50,7 @@ export default function AIDecisionFactorsModal({
       setError(null);
       const response = await apiClient.getAIDecisionFactors(predictionId);
       
-      if (response.success && response.data) {
+      if (response.status === 'success' && response.data) {
         setFactors(response.data.factors);
         generateSummary(response.data.factors);
       }

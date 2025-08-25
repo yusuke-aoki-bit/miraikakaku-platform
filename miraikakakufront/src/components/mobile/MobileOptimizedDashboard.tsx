@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useDashboardStore } from '@/store/dashboardStore';
-import { useUserModeStore } from '@/store/userModeStore';
+// import { useUserModeStore } from '@/store/userModeStore'; // Removed
 import { useResponsive } from '@/hooks/useResponsive';
 import { Widget } from '@/types/dashboard';
 import { 
@@ -127,7 +127,8 @@ function MobileWidgetCard({ widget, isExpanded, onToggleExpand, onRefresh }: Wid
 
 export default function MobileOptimizedDashboard({ className = '' }: MobileOptimizedDashboardProps) {
   const { getActiveLayout, updateWidget } = useDashboardStore();
-  const { config } = useUserModeStore();
+  // const { config } = useUserModeStore(); // Removed - using default config
+  const config = { mode: 'light' as const };
   const { isMobile } = useResponsive();
   const [expandedWidgetId, setExpandedWidgetId] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<'grid' | 'list'>('grid');

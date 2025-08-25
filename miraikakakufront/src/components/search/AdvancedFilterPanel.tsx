@@ -69,22 +69,11 @@ export default function AdvancedFilterPanel({
   const fetchSectors = async () => {
     try {
       const response = await apiClient.getSectors();
-      if (response.status === 'success' && response.data) {
+      if (response.status === 'success' && Array.isArray(response.data)) {
         setSectors(response.data);
       } else {
-        // フォールバック用のモックセクター
-        setSectors([
-          { id: 'technology', name: 'テクノロジー', count: 120 },
-          { id: 'finance', name: '金融', count: 85 },
-          { id: 'healthcare', name: 'ヘルスケア', count: 67 },
-          { id: 'consumer', name: '消費財', count: 93 },
-          { id: 'industrial', name: '工業', count: 78 },
-          { id: 'energy', name: 'エネルギー', count: 34 },
-          { id: 'materials', name: '素材', count: 45 },
-          { id: 'utilities', name: '公益', count: 28 },
-          { id: 'real-estate', name: '不動産', count: 31 },
-          { id: 'communications', name: '通信', count: 22 }
-        ]);
+        // API失敗時は空配列
+        setSectors([]);
       }
     } catch (error) {
       console.error('Failed to fetch sectors:', error);

@@ -68,7 +68,8 @@ export default function EconomicCalendarWidget({
       );
 
       if (response.status === 'success' && response.data) {
-        setEvents(response.data.slice(0, limit));
+        const dataArray = Array.isArray(response.data) ? response.data : [];
+        setEvents(dataArray.slice(0, limit));
       } else {
         // モックデータ
         const mockEvents: EconomicEvent[] = [

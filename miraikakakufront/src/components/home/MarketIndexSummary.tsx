@@ -39,28 +39,28 @@ export default function MarketIndexSummary() {
     const fetchMarketData = async () => {
       try {
         setLoading(true);
-        const response = await apiClient.request('/api/analytics/market-overview');
+        const response = await apiClient.getMarketIndices();
         
         if (response.status === 'success' && response.data) {
-          const marketData = response.data;
+          const marketData = Array.isArray(response.data) ? response.data : [];
           
           // APIデータを変換
-          const transformedIndices: IndexData[] = marketData.market_indices?.map((index: any) => ({
+          const transformedIndices: IndexData[] = marketData?.map((index: any) => ({
             name: getJapaneseName(index.index),
             value: index.current_value,
             change: index.daily_change,
             changePercent: index.daily_change_percent,
-            sparklineData: generateSparklineData(index.current_value, index.daily_change_percent)
+            sparklineData: index.sparkline_data || []
           })) || [];
           
           setIndices(transformedIndices);
         } else {
-          // API失敗時のフォールバック
-          setIndices(getFallbackData());
+          // API失敗時は空配列
+          setIndices([]);
         }
       } catch (error) {
         console.error('市場データ取得エラー:', error);
-        setIndices(getFallbackData());
+        setIndices([]);
       } finally {
         setLoading(false);
       }
@@ -80,50 +80,6 @@ export default function MarketIndexSummary() {
     return nameMap[indexSymbol] || indexSymbol;
   }
 
-  function getFallbackData(): IndexData[] {
-    return [
-      {
-        name: '日経平均225',
-        value: 39123.45,
-        change: 123.45,
-        changePercent: 0.32,
-        sparklineData: generateSparklineData(39000, 0.32)
-      },
-      {
-        name: 'TOPIX',
-        value: 2781.45,
-        change: -12.34,
-        changePercent: -0.44,
-        sparklineData: generateSparklineData(2780, -0.44)
-      },
-      {
-        name: 'NYダウ',
-        value: 38456.78,
-        change: 234.56,
-        changePercent: 0.61,
-        sparklineData: generateSparklineData(38400, 0.61)
-      },
-      {
-        name: 'NASDAQ',
-        value: 15234.12,
-        change: 45.67,
-        changePercent: 0.30,
-        sparklineData: generateSparklineData(15200, 0.30)
-      }
-    ];
-  }
-
-  function generateSparklineData(base: number, changePercent: number): number[] {
-    const data = [];
-    let current = base * (1 - Math.abs(changePercent) / 100);
-    for (let i = 0; i < 24; i++) {
-      current += (Math.random() - 0.5) * base * 0.001;
-      data.push(current);
-    }
-    // 最終値を現在値に設定
-    data[data.length - 1] = base;
-    return data;
-  }
 
   return (
     <div className="space-y-4">
