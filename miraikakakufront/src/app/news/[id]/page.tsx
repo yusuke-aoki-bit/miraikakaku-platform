@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import ArticleHeader from '@/components/news/ArticleHeader';
 import ArticleBody from '@/components/news/ArticleBody';
@@ -53,13 +53,7 @@ export default function NewsDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (articleId) {
-      fetchArticleData();
-    }
-  }, [articleId]);
-
-  const fetchArticleData = async () => {
+  const fetchArticleData = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -67,14 +61,14 @@ export default function NewsDetailPage() {
       // 記事データを取得
       const articleResponse = await apiClient.getNewsArticle(articleId);
       
-      if (articleResponse.status === 'success' && articleResponse.data) {
+      if (articleResponse.success && articleResponse.data) {
         const articleData = articleResponse.data as NewsArticle;
         setArticle(articleData);
 
         // 関連銘柄データを取得
         if (articleData.related_stocks.length > 0) {
           const stocksResponse = await apiClient.getBatchStockDetails(articleData.related_stocks);
-          if (stocksResponse.status === 'success') {
+          if (stocksResponse.success) {
             const stocksData = Object.values(stocksResponse.data || {}) as StockData[];
             setRelatedStocks(stocksData);
           }
@@ -82,7 +76,7 @@ export default function NewsDetailPage() {
 
         // 関連ニュースを取得
         const relatedResponse = await apiClient.getRelatedNews(articleId);
-        if (relatedResponse.status === 'success') {
+        if (relatedResponse.success) {
           setRelatedNews(relatedResponse.data || []);
         }
       } else {
@@ -94,7 +88,13 @@ export default function NewsDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [articleId]);
+
+  useEffect(() => {
+    if (articleId) {
+      fetchArticleData();
+    }
+  }, [articleId, fetchArticleData]);
 
   if (loading) {
     return (

@@ -41,7 +41,7 @@ export default function MarketIndexSummary() {
         setLoading(true);
         const response = await apiClient.getMarketIndices();
         
-        if (response.status === 'success' && response.data) {
+        if (response.success && response.data) {
           const marketData = Array.isArray(response.data) ? response.data : [];
           
           // APIデータを変換

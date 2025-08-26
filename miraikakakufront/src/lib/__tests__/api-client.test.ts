@@ -18,12 +18,14 @@ describe('APIClient', () => {
         json: () => Promise.resolve(mockResponse),
       } as Response);
 
-      const result = await apiClient.searchStocks('AAPL');
+      const result = await apiClient.searchStocks({ query: 'AAPL' });
 
-      expect(result.status).toBe('success');
-      expect(result.data).toEqual(mockResponse);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toEqual(mockResponse);
+      }
       expect(mockFetch).toHaveBeenCalledWith(
-        `${API_CONFIG.DEFAULT_BASE_URL}/api/finance/stocks/search?query=AAPL&limit=${PAGINATION.DEFAULT_PAGE_SIZE}`,
+        `${API_CONFIG.DEFAULT_BASE_URL}/api/stocks/search?query=AAPL`,
         expect.objectContaining({
           headers: {
             'Content-Type': 'application/json',
@@ -39,18 +41,18 @@ describe('APIClient', () => {
         statusText: 'Not Found',
       } as Response);
 
-      const result = await apiClient.searchStocks('INVALID');
+      const result = await apiClient.searchStocks({ query: 'INVALID' });
 
-      expect(result.status).toBe('error');
+      expect(result.success).toBe(false);
       expect(result.error).toBe('HTTP 404: Not Found');
     });
 
     it('ネットワークエラーを正しく処理する', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      const result = await apiClient.searchStocks('AAPL');
+      const result = await apiClient.searchStocks({ query: 'AAPL' });
 
-      expect(result.status).toBe('error');
+      expect(result.success).toBe(false);
       expect(result.error).toBe('Network error');
     });
   });
@@ -63,13 +65,13 @@ describe('APIClient', () => {
         json: () => Promise.resolve(mockData),
       } as Response);
 
-      const result = await apiClient.searchStocks('AAPL');
+      const result = await apiClient.searchStocks({ query: 'AAPL' });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        `${API_CONFIG.DEFAULT_BASE_URL}/api/finance/stocks/search?query=AAPL&limit=${PAGINATION.DEFAULT_PAGE_SIZE}`,
+        `${API_CONFIG.DEFAULT_BASE_URL}/api/stocks/search?query=AAPL`,
         expect.any(Object)
       );
-      expect(result.status).toBe('success');
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(mockData);
     });
 
@@ -79,10 +81,10 @@ describe('APIClient', () => {
         json: () => Promise.resolve([]),
       } as Response);
 
-      await apiClient.searchStocks('AAPL', 10, 'USD');
+      await apiClient.searchStocks({ query: 'AAPL', limit: 10 });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        `${API_CONFIG.DEFAULT_BASE_URL}/api/finance/stocks/search?query=AAPL&limit=10&currency=USD`,
+        `${API_CONFIG.DEFAULT_BASE_URL}/api/stocks/search?query=AAPL&limit=10`,
         expect.any(Object)
       );
     });
@@ -93,10 +95,10 @@ describe('APIClient', () => {
         json: () => Promise.resolve([]),
       } as Response);
 
-      await apiClient.searchStocks('AAPL', 5);
+      await apiClient.searchStocks({ query: 'AAPL', limit: 5 });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        `${API_CONFIG.DEFAULT_BASE_URL}/api/finance/stocks/search?query=AAPL&limit=5`,
+        `${API_CONFIG.DEFAULT_BASE_URL}/api/stocks/search?query=AAPL&limit=5`,
         expect.any(Object)
       );
     });
@@ -118,7 +120,7 @@ describe('APIClient', () => {
         `${API_CONFIG.DEFAULT_BASE_URL}/api/finance/stocks/AAPL/price?days=${TIME_PERIODS.DEFAULT_PRICE_HISTORY_DAYS}`,
         expect.any(Object)
       );
-      expect(result.status).toBe('success');
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(mockPriceData);
     });
 
@@ -153,7 +155,7 @@ describe('APIClient', () => {
         `${API_CONFIG.DEFAULT_BASE_URL}/api/finance/stocks/AAPL/predictions?days=${TIME_PERIODS.DEFAULT_PREDICTION_DAYS}`,
         expect.any(Object)
       );
-      expect(result.status).toBe('success');
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(mockPredictionData);
     });
 
@@ -189,18 +191,20 @@ describe('APIClient', () => {
     it('成長ポテンシャルランキングを動的生成する', async () => {
       const result = await apiClient.getGrowthPotentialRankings(1);
 
-      expect(result.status).toBe('success');
-      expect(result.data).toHaveLength(1);
-      
-      const stock = result.data[0];
-      expect(stock).toHaveProperty('symbol');
-      expect(stock).toHaveProperty('current_price');
-      expect(stock).toHaveProperty('predicted_price');
-      expect(stock).toHaveProperty('growth_potential');
-      expect(stock).toHaveProperty('confidence');
+      expect(result.success).toBe(true);
+      if (result.success && Array.isArray(result.data)) {
+        expect(result.data).toHaveLength(1);
+        
+        const stock = result.data[0];
+        expect(stock).toHaveProperty('symbol');
+        expect(stock).toHaveProperty('current_price');
+        expect(stock).toHaveProperty('predicted_price');
+        expect(stock).toHaveProperty('growth_potential');
+        expect(stock).toHaveProperty('confidence');
 
-      // 成長ポテンシャルの計算確認: (110-100)/100*100 = 10%
-      expect(stock.growth_potential).toBe(10);
+        // 成長ポテンシャルの計算確認: (110-100)/100*100 = 10%
+        expect(stock.growth_potential).toBe(10);
+      }
     });
 
     it('値上がりランキングが正の成長ポテンシャルのみ返す', async () => {
@@ -215,10 +219,10 @@ describe('APIClient', () => {
           json: () => Promise.resolve([{ predicted_price: 110.0, confidence_score: 0.8 }]),
         } as Response);
 
-      const result = await apiClient.getGainersRankings(1);
+      const result = await apiClient.getGainersRankings({ limit: 1 });
 
-      expect(result.status).toBe('success');
-      if (result.data.length > 0) {
+      expect(result.success).toBe(true);
+      if (result.success && Array.isArray(result.data) && result.data.length > 0) {
         result.data.forEach(stock => {
           expect(stock.growth_potential).toBeGreaterThan(0);
         });
@@ -237,10 +241,10 @@ describe('APIClient', () => {
           json: () => Promise.resolve([{ predicted_price: 90.0, confidence_score: 0.8 }]),
         } as Response);
 
-      const result = await apiClient.getLosersRankings(1);
+      const result = await apiClient.getLosersRankings({ limit: 1 });
 
-      expect(result.status).toBe('success');
-      if (result.data.length > 0) {
+      expect(result.success).toBe(true);
+      if (result.success && Array.isArray(result.data) && result.data.length > 0) {
         result.data.forEach(stock => {
           expect(stock.growth_potential).toBeLessThan(0);
         });
@@ -263,7 +267,7 @@ describe('APIClient', () => {
           method: 'POST',
         })
       );
-      expect(result.status).toBe('success');
+      expect(result.success).toBe(true);
     });
   });
 
@@ -281,7 +285,7 @@ describe('APIClient', () => {
         `${API_CONFIG.DEFAULT_BASE_URL}/health`,
         expect.any(Object)
       );
-      expect(result.status).toBe('success');
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(mockHealthData);
     });
   });
@@ -293,7 +297,7 @@ describe('APIClient', () => {
         json: () => Promise.resolve({}),
       } as Response);
 
-      await apiClient.searchStocks('AAPL');
+      await apiClient.searchStocks({ query: 'AAPL' });
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining(API_CONFIG.DEFAULT_BASE_URL),
@@ -307,7 +311,7 @@ describe('APIClient', () => {
         json: () => Promise.resolve([]),
       } as Response);
 
-      await apiClient.searchStocks('AAPL');
+      await apiClient.searchStocks({ query: 'AAPL' });
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining(`limit=${PAGINATION.DEFAULT_PAGE_SIZE}`),
@@ -321,7 +325,7 @@ describe('APIClient', () => {
         json: () => Promise.resolve({}),
       } as Response);
 
-      await apiClient.searchStocks('AAPL');
+      await apiClient.searchStocks({ query: 'AAPL' });
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),

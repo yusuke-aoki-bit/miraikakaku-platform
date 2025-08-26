@@ -67,7 +67,7 @@ export default function EconomicCalendarWidget({
         today.toISOString().split('T')[0]
       );
 
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         const dataArray = Array.isArray(response.data) ? response.data : [];
         setEvents(dataArray.slice(0, limit));
       } else {

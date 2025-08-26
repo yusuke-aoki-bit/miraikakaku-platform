@@ -59,7 +59,7 @@ export default function MarketOverview() {
           response = await apiClient.getTrendingStocks(10);
       }
 
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setMarketData(Array.isArray(response.data) ? response.data : []);
       } else {
         setError(response.error || 'データの取得に失敗しました');

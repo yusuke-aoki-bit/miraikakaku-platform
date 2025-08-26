@@ -4,9 +4,10 @@ from datetime import datetime
 
 Base = declarative_base()
 
+
 class AIInferenceLog(Base):
     __tablename__ = "ai_inference_log"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     request_id = Column(String(100), unique=True, index=True, nullable=False)
     model_name = Column(String(100), nullable=False)
@@ -21,7 +22,7 @@ class AIInferenceLog(Base):
     user_id = Column(String(100))
     session_id = Column(String(100))
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    
+
     # パフォーマンス監視用
     cpu_usage = Column(Numeric(5, 2))
     memory_usage = Column(Numeric(10, 2))

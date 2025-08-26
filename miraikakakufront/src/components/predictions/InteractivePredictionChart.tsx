@@ -86,9 +86,9 @@ export default function InteractivePredictionChart({ stock }: InteractivePredict
       ]);
 
       // 実際の価格データ（型安全）
-      const priceData: any[] = (priceResponse.status === 'success' && Array.isArray(priceResponse.data)) ? priceResponse.data : [];
-      const predictionData: any[] = (predictionResponse.status === 'success' && Array.isArray(predictionResponse.data)) ? predictionResponse.data : [];
-      const historicalPredictions: any[] = (historicalResponse.status === 'success' && Array.isArray(historicalResponse.data)) ? historicalResponse.data : [];
+      const priceData: any[] = (priceResponse.success && Array.isArray(priceResponse.data)) ? priceResponse.data : [];
+      const predictionData: any[] = (predictionResponse.success && Array.isArray(predictionResponse.data)) ? predictionResponse.data : [];
+      const historicalPredictions: any[] = (historicalResponse.success && Array.isArray(historicalResponse.data)) ? historicalResponse.data : [];
 
       // チャートデータを構築
       const combinedData: ChartDataPoint[] = [];

@@ -66,7 +66,7 @@ export default function CurrencyAIPredictionPanel({
       ]);
 
       // 現在レート設定
-      if (rateResponse.status === 'success' && rateResponse.data) {
+      if (rateResponse.success && rateResponse.data) {
         setCurrentRate(rateResponse.data as CurrencyRate);
       } else {
         // モックデータ
@@ -86,7 +86,7 @@ export default function CurrencyAIPredictionPanel({
       const predictionPromises = timeframes.map(async (timeframe) => {
         const response = await apiClient.getCurrencyPredictions(pair, timeframe, 1);
         const dataArray = Array.isArray(response.data) ? response.data : [];
-        if (response.status === 'success' && dataArray[0]) {
+        if (response.success && dataArray[0]) {
           return {
             timeframe,
             predicted_rate: dataArray[0].predicted_rate,
@@ -110,7 +110,7 @@ export default function CurrencyAIPredictionPanel({
       setPredictions(predictionResults);
 
       // AIインサイトの処理
-      if (insightsResponse.status === 'success' && insightsResponse.data) {
+      if (insightsResponse.success && insightsResponse.data) {
         const insights = insightsResponse.data as any;
         setAISignal(insights.ai_signal);
         setKeyDrivers(insights.key_drivers);

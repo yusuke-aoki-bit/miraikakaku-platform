@@ -1,15 +1,18 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
 
 class LoginResponse(BaseModel):
     access_token: str
     token_type: str
     expires_in: int
-    user: 'UserResponse'
+    user: "UserResponse"
+
 
 class UserResponse(BaseModel):
     id: str
@@ -18,6 +21,7 @@ class UserResponse(BaseModel):
     role: str
     created_at: Optional[str] = None
     last_login: Optional[str] = None
+
 
 class RegisterRequest(BaseModel):
     email: EmailStr

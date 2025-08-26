@@ -91,9 +91,27 @@
       "Bash(find:*)",
       "Bash(gcloud beta run domain-mappings list:*)",
       "Bash(gcloud beta run domain-mappings delete:*)",
-      "Bash(gcloud beta run domain-mappings create:*)"
+      "Bash(gcloud beta run domain-mappings create:*)",
+      "Bash(gcloud scheduler jobs:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm test:*)",
+      "Bash(sed:*)",
+      "Bash(flake8:*)",
+      "Bash(apt list:*)",
+      "Bash(git checkout:*)",
+      "Bash(./venv_fix/bin/pip install autopep8)",
+      "Bash(./venv_fix/bin/autopep8:*)",
+      "Bash(./venv_fix/bin/pip install black)",
+      "Bash(./venv_fix/bin/black:*)",
+      "Bash(./venv_batch/bin/autopep8:*)",
+      "Bash(autopep8:*)",
+      "Bash(black:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "/mnt/c/Users/yuuku/cursor"
+    ]
   }
 }

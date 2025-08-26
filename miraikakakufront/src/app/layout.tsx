@@ -33,6 +33,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#2196f3" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1941622962098828" crossOrigin="anonymous"></script>
       </head>
       <body 
         className={`${inter.className} overflow-hidden`}

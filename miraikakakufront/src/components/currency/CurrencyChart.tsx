@@ -89,7 +89,7 @@ export default function CurrencyChart({
       let historicalData: number[] = [];
       let labels: string[] = [];
       
-      if (historyResponse.status === 'success' && historyResponse.data) {
+      if (historyResponse.success && historyResponse.data) {
         const historyArray = Array.isArray(historyResponse.data) ? historyResponse.data : [];
         historicalData = historyArray.map((d: any) => d.rate);
         labels = historyArray.map((d: any) => {
@@ -138,7 +138,7 @@ export default function CurrencyChart({
       const predictionLength = Math.floor(config.dataPoints * 0.3);
       const lastHistoricalRate = historicalData[historicalData.length - 1];
       
-      if (predictionsResponse.status === 'success' && predictionsResponse.data) {
+      if (predictionsResponse.success && predictionsResponse.data) {
         const predictionsArray = Array.isArray(predictionsResponse.data) ? predictionsResponse.data : [];
         predictionsData = predictionsArray.map((d: any) => d.predicted_rate);
         upperBoundData = predictionsArray.map((d: any) => d.upper_bound || d.predicted_rate * 1.002);

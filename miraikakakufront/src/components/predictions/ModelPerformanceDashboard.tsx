@@ -231,7 +231,7 @@ export default function ModelPerformanceDashboard({ stock }: ModelPerformanceDas
     setLoading(true);
     try {
       const response = await apiClient.getModelPerformance(stock.symbol);
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setPerformanceData(response.data as ModelPerformanceData);
       }
     } catch (error) {

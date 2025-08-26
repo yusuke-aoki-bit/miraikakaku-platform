@@ -35,7 +35,7 @@ export default function AdvancedStockSearch() {
     const fetchSectors = async () => {
       try {
         const response = await apiClient.getSectors();
-        if (response.status === 'success' && response.data) {
+        if (response.success && response.data) {
           setSectors(Array.isArray(response.data) ? response.data : []);
         }
       } catch (error) {
@@ -69,7 +69,7 @@ export default function AdvancedStockSearch() {
         limit: 20
       });
 
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setSearchResults(Array.isArray(response.data) ? response.data : []);
       } else {
         setSearchResults([]);
@@ -89,7 +89,7 @@ export default function AdvancedStockSearch() {
     setLoading(true);
     try {
       const response = await apiClient.getStocksBySector(sectorId, { limit: 20 });
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setSearchResults(Array.isArray(response.data) ? response.data : []);
       } else {
         setSearchResults([]);

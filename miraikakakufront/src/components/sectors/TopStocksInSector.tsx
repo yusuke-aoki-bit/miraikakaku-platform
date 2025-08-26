@@ -54,7 +54,7 @@ export default function TopStocksInSector({ sectorId, sectorName }: TopStocksInS
     try {
       const response = await apiClient.getStocksBySector(sectorId, { limit: 50 });
       
-      if (response.status === 'success' && Array.isArray(response.data)) {
+      if (response.success && Array.isArray(response.data)) {
         // ウォッチリスト情報を取得
         const watchlist = JSON.parse(localStorage.getItem('user_watchlist') || '[]');
         

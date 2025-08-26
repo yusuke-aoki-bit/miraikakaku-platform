@@ -64,7 +64,7 @@ export default function SearchBar({
     setLoading(true);
     try {
       const response = await apiClient.searchStocksAutocomplete(searchQuery, 8);
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setSuggestions(response.data as any);
         setShowSuggestions(true);
         setSelectedIndex(-1);

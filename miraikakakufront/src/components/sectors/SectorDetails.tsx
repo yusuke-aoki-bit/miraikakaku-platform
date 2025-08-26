@@ -22,6 +22,9 @@ import {
   BarChart3
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import BookRecommendationSection from '@/components/books/BookRecommendationSection';
+import { getBooksForSector } from '@/data/bookRecommendations';
+import { BookSection } from '@/types/books';
 
 interface SectorDetailsProps {
   sectorId: string | null;
@@ -73,11 +76,11 @@ export default function SectorDetails({ sectorId, sectorName, timeframe }: Secto
         apiClient.getAISectorOutlook(sectorId)
       ]);
 
-      if (historicalResponse.status === 'success') {
+      if (historicalResponse.success) {
         setHistoricalData(historicalResponse.data as any);
       }
 
-      if (outlookResponse.status === 'success') {
+      if (outlookResponse.success) {
         setAiOutlook(outlookResponse.data as any);
       }
     } catch (error) {
@@ -281,6 +284,28 @@ export default function SectorDetails({ sectorId, sectorName, timeframe }: Secto
           </div>
         </div>
       )}
+
+      {/* セクター関連書籍推薦セクション */}
+      {sectorName && (() => {
+        const relatedBooks = getBooksForSector(sectorName, 3);
+        if (relatedBooks.length > 0) {
+          const bookSection: BookSection = {
+            title: `${sectorName}セクター関連書籍`,
+            subtitle: 'セクター理解を深める専門書をご紹介します',
+            books: relatedBooks,
+            displayType: 'grid',
+            maxDisplay: 3
+          };
+          
+          return (
+            <BookRecommendationSection
+              section={bookSection}
+              contextTitle={`${sectorName}セクター分析`}
+            />
+          );
+        }
+        return null;
+      })()}
     </div>
   );
 }

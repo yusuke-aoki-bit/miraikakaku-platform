@@ -2,12 +2,14 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
+
 class StockSearchResponse(BaseModel):
     symbol: str
     company_name: str
     exchange: str
     sector: Optional[str] = None
     industry: Optional[str] = None
+
 
 class StockPriceResponse(BaseModel):
     symbol: str
@@ -19,6 +21,7 @@ class StockPriceResponse(BaseModel):
     volume: Optional[int] = None
     data_source: str
 
+
 class StockPredictionResponse(BaseModel):
     symbol: str
     prediction_date: datetime
@@ -28,10 +31,12 @@ class StockPredictionResponse(BaseModel):
     prediction_horizon: int
     is_active: bool
 
+
 class StockPredictionRequest(BaseModel):
     symbol: str
     prediction_type: str = "daily"
     model_name: Optional[str] = "default"
+
 
 class HealthResponse(BaseModel):
     status: str

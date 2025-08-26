@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Trophy, Target, Medal, Users, Zap, Crown } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Trophy, Target, Medal, Zap, Crown, Users } from 'lucide-react';
 import ActiveContests from '@/components/contests/ActiveContests';
 import PastContests from '@/components/contests/PastContests';
 import Leaderboard from '@/components/contests/Leaderboard';
@@ -23,16 +23,24 @@ export default function ContestsPage() {
   const [stats, setStats] = useState<ContestStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchContestStats();
+  const generateMockStats = useCallback(() => {
+    const mockStats: ContestStats = {
+      total_contests: 47,
+      active_contests: 5,
+      total_participants: 2847,
+      user_rank: 156,
+      user_points: 2450,
+      user_badges: 7
+    };
+    setStats(mockStats);
   }, []);
 
-  const fetchContestStats = async () => {
+  const fetchContestStats = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiClient.getContestStats();
       
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setStats(response.data);
       } else {
         // Generate mock stats for development
@@ -44,19 +52,11 @@ export default function ContestsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [generateMockStats]);
 
-  const generateMockStats = () => {
-    const mockStats: ContestStats = {
-      total_contests: 47,
-      active_contests: 5,
-      total_participants: 2847,
-      user_rank: 156,
-      user_points: 2450,
-      user_badges: 7
-    };
-    setStats(mockStats);
-  };
+  useEffect(() => {
+    fetchContestStats();
+  }, [fetchContestStats]);
 
   const getTabIcon = (tab: TabType) => {
     switch (tab) {

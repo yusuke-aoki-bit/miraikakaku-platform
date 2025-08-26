@@ -79,7 +79,7 @@ export default function ResetPasswordForm({ token, onPasswordReset }: ResetPassw
     try {
       const response = await apiClient.resetPassword(token, formData.password);
       
-      if (response.status === 'success') {
+      if (response.success) {
         onPasswordReset();
       } else {
         setError(response.message || 'パスワードの再設定に失敗しました。');

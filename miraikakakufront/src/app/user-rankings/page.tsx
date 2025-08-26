@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Users, TrendingUp, Award, Medal, Crown, Star, Target, Calendar, Filter } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { apiClient } from '@/lib/api-client';
 
 interface UserRanking {
   id: string;
@@ -68,89 +69,44 @@ export default function UserRankingsPage() {
     { id: 'master', label: 'マスター' }
   ];
 
-  // Mock data generation
+  // Fetch real user rankings data
   useEffect(() => {
-    const generateMockRankings = (): UserRanking[] => {
-      const usernames = [
-        'AITrader2024', 'MarketMaster', 'StockNinja', 'PredictorPro', 'BullMarketKing',
-        'InvestGuru', 'TradingLegend', 'MarketAnalyst', 'StockHunter', 'AIPredictor',
-        'DataDriven', 'QuantTrader', 'MarketSage', 'TradingAce', 'ProfitMaker',
-        'ChartMaster', 'TrendFollower', 'ValueInvestor', 'GrowthHunter', 'RiskTaker'
-      ];
+    const fetchUserRankings = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.getUserRankings({
+          period: selectedPeriod,
+          category: selectedCategory,
+          level: selectedLevel,
+          limit: 50
+        });
 
-      const badges = [
-        '🏆 コンテスト王者', '🎯 精密射手', '🔥 連勝記録', '💎 ダイヤモンド会員',
-        '🚀 急成長', '🧠 AI使い', '📈 上昇トレンド', '💰 利益マスター',
-        '🌟 新星', '⚡ 瞬時判断', '🎨 チャート芸術家', '🔮 未来予知'
-      ];
-
-      const levels: UserRanking['level'][] = ['beginner', 'intermediate', 'advanced', 'expert', 'master'];
-
-      return Array.from({ length: 50 }, (_, i) => {
-        const level = levels[Math.floor(Math.random() * levels.length)];
-        const accuracy = Math.random() * 40 + 60; // 60-100%
-        const contestsParticipated = Math.floor(Math.random() * 50) + 10;
-        const contestsWon = Math.floor(contestsParticipated * (Math.random() * 0.3 + 0.1));
-        
-        return {
-          id: `user-${i + 1}`,
-          username: usernames[i % usernames.length] + (i > 19 ? `${Math.floor(i / 20) + 1}` : ''),
-          displayName: usernames[i % usernames.length],
-          rank: i + 1,
-          totalScore: Math.floor(Math.random() * 10000) + 1000,
-          accuracy,
-          contestsWon,
-          contestsParticipated,
-          winRate: (contestsWon / contestsParticipated) * 100,
-          averageReturn: (Math.random() * 30 - 5), // -5% to 25%
-          bestPrediction: Math.random() * 50 + 10, // 10-60%
-          streak: Math.floor(Math.random() * 20),
-          level,
-          badges: badges.slice(0, Math.floor(Math.random() * 4) + 1),
-          joinedDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
-          lastActive: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
-        };
-      });
+        if (response.success && response.data) {
+          setRankings(response.data);
+          setFilteredRankings(response.data);
+        } else {
+          console.error('Failed to fetch user rankings:', response.error);
+          // Fallback to empty array if API fails
+          setRankings([]);
+          setFilteredRankings([]);
+        }
+      } catch (error) {
+        console.error('Error fetching user rankings:', error);
+        // Fallback to empty array on error
+        setRankings([]);
+        setFilteredRankings([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setTimeout(() => {
-      const mockRankings = generateMockRankings();
-      setRankings(mockRankings);
-      setFilteredRankings(mockRankings);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    fetchUserRankings();
+  }, [selectedPeriod, selectedCategory, selectedLevel]);
 
-  // Filter logic
+  // Since API handles filtering and sorting, just use rankings directly
   useEffect(() => {
-    let filtered = rankings;
-
-    // Level filter
-    if (selectedLevel !== 'all') {
-      filtered = filtered.filter(user => user.level === selectedLevel);
-    }
-
-    // Sort by category
-    filtered.sort((a, b) => {
-      switch (selectedCategory) {
-        case 'overall':
-          return b.totalScore - a.totalScore;
-        case 'accuracy':
-          return b.accuracy - a.accuracy;
-        case 'contests':
-          return b.contestsWon - a.contestsWon;
-        case 'streak':
-          return b.streak - a.streak;
-        default:
-          return a.rank - b.rank;
-      }
-    });
-
-    // Update ranks based on filtered results
-    filtered = filtered.map((user, index) => ({ ...user, rank: index + 1 }));
-
-    setFilteredRankings(filtered);
-  }, [rankings, selectedCategory, selectedLevel, selectedPeriod]);
+    setFilteredRankings(rankings);
+  }, [rankings]);
 
   const getLevelColor = (level: UserRanking['level']) => {
     switch (level) {

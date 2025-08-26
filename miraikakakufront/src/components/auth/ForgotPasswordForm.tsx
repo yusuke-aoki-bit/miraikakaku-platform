@@ -37,7 +37,7 @@ export default function ForgotPasswordForm({ onEmailSent }: ForgotPasswordFormPr
     try {
       const response = await apiClient.sendPasswordResetLink(email);
       
-      if (response.status === 'success') {
+      if (response.success) {
         onEmailSent(email);
       } else {
         setError(response.message || 'エラーが発生しました。しばらく時間を置いてから再度お試しください。');

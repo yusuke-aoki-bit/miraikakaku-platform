@@ -77,7 +77,7 @@ export default function VolumeChart({
           apiClient.getStockPredictions(symbol, undefined, days)
         ]);
 
-        if (priceResponse.status === 'success' && predictionResponse.status === 'success') {
+        if (priceResponse.success && predictionResponse.success) {
           // データを統合
           
           // データ取得完了（実装では使用）

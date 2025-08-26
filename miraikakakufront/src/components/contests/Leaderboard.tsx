@@ -56,7 +56,7 @@ export default function Leaderboard({ timeFrame = 'all_time' }: LeaderboardProps
       setLoading(true);
       const response = await apiClient.getLeaderboard(selectedTimeFrame);
       
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setLeaderboard(response.data);
       } else {
         // Generate mock leaderboard for development

@@ -1,17 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
   Trophy, 
   Target, 
-  Users, 
   BarChart3,
   Award,
-  Calendar,
-  TrendingUp,
-  TrendingDown,
   Medal,
   Crown,
   Info
@@ -78,35 +74,7 @@ export default function ContestDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'ranking' | 'analysis'>('overview');
 
-  useEffect(() => {
-    if (contestId) {
-      fetchContestDetails();
-    }
-  }, [contestId]);
-
-  const fetchContestDetails = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await apiClient.getContestDetails(contestId);
-      
-      if (response.status === 'success' && response.data) {
-        setContest(response.data.contest);
-        setDistribution(response.data.distribution);
-      } else {
-        // Generate mock contest details for development
-        generateMockContestDetails();
-      }
-    } catch (err) {
-      console.error('Failed to fetch contest details:', err);
-      generateMockContestDetails();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const generateMockContestDetails = () => {
+  const generateMockContestDetails = useCallback(() => {
     const mockContest: ContestDetail = {
       id: contestId,
       title: '先週のTOPIX予測チャレンジ',
@@ -180,7 +148,35 @@ export default function ContestDetailPage() {
 
     setContest(mockContest);
     setDistribution(mockDistribution);
-  };
+  }, [contestId]);
+
+  const fetchContestDetails = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await apiClient.getContestDetails(contestId);
+      
+      if (response.success && response.data) {
+        setContest(response.data.contest);
+        setDistribution(response.data.distribution);
+      } else {
+        // Generate mock contest details for development
+        generateMockContestDetails();
+      }
+    } catch (err) {
+      console.error('Failed to fetch contest details:', err);
+      generateMockContestDetails();
+    } finally {
+      setLoading(false);
+    }
+  }, [contestId, generateMockContestDetails]);
+
+  useEffect(() => {
+    if (contestId) {
+      fetchContestDetails();
+    }
+  }, [contestId, fetchContestDetails]);
 
   const formatValue = (value: number, symbol: string) => {
     if (symbol === 'USDJPY') {
@@ -416,7 +412,7 @@ export default function ContestDetailPage() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'overview' | 'ranking' | 'analysis')}
                 className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                   isActive
                     ? 'border-yellow-400 text-yellow-400'

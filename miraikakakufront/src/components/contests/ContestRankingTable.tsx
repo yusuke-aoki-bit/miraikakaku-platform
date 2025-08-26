@@ -58,7 +58,7 @@ export default function ContestRankingTable({ contestId }: ContestRankingTablePr
       setLoading(true);
       const response = await apiClient.getContestRanking(contestId);
       
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setRankings(response.data);
       } else {
         // Generate mock ranking data for development

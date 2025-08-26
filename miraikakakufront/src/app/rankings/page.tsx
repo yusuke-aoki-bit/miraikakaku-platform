@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Trophy } from 'lucide-react';
 import RankingTabs from '@/components/rankings/RankingTabs';
 import RankingFilters, { RankingFilters as RankingFiltersType } from '@/components/rankings/RankingFilters';
@@ -21,6 +21,21 @@ interface RankingStock {
   sparkline_data?: number[];
 }
 
+interface ApiStock {
+  symbol: string;
+  company_name?: string;
+  current_price?: number;
+  close_price?: number;
+  change?: number;
+  change_percent?: number;
+  growth_potential?: number;
+  volume_change?: number;
+  composite_score?: number;
+  confidence_score?: number;
+  confidence?: number;
+  price_history?: Array<{ close_price?: number; price?: number }>;
+}
+
 export default function RankingsPage() {
   const [rankings, setRankings] = useState<RankingStock[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,11 +47,7 @@ export default function RankingsPage() {
     period: 'daily'
   });
 
-  useEffect(() => {
-    fetchRankings();
-  }, [activeTab, filters]);
-
-  const fetchRankings = async () => {
+  const fetchRankings = useCallback(async () => {
     setLoading(true);
     try {
       let response;
@@ -63,10 +74,10 @@ export default function RankingsPage() {
           response = await apiClient.getGainersRankings({ limit });
       }
       
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         // データをRankingStock形式に変換
         const dataArray = Array.isArray(response.data) ? response.data : [];
-        const formattedData: RankingStock[] = dataArray.map((stock: any, index: number) => ({
+        const formattedData: RankingStock[] = dataArray.map((stock: ApiStock, index: number) => ({
           rank: index + 1,
           symbol: stock.symbol,
           company_name: stock.company_name || stock.symbol,
@@ -74,7 +85,7 @@ export default function RankingsPage() {
           change: stock.change,
           change_percent: stock.change_percent || stock.growth_potential,
           volume_change: stock.volume_change,
-          ai_score: stock.composite_score || (stock.confidence_score || stock.confidence) * 100 || 75,
+          ai_score: stock.composite_score || ((stock.confidence_score || stock.confidence || 0) * 100) || 75,
           growth_potential: stock.growth_potential,
           confidence: stock.confidence_score || stock.confidence,
           sparkline_data: generateSparklineFromData(stock)
@@ -87,12 +98,16 @@ export default function RankingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, filters]);
+
+  useEffect(() => {
+    fetchRankings();
+  }, [fetchRankings]);
   
-  const generateSparklineFromData = (stock: any): number[] => {
+  const generateSparklineFromData = (stock: ApiStock): number[] => {
     // APIから実際の価格履歴データがある場合のみ使用
     if (stock.price_history && Array.isArray(stock.price_history) && stock.price_history.length > 0) {
-      return stock.price_history.slice(-24).map((p: any) => p.close_price || p.price || 0);
+      return stock.price_history.slice(-24).map(p => p.close_price || p.price || 0);
     }
     
     // データがない場合は空配列を返す（チャートは表示されない）

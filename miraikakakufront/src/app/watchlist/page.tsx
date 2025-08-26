@@ -54,7 +54,7 @@ export default function WatchlistPage() {
       // localStorageからウォッチリスト取得
       const watchlistResponse = await apiClient.getWatchlist();
       const watchlistData = Array.isArray(watchlistResponse.data) ? watchlistResponse.data : [];
-      if (watchlistResponse.status === 'success' && watchlistData.length > 0) {
+      if (watchlistResponse.success && watchlistData.length > 0) {
         await loadStockData(watchlistData);
       } else {
         // APIにデータがない場合は空のウォッチリストを表示
@@ -78,9 +78,9 @@ export default function WatchlistPage() {
     try {
       // バッチで株式データを取得
       const batchResponse = await apiClient.getBatchStockDetails(symbols);
-      if (batchResponse.status === 'success') {
+      if (batchResponse.success && batchResponse.data) {
         const stocksData: WatchlistStock[] = symbols.map(symbol => {
-          const data = batchResponse.data[symbol];
+          const data = (batchResponse.data as any)[symbol];
           if (data) {
             return {
               symbol: data.symbol,

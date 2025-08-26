@@ -49,7 +49,7 @@ export default function StockMentionCard({ stock, onWatchlistAdd }: StockMention
     setIsAdding(true);
     try {
       const response = await apiClient.addToWatchlist('default', stock.symbol);
-      if (response.status === 'success') {
+      if (response.success) {
         setIsInWatchlist(true);
         onWatchlistAdd?.(stock.symbol);
       }

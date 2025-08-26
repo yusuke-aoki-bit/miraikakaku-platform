@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import PortfolioToolbar from '@/components/portfolio/PortfolioToolbar';
 import PortfolioSummary from '@/components/portfolio/PortfolioSummary';
 import PortfolioPerformanceChart from '@/components/portfolio/PortfolioPerformanceChart';
@@ -12,6 +12,34 @@ interface Portfolio {
   name: string;
   created_at: string;
   is_default: boolean;
+}
+
+interface HoldingData {
+  id: string;
+  symbol: string;
+  company_name: string;
+  sector: string;
+  quantity: number;
+  average_cost: number;
+  current_price: number;
+  market_value: number;
+  unrealized_pnl: number;
+  unrealized_pnl_percent: number;
+  allocation_percent: number;
+  transactions: TransactionData[];
+}
+
+interface TransactionData {
+  date: string;
+  type: 'buy' | 'sell';
+  quantity: number;
+  price: number;
+}
+
+interface PerformanceData {
+  date: string;
+  value: number;
+  return_percent: number;
 }
 
 interface PortfolioData {
@@ -26,8 +54,8 @@ interface PortfolioData {
     daily_change_percent: number;
     annual_dividend_estimate: number;
   };
-  holdings: any[];
-  performance_history: any[];
+  holdings: HoldingData[];
+  performance_history: PerformanceData[];
 }
 
 export default function PortfolioPage() {
@@ -36,11 +64,7 @@ export default function PortfolioPage() {
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
-
-  const fetchInitialData = async () => {
+  const fetchInitialData = useCallback(async () => {
     setLoading(true);
     try {
       // TODO: Replace with actual API calls
@@ -134,7 +158,11 @@ export default function PortfolioPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   const handlePortfolioChange = async (portfolioId: string) => {
     setSelectedPortfolioId(portfolioId);
@@ -146,7 +174,7 @@ export default function PortfolioPage() {
     }, 500);
   };
 
-  const handleTransactionAdded = (transaction: any) => {
+  const handleTransactionAdded = (transaction: TransactionData) => {
     // Refresh portfolio data after transaction
     fetchInitialData();
   };
@@ -191,7 +219,10 @@ export default function PortfolioPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <PortfolioPerformanceChart
             portfolioId={currentPortfolio.id}
-            performanceHistory={currentPortfolio.performance_history}
+            performanceHistory={currentPortfolio.performance_history.map(p => ({
+              date: p.date,
+              portfolio_value: p.value
+            }))}
           />
           <HoldingsAllocation holdings={currentPortfolio.holdings} />
         </div>

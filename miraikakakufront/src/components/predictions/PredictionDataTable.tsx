@@ -63,7 +63,7 @@ export default function PredictionDataTable({ stock, onShowAIFactors }: Predicti
       const days = selectedPeriod === '1W' ? 7 : selectedPeriod === '1M' ? 30 : 90;
       const response = await apiClient.getStockPredictions(stock.symbol, undefined, days);
       
-      if (response.status === 'success' && Array.isArray(response.data)) {
+      if (response.success && Array.isArray(response.data)) {
         // APIデータを変換
         const transformedData: PredictionRow[] = response.data.map((item: any, index: number) => {
           const predictedPrice = item.predicted_price || (stock as any).current_price * 1.05;

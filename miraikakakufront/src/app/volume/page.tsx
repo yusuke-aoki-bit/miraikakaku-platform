@@ -150,7 +150,7 @@ export default function VolumePage() {
                     // 実際のAPIから株式データを取得
                     try {
                       const response = await apiClient.getStockPrice(stock.symbol, 1);
-                      const priceData = response.status === 'success' ? (response.data as any)?.[0] : null;
+                      const priceData = response.success ? (response.data as any)?.[0] : null;
                       setSelectedStock({
                         symbol: stock.symbol,
                         company_name: stock.name,

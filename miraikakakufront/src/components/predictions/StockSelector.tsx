@@ -74,7 +74,7 @@ export default function StockSelector({ selectedStock, onStockSelect }: StockSel
     setLoading(true);
     try {
       const response = await apiClient.searchStocksAutocomplete(query, 10);
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setSuggestions(response.data as any);
         setIsOpen(true);
       }

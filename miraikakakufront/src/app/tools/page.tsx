@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calculator, DollarSign, Percent, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
+import { Calculator, DollarSign, Percent, TrendingUp, Package, ExternalLink } from 'lucide-react';
 
 export default function ToolsPage() {
   const [investment, setInvestment] = useState(10000);
@@ -28,10 +29,53 @@ export default function ToolsPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-white mb-6 flex items-center">
-        <Calculator className="w-6 h-6 mr-2 text-blue-400" />
-        投資計算機
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-white flex items-center">
+          <Calculator className="w-6 h-6 mr-2 text-blue-400" />
+          投資ツール
+        </h1>
+      </div>
+
+      {/* ツールメニュー */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <Link 
+          href="/tools/trading-setup"
+          className="bg-gradient-to-br from-orange-900/50 to-red-900/50 border border-orange-500/30 rounded-xl p-6 hover:border-orange-400/50 transition-all group"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Package className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-white font-semibold text-lg mb-1">最強のトレーディング環境</h3>
+              <p className="text-orange-200 text-sm">プロ投資家が使用するツールと環境を紹介</p>
+            </div>
+            <ExternalLink className="w-5 h-5 text-orange-400 group-hover:text-orange-300" />
+          </div>
+          
+          <div className="mt-4 bg-orange-500/10 rounded-lg p-3">
+            <div className="flex items-center space-x-4 text-sm">
+              <span className="text-orange-300">🖥️ モニター</span>
+              <span className="text-orange-300">💻 PC構成</span>
+              <span className="text-orange-300">🪑 作業環境</span>
+            </div>
+          </div>
+        </Link>
+
+        <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+              <Calculator className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-white font-semibold text-lg mb-1">投資計算機</h3>
+              <p className="text-gray-400 text-sm">複利効果や投資戦略の計算</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2 className="text-xl font-semibold text-white mb-4">複利計算機</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 計算機 */}

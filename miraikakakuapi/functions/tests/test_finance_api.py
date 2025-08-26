@@ -8,8 +8,11 @@ import os
 
 # テスト用データベース設定
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 def override_get_db():
     try:
@@ -18,7 +21,9 @@ def override_get_db():
     finally:
         db.close()
 
+
 app.dependency_overrides[get_db] = override_get_db
+
 
 @pytest.fixture(scope="module")
 def test_db():
@@ -26,12 +31,14 @@ def test_db():
     yield
     Base.metadata.drop_all(bind=engine)
 
+
 @pytest.fixture(scope="module")
 def client():
     return TestClient(app)
 
+
 class TestFinanceAPI:
-    
+
     def test_health_check(self, client):
         """ヘルスチェックエンドポイントのテスト"""
         response = client.get("/health")
@@ -58,8 +65,9 @@ class TestFinanceAPI:
         # 認証エラーが先に発生するため401を期待
         assert response.status_code == 401
 
+
 class TestStockDataEndpoints:
-    
+
     @pytest.fixture
     def auth_headers(self):
         """認証済みヘッダー（モック）"""
@@ -74,11 +82,10 @@ class TestStockDataEndpoints:
 
     def test_get_stock_data_with_date_range(self, client, test_db, auth_headers):
         """期間指定での株価データ取得テスト"""
-        params = {
-            "start_date": "2024-01-01",
-            "end_date": "2024-12-31"
-        }
-        response = client.get("/api/finance/stock/AAPL", params=params, headers=auth_headers)
+        params = {"start_date": "2024-01-01", "end_date": "2024-12-31"}
+        response = client.get(
+            "/api/finance/stock/AAPL", params=params, headers=auth_headers
+        )
         assert response.status_code in [200, 401]
 
     def test_get_multiple_stocks(self, client, test_db, auth_headers):
@@ -88,8 +95,9 @@ class TestStockDataEndpoints:
             response = client.get(f"/api/finance/stock/{symbol}", headers=auth_headers)
             assert response.status_code in [200, 401, 404]
 
+
 class TestPredictionEndpoints:
-    
+
     @pytest.fixture
     def auth_headers(self):
         return {"Authorization": "Bearer test-valid-token"}
@@ -104,48 +112,68 @@ class TestPredictionEndpoints:
         payload = {
             "symbol": "AAPL",
             "prediction_type": "daily",
-            "model_name": "lstm_v1"
+            "model_name": "lstm_v1",
         }
-        response = client.post("/api/finance/predictions", json=payload, headers=auth_headers)
+        response = client.post(
+            "/api/finance/predictions", json=payload, headers=auth_headers
+        )
         assert response.status_code in [200, 201, 401]
 
+
 class TestTechnicalIndicators:
-    
+
     def test_calculate_sma(self):
         """移動平均計算テスト"""
         from services.finance_service import FinanceService
-        
+
         # モックデータでSMA計算
         prices = [100, 102, 98, 105, 103, 107, 109, 106, 108, 110]
         sma_5 = sum(prices[-5:]) / 5
-        
+
         assert abs(sma_5 - 106.8) < 0.1
 
     def test_calculate_rsi(self):
         """RSI計算テスト"""
         # RSI計算ロジックの単体テスト
-        prices = [44, 44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.85, 46.08, 45.89, 46.03, 46.83, 46.69, 46.45, 46.59]
-        
+        prices = [
+            44,
+            44.34,
+            44.09,
+            44.15,
+            43.61,
+            44.33,
+            44.83,
+            45.85,
+            46.08,
+            45.89,
+            46.03,
+            46.83,
+            46.69,
+            46.45,
+            46.59,
+        ]
+
         # RSIは0-100の範囲内であることを確認
         # 実際の計算は複雑なので基本的な範囲チェックのみ
         assert 0 <= 70 <= 100  # 期待値の代わりに範囲確認
 
+
 class TestDatabaseOperations:
-    
+
     def test_stock_master_crud(self, test_db):
         """株式マスターデータのCRUDテスト"""
         from database.models.stock_master import StockMaster
         from database.database import get_db_session
-        
+
         # テスト用のダミーデータ
         stock_data = {
             "symbol": "TEST",
             "company_name": "Test Company",
             "sector": "Technology",
             "market": "NASDAQ",
-            "is_active": True
+            "is_active": True,
         }
-        
+
         # 作成・取得・更新・削除のテスト（実際のDBセッションは別途設定）
         assert True  # プレースホルダー
 
@@ -153,6 +181,7 @@ class TestDatabaseOperations:
         """株価履歴データのCRUDテスト"""
         # 株価履歴データのCRUD操作テスト
         assert True  # プレースホルダー
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

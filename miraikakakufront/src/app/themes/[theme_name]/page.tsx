@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Lightbulb, Star, Users, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Lightbulb } from 'lucide-react';
 import ThemeHeader from '@/components/themes/ThemeHeader';
 import ThemePerformanceChart from '@/components/themes/ThemePerformanceChart';
 import ThemeStockTable from '@/components/themes/ThemeStockTable';
@@ -61,20 +61,14 @@ export default function ThemeDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
 
-  useEffect(() => {
-    if (themeId) {
-      fetchThemeDetails();
-    }
-  }, [themeId]);
-
-  const fetchThemeDetails = async () => {
+  const fetchThemeDetails = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
       const response = await apiClient.getThemeDetails(themeId);
       
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setTheme(response.data.theme);
         setStocks(response.data.stocks);
         setPerformanceData(response.data.performance_data);
@@ -89,7 +83,13 @@ export default function ThemeDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [themeId]);
+
+  useEffect(() => {
+    if (themeId) {
+      fetchThemeDetails();
+    }
+  }, [themeId, fetchThemeDetails]);
 
   const generateMockThemeData = () => {
     // Create mock theme based on theme ID

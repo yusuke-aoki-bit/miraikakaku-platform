@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Lightbulb, Search, Filter, TrendingUp, Star } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Lightbulb, Search, TrendingUp, Star } from 'lucide-react';
 import FeaturedThemes from '@/components/themes/FeaturedThemes';
 import AllThemes from '@/components/themes/AllThemes';
 import { apiClient } from '@/lib/api-client';
@@ -30,18 +30,14 @@ export default function ThemesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchThemes();
-  }, []);
-
-  const fetchThemes = async () => {
+  const fetchThemes = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
       const response = await apiClient.getThemes();
       
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         const allThemes = response.data;
         setThemes(allThemes);
         setFeaturedThemes(allThemes.filter((theme: Theme) => theme.is_featured));
@@ -55,7 +51,11 @@ export default function ThemesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchThemes();
+  }, [fetchThemes]);
 
   const generateMockThemes = () => {
     const mockThemes: Theme[] = [

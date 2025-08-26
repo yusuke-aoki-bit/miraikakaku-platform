@@ -4,10 +4,12 @@ import json
 import asyncio
 import logging
 from datetime import datetime
+from config import WebSocketConfig
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
 
 class ConnectionManager:
     def __init__(self):
@@ -34,12 +36,14 @@ class ConnectionManager:
             except Exception as e:
                 logger.error(f"WebSocket送信エラー: {e}")
                 disconnected.append(connection)
-        
+
         # 切断されたコネクションを削除
         for conn in disconnected:
             self.disconnect(conn)
 
+
 manager = ConnectionManager()
+
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -50,50 +54,64 @@ async def websocket_endpoint(websocket: WebSocket):
             "type": "connection",
             "data": {
                 "message": "Miraikakaku WebSocketに接続しました",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
         await manager.send_personal_message(json.dumps(welcome_message), websocket)
-        
-        # 定期的に価格更新をシミュレート
-        while True:
-            # 実際の実装では、ここで最新の株価データを取得
-            price_update = {
-                "type": "price_update",
-                "data": {
-                    "symbol": "AAPL",
-                    "price": 150.25 + (hash(str(datetime.utcnow())) % 100 - 50) / 100,
-                    "change": 1.25,
-                    "change_percent": 0.84,
-                    "timestamp": datetime.utcnow().isoformat()
+
+        # 本番環境ではモックデータを無効化
+        if WebSocketConfig.ENABLE_MOCK_DATA:
+            # 開発環境のみ: モック価格更新をシミュレート
+            while True:
+                price_update = {
+                    "type": "price_update",
+                    "data": {
+                        "symbol": "AAPL",
+                        "price": 150.25
+                        + ((hash(str(datetime.utcnow())) % 100 - 50) / 100),
+                        "change": 1.25,
+                        "change_percent": 0.84,
+                        "timestamp": datetime.utcnow().isoformat(),
+                    },
                 }
-            }
-            await manager.send_personal_message(json.dumps(price_update), websocket)
-            await asyncio.sleep(5)  # 5秒間隔で更新
-            
+                await manager.send_personal_message(json.dumps(price_update), websocket)
+                await asyncio.sleep(WebSocketConfig.DEFAULT_UPDATE_INTERVAL)
+        else:
+            # 本番環境: 実際のデータ取得処理を実装
+            # TODO: 実際の株価APIからデータを取得
+            while True:
+                await asyncio.sleep(WebSocketConfig.DEFAULT_UPDATE_INTERVAL)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+
 
 @router.websocket("/ws/{symbol}")
 async def websocket_symbol_endpoint(websocket: WebSocket, symbol: str):
     """特定銘柄のWebSocket接続"""
     await manager.connect(websocket)
     try:
-        # 銘柄固有の価格更新を送信
-        while True:
-            price_update = {
-                "type": "price_update",
-                "data": {
-                    "symbol": symbol.upper(),
-                    "price": 100 + (hash(str(datetime.utcnow()) + symbol) % 200),
-                    "timestamp": datetime.utcnow().isoformat()
+        # 本番環境ではモックデータを無効化
+        if WebSocketConfig.ENABLE_MOCK_DATA:
+            # 開発環境のみ: 銘柄固有のモック価格更新
+            while True:
+                price_update = {
+                    "type": "price_update",
+                    "data": {
+                        "symbol": symbol.upper(),
+                        "price": 100 + (hash(str(datetime.utcnow()) + symbol) % 200),
+                        "timestamp": datetime.utcnow().isoformat(),
+                    },
                 }
-            }
-            await manager.send_personal_message(json.dumps(price_update), websocket)
-            await asyncio.sleep(3)
-            
+                await manager.send_personal_message(json.dumps(price_update), websocket)
+                await asyncio.sleep(WebSocketConfig.SYMBOL_UPDATE_INTERVAL)
+        else:
+            # 本番環境: 銘柄固有の実際データ取得
+            # TODO: 銘柄固有の実際データを取得
+            while True:
+                await asyncio.sleep(WebSocketConfig.SYMBOL_UPDATE_INTERVAL)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+
 
 # ブロードキャスト用のヘルパー関数
 async def broadcast_price_update(symbol: str, price_data: dict):
@@ -103,10 +121,11 @@ async def broadcast_price_update(symbol: str, price_data: dict):
         "data": {
             "symbol": symbol,
             **price_data,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+            "timestamp": datetime.utcnow().isoformat(),
+        },
     }
     await manager.broadcast(json.dumps(message))
+
 
 async def broadcast_prediction_update(symbol: str, prediction_data: dict):
     """予測更新をすべてのクライアントにブロードキャスト"""
@@ -115,7 +134,7 @@ async def broadcast_prediction_update(symbol: str, prediction_data: dict):
         "data": {
             "symbol": symbol,
             **prediction_data,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+            "timestamp": datetime.utcnow().isoformat(),
+        },
     }
     await manager.broadcast(json.dumps(message))

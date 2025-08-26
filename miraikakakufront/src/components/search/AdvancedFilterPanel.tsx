@@ -69,7 +69,7 @@ export default function AdvancedFilterPanel({
   const fetchSectors = async () => {
     try {
       const response = await apiClient.getSectors();
-      if (response.status === 'success' && Array.isArray(response.data)) {
+      if (response.success && Array.isArray(response.data)) {
         setSectors(response.data);
       } else {
         // API失敗時は空配列

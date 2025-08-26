@@ -58,7 +58,7 @@ export default function WatchlistWidget() {
       if (symbols.length > 0) {
         const response = await apiClient.getBatchStockDetails(symbols.slice(0, 5));
         
-        if (response.status === 'success' && response.data) {
+        if (response.success && response.data) {
           const stockData: WatchlistStock[] = symbols.slice(0, 5).map(symbol => {
             const stockInfo = (response.data as any)?.[symbol];
             const latestPrice = stockInfo?.prices?.[stockInfo.prices.length - 1];

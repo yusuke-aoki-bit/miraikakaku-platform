@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from datetime import datetime
+
 
 class UserCreateRequest(BaseModel):
     email: EmailStr
@@ -8,10 +8,12 @@ class UserCreateRequest(BaseModel):
     name: str
     role: str = "user"
 
+
 class UserUpdateRequest(BaseModel):
     name: Optional[str] = None
     role: Optional[str] = None
     is_active: Optional[bool] = None
+
 
 class UserResponse(BaseModel):
     id: str
@@ -21,6 +23,7 @@ class UserResponse(BaseModel):
     is_active: bool
     created_at: str
     last_login: Optional[str] = None
+
 
 class SystemStatsResponse(BaseModel):
     total_users: int
@@ -32,12 +35,14 @@ class SystemStatsResponse(BaseModel):
     system_uptime: str
     last_updated: str
 
+
 class ModelPerformanceResponse(BaseModel):
     model_name: str
     total_predictions: int
     avg_confidence: float
     avg_accuracy: float
     last_prediction: str
+
 
 class LogEntryResponse(BaseModel):
     id: int

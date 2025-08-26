@@ -287,7 +287,7 @@ export default function ActiveContests() {
       setLoading(true);
       const response = await apiClient.getActiveContests();
       
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setContests(response.data);
       } else {
         // Generate mock contests for development
@@ -402,7 +402,7 @@ export default function ActiveContests() {
     try {
       const response = await apiClient.submitPrediction(selectedContest.id, prediction);
       
-      if (response.status === 'success') {
+      if (response.success) {
         // Update the contest in the local state
         setContests(prevContests => 
           prevContests.map(contest => 

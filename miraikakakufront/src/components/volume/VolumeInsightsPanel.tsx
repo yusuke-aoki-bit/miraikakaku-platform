@@ -64,7 +64,7 @@ export default function VolumeInsightsPanel({ stock }: VolumeInsightsPanelProps)
     setLoading(true);
     try {
       const response = await apiClient.getAIVolumeInsights(stock.symbol);
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setInsights(response.data as any);
       }
     } catch (error) {

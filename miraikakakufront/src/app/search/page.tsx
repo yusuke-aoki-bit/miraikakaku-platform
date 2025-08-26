@@ -27,6 +27,34 @@ interface SearchResult {
   };
 }
 
+interface ApiSearchResult {
+  symbol: string;
+  company_name?: string;
+  name?: string;
+  current_price?: number;
+  price?: number;
+  close_price?: number;
+  change?: number;
+  change_percent?: number;
+  changePct?: number;
+  market?: string;
+  exchange?: string;
+  sector?: string;
+  market_cap?: number;
+  marketCap?: number;
+  ai_score?: number;
+  aiScore?: number;
+  per?: number;
+  pbr?: number;
+  dividend_yield?: number;
+  dividendYield?: number;
+}
+
+interface ApiSearchResponse {
+  stocks?: ApiSearchResult[];
+  total?: number;
+}
+
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -63,9 +91,9 @@ export default function SearchPage() {
       
       const response = await apiClient.searchStocksAdvanced(query, searchFilters);
       
-      if (response.status === 'success' && response.data) {
-        const results = Array.isArray(response.data) ? response.data : (response.data as any)?.stocks || [];
-        const formattedResults: SearchResult[] = results.map((stock: any) => ({
+      if (response.success && response.data) {
+        const results = Array.isArray(response.data) ? response.data : (response.data as ApiSearchResponse)?.stocks || [];
+        const formattedResults: SearchResult[] = results.map((stock: ApiSearchResult) => ({
           symbol: stock.symbol,
           company_name: stock.company_name || stock.name || stock.symbol,
           current_price: stock.current_price || stock.price || stock.close_price || 100,
@@ -81,7 +109,7 @@ export default function SearchPage() {
         }));
         
         setSearchResults(formattedResults);
-        setTotalCount((response.data as any)?.total || formattedResults.length);
+        setTotalCount((response.data as ApiSearchResponse)?.total || formattedResults.length);
         
         if (formattedResults.length > 0) {
           fetchBatchChartData(formattedResults.map(s => s.symbol));
@@ -102,10 +130,10 @@ export default function SearchPage() {
   const fetchBatchChartData = async (symbols: string[]) => {
     try {
       const response = await apiClient.getBatchStockChartData(symbols.slice(0, 10));
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         setSearchResults(prev => prev.map(stock => ({
           ...stock,
-          chart_data: (response.data as any)?.[stock.symbol] || { historical: [], past_prediction: [], future_prediction: [] }
+          chart_data: (response.data as Record<string, { historical?: number[]; past_prediction?: number[]; future_prediction?: number[] }>)?.[stock.symbol] || { historical: [], past_prediction: [], future_prediction: [] }
         })));
       }
     } catch (error) {

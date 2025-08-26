@@ -122,9 +122,9 @@ export default function EnhancedStockChart({ symbol, timeframe = '1M', showThumb
           apiClient.getStockPredictions(symbol, undefined, 15)
         ]);
 
-        const historical = historicalRes.status === 'success' && Array.isArray(historicalRes.data) ? (historicalRes.data as any[]).map(d => ({...d, date: d.date.split('T')[0], actual_price: d.close_price, volume: d.volume || 0})) : [];
-        const pastPredictions = pastPredictionsRes.status === 'success' && Array.isArray(pastPredictionsRes.data) ? (pastPredictionsRes.data as any[]).map(d => ({...d, date: d.target_date})) : [];
-        const futurePredictions = futurePredictionsRes.status === 'success' && Array.isArray(futurePredictionsRes.data) ? (futurePredictionsRes.data as any[]).map(d => ({...d, date: d.target_date})) : [];
+        const historical = historicalRes.success && Array.isArray(historicalRes.data) ? (historicalRes.data as any[]).map(d => ({...d, date: d.date.split('T')[0], actual_price: d.close_price, volume: d.volume || 0})) : [];
+        const pastPredictions = pastPredictionsRes.success && Array.isArray(pastPredictionsRes.data) ? (pastPredictionsRes.data as any[]).map(d => ({...d, date: d.target_date})) : [];
+        const futurePredictions = futurePredictionsRes.success && Array.isArray(futurePredictionsRes.data) ? (futurePredictionsRes.data as any[]).map(d => ({...d, date: d.target_date})) : [];
 
         setData({
           historical,

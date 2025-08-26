@@ -58,10 +58,10 @@ interface BillingHistory {
 }
 
 interface APIResponse<T = any> {
+  success: boolean;
   data?: T;
   error?: string;
   message?: string;
-  status: 'success' | 'error';
 }
 
 // Helper function to ensure array response
@@ -73,7 +73,7 @@ function ensureArray<T = any>(data: any): T[] {
 
 // Helper function to check if response has valid array data
 function hasArrayData(response: APIResponse<any>): boolean {
-  return response.status === 'success' && 
+  return response.success === true && 
          response.data !== undefined && 
          response.data !== null;
 }
@@ -101,7 +101,7 @@ class APIClient {
         
         if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
           return {
-            status: 'success',
+            success: true,
             data: cached.data,
           };
         }
@@ -118,7 +118,7 @@ class APIClient {
 
       if (!response.ok) {
         return {
-          status: 'error',
+          success: false,
           error: `HTTP ${response.status}: ${response.statusText}`,
         };
       }
@@ -143,12 +143,12 @@ class APIClient {
       }
       
       return {
-        status: 'success',
+        success: true,
         data,
       };
     } catch (error) {
       return {
-        status: 'error',
+        success: false,
         error: error instanceof Error ? error.message : '不明なエラー',
       };
     }
@@ -219,16 +219,16 @@ class APIClient {
       ]);
       
       return {
-        status: 'success' as const,
+        success: true,
         data: {
           symbol,
-          prices: priceResponse.status === 'success' ? priceResponse.data : [],
-          predictions: predictionResponse.status === 'success' ? predictionResponse.data : []
+          prices: priceResponse.success ? priceResponse.data : [],
+          predictions: predictionResponse.success ? predictionResponse.data : []
         }
       };
     } catch (error) {
       return {
-        status: 'error' as const,
+        success: false,
         error: error instanceof Error ? error.message : '株式詳細取得エラー'
       };
     }
@@ -309,7 +309,7 @@ class APIClient {
     
     // 既存のAPIレスポンスを拡張フォーマットに変換
     const response = await this.request(url);
-    if (response.status === 'success' && response.data && Array.isArray(response.data)) {
+    if (response.success && response.data && Array.isArray(response.data)) {
       // データを拡張フォーマットに変換
       const enhancedData = response.data.map((stock: any) => ({
         ...stock,
@@ -351,7 +351,7 @@ class APIClient {
       }
       
       return {
-        status: 'success' as const,
+        success: true,
         data: filteredData.slice(0, filters.limit || 20)
       };
     }
@@ -363,7 +363,7 @@ class APIClient {
   async searchStocksAutocomplete(query: string, limit: number = 10) {
     const response = await this.request(`/api/finance/stocks/search?query=${encodeURIComponent(query)}&limit=${limit}`);
     
-    if (response.status === 'success' && response.data && Array.isArray(response.data)) {
+    if (response.success && response.data && Array.isArray(response.data)) {
       // オートコンプリート形式に変換
       const suggestions = response.data.map((stock: any) => ({
         symbol: stock.symbol,
@@ -374,7 +374,7 @@ class APIClient {
       }));
       
       return {
-        status: 'success' as const,
+        success: true,
         data: suggestions
       };
     }
@@ -404,12 +404,12 @@ class APIClient {
       });
       
       return {
-        status: 'success' as const,
+        success: true,
         data
       };
     } catch (error) {
       return {
-        status: 'error' as const,
+        success: false,
         error: error instanceof Error ? error.message : 'Batch data fetch failed'
       };
     }
@@ -429,18 +429,18 @@ class APIClient {
       
       const data: { [key: string]: any } = {};
       results.forEach((result, index) => {
-        if (result.status === 'success') {
+        if (result.success) {
           data[symbols[index]] = result.data;
         }
       });
       
       return {
-        status: 'success' as const,
+        success: true,
         data
       };
     } catch (error) {
       return {
-        status: 'error' as const,
+        success: false,
         error: error instanceof Error ? error.message : 'Batch financials fetch failed'
       };
     }
@@ -497,7 +497,7 @@ class APIClient {
   async getBatchStockDetails(symbols: string[]) {
     if (symbols.length === 0) {
       return {
-        status: 'success' as const,
+        success: true,
         data: {}
       };
     }
@@ -519,7 +519,7 @@ class APIClient {
           financials: {}
         };
 
-        if (priceResponse.status === 'success') {
+        if (priceResponse.success) {
           stockData.prices = priceResponse.data || [];
           if (stockData.prices.length > 0) {
             const latest = stockData.prices[stockData.prices.length - 1];
@@ -530,7 +530,7 @@ class APIClient {
           }
         }
 
-        if (predictionResponse.status === 'success') {
+        if (predictionResponse.success) {
           stockData.predictions = predictionResponse.data || [];
           if (stockData.predictions.length > 0) {
             stockData.ai_score = Math.round(stockData.predictions[0].confidence_score * 100);
@@ -538,7 +538,7 @@ class APIClient {
           }
         }
 
-        if (financialResponse.status === 'success') {
+        if (financialResponse.success) {
           stockData.financials = financialResponse.data || {};
           stockData.market_cap = stockData.financials.market_cap;
           stockData.per = stockData.financials.per;
@@ -573,12 +573,12 @@ class APIClient {
       });
 
       return {
-        status: 'success' as const,
+        success: true,
         data: batchData
       };
     } catch (error) {
       return {
-        status: 'error' as const,
+        success: false,
         error: error instanceof Error ? error.message : 'バッチデータ取得エラー'
       };
     }
@@ -589,7 +589,7 @@ class APIClient {
     if (!userId) {
       localStorage.setItem('watchlist', JSON.stringify(symbols));
       return {
-        status: 'success' as const,
+        success: true,
         data: { order_updated: true }
       };
     }
@@ -818,8 +818,12 @@ class APIClient {
   }
 
   // ポートフォリオサマリー取得
-  async getPortfolioSummary(portfolioId: string): Promise<APIResponse<any>> {
-    return this.request(`/api/portfolios/${portfolioId}/summary`);
+  async getPortfolioSummary(portfolioId?: string): Promise<APIResponse<any>> {
+    if (portfolioId) {
+      return this.request(`/api/portfolios/${portfolioId}/summary`);
+    } else {
+      return this.request('/api/portfolios/summary');
+    }
   }
 
   // 保有銘柄一覧取得
@@ -1310,6 +1314,110 @@ class APIClient {
       method: 'GET'
     });
   }
+
+  // Authentication API Methods
+  async login(credentials: {
+    email: string;
+    password: string;
+  }): Promise<APIResponse<any>> {
+    return this.request('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials)
+    }, false);
+  }
+
+  async register(userData: {
+    email: string;
+    password: string;
+    displayName: string;
+  }): Promise<APIResponse<any>> {
+    return this.request('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    }, false);
+  }
+
+  // Current User API
+  async getCurrentUser(): Promise<APIResponse<any>> {
+    return this.request('/api/user/profile', {
+      method: 'GET'
+    });
+  }
+
+
+  // AI Predictions API
+  async getAIPredictions(params: {
+    category?: string;
+    limit?: number;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params.category) queryParams.append('category', params.category);
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+
+    const endpoint = `/api/ai/predictions${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  // Detailed Analysis API
+  async getDetailedAnalysis(symbol: string): Promise<APIResponse<any>> {
+    return this.request(`/api/analysis/${symbol}/detailed`, {
+      method: 'GET'
+    });
+  }
+
+  // Realtime API Methods
+  async getRealtimeStocks(params: {
+    category?: string;
+    limit?: number;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params.category) queryParams.append('category', params.category);
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+
+    const endpoint = `/api/realtime/stocks${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  async getMarketStatus(): Promise<APIResponse<any>> {
+    return this.request('/api/realtime/market-status', {
+      method: 'GET'
+    });
+  }
+
+  async getRealtimeAlerts(params: {
+    limit?: number;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+
+    const endpoint = `/api/realtime/alerts${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  // Stock News API
+  async getStockNews(symbol: string, params?: {
+    limit?: number;
+  }): Promise<APIResponse<any[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const endpoint = `/api/stocks/${symbol}/news${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request(endpoint, {
+      method: 'GET'
+    });
+  }
+
+  // AI Stock Decision Factors API - matches existing pattern
+  async getAIStockDecisionFactors(symbol: string): Promise<APIResponse<any>> {
+    return this.getAIDecisionFactors(symbol);
+  }
+
 
   async getUserRankingStats(): Promise<APIResponse<any>> {
     return this.request('/api/user-rankings/stats', {

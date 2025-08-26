@@ -24,7 +24,7 @@ test.describe('Comprehensive API Integration Tests', () => {
         };
       } catch (error) {
         return {
-          error: error.message
+          error: error instanceof Error ? error.message : String(error)
         };
       }
     });
@@ -64,7 +64,7 @@ test.describe('Comprehensive API Integration Tests', () => {
         }
         return null;
       } catch (error) {
-        return { error: error.message };
+        return { error: error instanceof Error ? error.message : String(error) };
       }
     });
 
@@ -86,7 +86,7 @@ test.describe('Comprehensive API Integration Tests', () => {
         }
         return null;
       } catch (error) {
-        return { error: error.message };
+        return { error: error instanceof Error ? error.message : String(error) };
       }
     });
 
@@ -210,7 +210,7 @@ test.describe('Comprehensive API Integration Tests', () => {
         }
         return null;
       } catch (error) {
-        return { error: error.message };
+        return { error: error instanceof Error ? error.message : String(error) };
       }
     });
 
@@ -233,7 +233,7 @@ test.describe('Comprehensive API Integration Tests', () => {
           ok: response.ok
         };
       } catch (error) {
-        return { error: error.message };
+        return { error: error instanceof Error ? error.message : String(error) };
       }
     });
 
@@ -274,7 +274,7 @@ test.describe('Comprehensive API Integration Tests', () => {
         }
         return null;
       } catch (error) {
-        return { error: error.message };
+        return { error: error instanceof Error ? error.message : String(error) };
       }
     });
 
@@ -293,7 +293,7 @@ test.describe('Comprehensive API Integration Tests', () => {
         }
         return null;
       } catch (error) {
-        return { error: error.message };
+        return { error: error instanceof Error ? error.message : String(error) };
       }
     });
 
@@ -319,7 +319,7 @@ test.describe('Comprehensive API Integration Tests', () => {
           }
           return null;
         } catch (error) {
-          return { error: error.message };
+          return { error: error instanceof Error ? error.message : String(error) };
         }
       }, symbol);
 
@@ -347,7 +347,7 @@ test.describe('Comprehensive API Integration Tests', () => {
           }
           return null;
         } catch (error) {
-          return { error: error.message };
+          return { error: error instanceof Error ? error.message : String(error) };
         }
       }, symbol);
 
@@ -396,7 +396,7 @@ test.describe('Comprehensive API Integration Tests', () => {
           results.push({
             endpoint,
             responseTime: endTime - startTime,
-            error: error.message
+            error: error instanceof Error ? error.message : String(error)
           });
         }
       }

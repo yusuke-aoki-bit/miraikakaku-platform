@@ -78,9 +78,9 @@ export default function VolumeAnalysisChart({ stock }: VolumeAnalysisChartProps)
       const combinedData: VolumeAnalysisDataPoint[] = [];
       
       // 過去のデータ処理
-      if (priceResponse.status === 'success' && Array.isArray(priceResponse.data)) {
+      if (priceResponse.success && Array.isArray(priceResponse.data)) {
         const priceData = priceResponse.data;
-        const volumeData = (volumeResponse.status === 'success' && Array.isArray(volumeResponse.data)) ? volumeResponse.data : [];
+        const volumeData = (volumeResponse.success && Array.isArray(volumeResponse.data)) ? volumeResponse.data : [];
         
         priceData.forEach((pricePoint: any, index: number) => {
           const volumePoint = volumeData.find((v: any) => v.date === pricePoint.date);
@@ -113,7 +113,7 @@ export default function VolumeAnalysisChart({ stock }: VolumeAnalysisChartProps)
       }
 
       // 未来の予測データ処理
-      if (volumePredictionResponse.status === 'success' && Array.isArray(volumePredictionResponse.data)) {
+      if (volumePredictionResponse.success && Array.isArray(volumePredictionResponse.data)) {
         const lastPrice = combinedData[combinedData.length - 1]?.close_price || (stock as any).current_price;
         const avgVolume = combinedData.slice(-20).reduce((sum, item) => sum + item.volume, 0) / 20;
         

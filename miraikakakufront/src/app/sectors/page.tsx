@@ -33,7 +33,7 @@ export default function SectorsPage() {
     setLoading(true);
     try {
       const response = await apiClient.getSectorsWithPerformance();
-      if (response.status === 'success' && response.data) {
+      if (response.success && response.data) {
         const dataArray = Array.isArray(response.data) ? response.data : [];
         setSectors(dataArray);
       } else {

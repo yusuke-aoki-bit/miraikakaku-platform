@@ -3,7 +3,10 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, date
 from enum import Enum
 
+
 # Enums
+
+
 class InvestmentStyle(str, Enum):
     conservative = "conservative"
     moderate = "moderate"
@@ -11,10 +14,12 @@ class InvestmentStyle(str, Enum):
     growth = "growth"
     value = "value"
 
+
 class RiskTolerance(str, Enum):
     low = "low"
     medium = "medium"
     high = "high"
+
 
 class InvestmentExperience(str, Enum):
     beginner = "beginner"
@@ -22,10 +27,12 @@ class InvestmentExperience(str, Enum):
     advanced = "advanced"
     expert = "expert"
 
+
 class Priority(str, Enum):
     high = "high"
     medium = "medium"
     low = "low"
+
 
 class FactorType(str, Enum):
     technical = "technical"
@@ -34,15 +41,18 @@ class FactorType(str, Enum):
     news = "news"
     pattern = "pattern"
 
+
 class ContestStatus(str, Enum):
     active = "active"
     closed = "closed"
     completed = "completed"
 
+
 class ConfidenceLevel(str, Enum):
     low = "low"
     medium = "medium"
     high = "high"
+
 
 class ThemeCategory(str, Enum):
     technology = "technology"
@@ -53,12 +63,16 @@ class ThemeCategory(str, Enum):
     industrial = "industrial"
     materials = "materials"
 
+
 class TrendDirection(str, Enum):
     bullish = "bullish"
     bearish = "bearish"
     neutral = "neutral"
 
+
 # User Profile Models
+
+
 class UserProfileCreate(BaseModel):
     user_id: str
     username: Optional[str] = None
@@ -70,6 +84,7 @@ class UserProfileCreate(BaseModel):
     investment_goals: Optional[str] = None
     total_portfolio_value: Optional[float] = None
 
+
 class UserProfileUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[str] = None
@@ -79,6 +94,7 @@ class UserProfileUpdate(BaseModel):
     preferred_sectors: Optional[List[str]] = None
     investment_goals: Optional[str] = None
     total_portfolio_value: Optional[float] = None
+
 
 class UserProfileResponse(BaseModel):
     id: int
@@ -97,7 +113,10 @@ class UserProfileResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # AI Decision Factor Models
+
+
 class AiDecisionFactorResponse(BaseModel):
     id: int
     factor_type: FactorType
@@ -109,6 +128,7 @@ class AiDecisionFactorResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class EnhancedPredictionResponse(BaseModel):
     id: int
@@ -122,13 +142,17 @@ class EnhancedPredictionResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # Watchlist Models
+
+
 class WatchlistCreate(BaseModel):
     symbol: str
     alert_threshold_up: Optional[float] = None
     alert_threshold_down: Optional[float] = None
     notes: Optional[str] = None
     priority: Priority = Priority.medium
+
 
 class WatchlistResponse(BaseModel):
     id: int
@@ -143,7 +167,10 @@ class WatchlistResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # Portfolio Models
+
+
 class PortfolioResponse(BaseModel):
     id: int
     user_id: str
@@ -159,7 +186,10 @@ class PortfolioResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # Contest Models
+
+
 class PredictionContestResponse(BaseModel):
     id: int
     contest_name: str
@@ -175,11 +205,13 @@ class PredictionContestResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class ContestPredictionCreate(BaseModel):
     user_id: str
     predicted_price: float
     confidence_level: ConfidenceLevel = ConfidenceLevel.medium
     reasoning: Optional[str] = None
+
 
 class ContestPredictionResponse(BaseModel):
     id: int
@@ -195,7 +227,10 @@ class ContestPredictionResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # Theme Insights Models
+
+
 class ThemeInsightResponse(BaseModel):
     id: int
     theme_name: str
@@ -212,7 +247,10 @@ class ThemeInsightResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # Personalized Recommendation Models
+
+
 class PersonalizedRecommendationResponse(BaseModel):
     symbol: str
     company_name: str
@@ -222,6 +260,7 @@ class PersonalizedRecommendationResponse(BaseModel):
     expected_return: float
     time_horizon: str
     match_reasons: List[str]
+
 
 class InvestmentStyleAnalysis(BaseModel):
     current_style: InvestmentStyle

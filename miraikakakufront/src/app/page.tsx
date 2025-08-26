@@ -6,6 +6,7 @@ import MarketNews from '@/components/home/MarketNews';
 import WatchlistWidget from '@/components/home/WatchlistWidget';
 import TrendingStocksWidget from '@/components/home/TrendingStocksWidget';
 import FeaturedPredictionWidget from '@/components/home/FeaturedPredictionWidget';
+import EconomicEventBooksWidget from '@/components/books/EconomicEventBooksWidget';
 
 export default function Home() {
   return (
@@ -24,6 +25,9 @@ export default function Home() {
           
           {/* マーケットニュース */}
           <MarketNews />
+          
+          {/* 経済指標関連書籍ウィジェット */}
+          <EconomicEventBooksWidget />
         </div>
 
         {/* 右カラム（サイドコンテンツ、1/3幅） */}
