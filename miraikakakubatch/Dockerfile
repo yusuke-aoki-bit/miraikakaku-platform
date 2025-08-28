@@ -36,5 +36,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
-# バッチ処理メイン実行 (強化版を使用)
-CMD ["python", "massive_batch_main.py"]
+# バッチ処理メイン実行 (LSTMモデル版を使用)
+CMD ["python", "simple_batch_main.py"]

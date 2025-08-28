@@ -37,7 +37,7 @@ class CloudSQLManager:
             instance_name = os.getenv("CLOUD_SQL_INSTANCE", "miraikakaku")
             database_name = os.getenv("CLOUD_SQL_DATABASE", "miraikakaku_prod")
             db_user = os.getenv("CLOUD_SQL_USER", "root")
-            db_password = os.getenv("CLOUD_SQL_PASSWORD", "miraikakaku2025")
+            db_password = os.getenv("CLOUD_SQL_PASSWORD")
 
             # Cloud SQL Connectorを使用
             self.connector = Connector()
@@ -113,7 +113,8 @@ class StockDataRepository:
     def __init__(self, db_session: Session = None):
         self.db = db_session or db_manager.get_session()
 
-    def insert_stock_prices(self, symbol: str, price_data: pd.DataFrame) -> int:
+    def insert_stock_prices(self, symbol: str,
+                            price_data: pd.DataFrame) -> int:
         """株価データを挿入"""
         try:
             records_inserted = 0
@@ -148,7 +149,8 @@ class StockDataRepository:
                     records_inserted += 1
 
             self.db.commit()
-            logger.info(f"Inserted {records_inserted} price records for {symbol}")
+            logger.info(
+                f"Inserted {records_inserted} price records for {symbol}")
             return records_inserted
 
         except Exception as e:
@@ -184,7 +186,13 @@ class StockDataRepository:
                 df["date"] = pd.to_datetime(df["date"])
                 df.set_index("date", inplace=True)
                 # カラム名をyfinance形式に合わせる
-                df.columns = ["Open", "High", "Low", "Close", "Volume", "Adj Close"]
+                df.columns = [
+                    "Open",
+                    "High",
+                    "Low",
+                    "Close",
+                    "Volume",
+                    "Adj Close"]
 
             return df
 
@@ -192,7 +200,8 @@ class StockDataRepository:
             logger.error(f"Failed to get stock prices for {symbol}: {e}")
             return pd.DataFrame()
 
-    def insert_predictions(self, predictions_data: List[Dict[str, Any]]) -> int:
+    def insert_predictions(
+            self, predictions_data: List[Dict[str, Any]]) -> int:
         """予測結果を挿入"""
         try:
             records_inserted = 0
@@ -219,13 +228,16 @@ class StockDataRepository:
                             "prediction_date": datetime.now().date(),
                             "prediction_days": pred.get("prediction_days", 7),
                             "current_price": pred.get("current_price", 0),
-                            "predicted_price": predicted_prices[-1],  # 最終日の予測価格
+                            # 最終日の予測価格
+                            "predicted_price": predicted_prices[-1],
                             "confidence_score": pred.get("confidence_score", 0),
                             "prediction_range_low": min(
                                 pred.get("prediction_range", {}).get("low", [])
                             ),
                             "prediction_range_high": max(
-                                pred.get("prediction_range", {}).get("high", [])
+                                pred.get(
+                                    "prediction_range", {}).get(
+                                    "high", [])
                             ),
                             "model_version": pred.get("model_version", "LSTM_v1.0"),
                             "model_accuracy": pred.get("model_accuracy", 0),
@@ -243,7 +255,8 @@ class StockDataRepository:
             logger.error(f"Failed to insert predictions: {e}")
             raise
 
-    def get_latest_predictions(self, symbol: str = None, limit: int = 10) -> List[Dict]:
+    def get_latest_predictions(self, symbol: str = None,
+                               limit: int = 10) -> List[Dict]:
         """最新の予測結果を取得"""
         try:
             query = """

@@ -74,81 +74,11 @@ export default function ContestDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'ranking' | 'analysis'>('overview');
 
-  const generateMockContestDetails = useCallback(() => {
-    const mockContest: ContestDetail = {
-      id: contestId,
-      title: '先週のTOPIX予測チャレンジ',
-      description: '2月16日のTOPIX終値を正確に予測するウィークリーチャレンジでした。',
-      challenge: '2月16日のTOPIX終値を予測',
-      target_symbol: '^TOPIX',
-      target_name: '東証株価指数',
-      contest_type: 'weekly',
-      start_date: '2024-02-12T09:00:00Z',
-      end_date: '2024-02-16T15:00:00Z',
-      result_date: '2024-02-16T16:00:00Z',
-      actual_result: 2741.8,
-      total_participants: 1834,
-      status: 'completed',
-      reward_description: '上位10%に『ゴールドプレディクター』バッジを付与、1位には『週間チャンピオン』称号',
-      user_participation: {
-        participated: true,
-        prediction: 2739.5,
-        rank: 47,
-        points_earned: 150,
-        accuracy_percent: 99.2
-      },
-      statistics: {
-        average_prediction: 2738.4,
-        median_prediction: 2740.1,
-        closest_prediction: 2741.9,
-        furthest_prediction: 2587.2,
-        standard_deviation: 47.8
-      },
-      top_performers: [
-        {
-          rank: 1,
-          user_id: 'user-1',
-          nickname: 'MarketMaster',
-          prediction: 2741.9,
-          accuracy: 99.996,
-          points_earned: 1000,
-          badge_earned: '週間チャンピオン'
-        },
-        {
-          rank: 2,
-          user_id: 'user-2',
-          nickname: 'TradingKing',
-          prediction: 2741.7,
-          accuracy: 99.996,
-          points_earned: 750,
-          badge_earned: 'ゴールドプレディクター'
-        },
-        {
-          rank: 3,
-          user_id: 'user-3',
-          nickname: 'StockSage',
-          prediction: 2742.0,
-          accuracy: 99.993,
-          points_earned: 500,
-          badge_earned: 'ゴールドプレディクター'
-        }
-      ]
-    };
-
-    const mockDistribution: PredictionDistribution[] = [
-      { range: '2600-2650', count: 23, percentage: 1.3 },
-      { range: '2650-2700', count: 67, percentage: 3.7 },
-      { range: '2700-2720', count: 134, percentage: 7.3 },
-      { range: '2720-2740', count: 387, percentage: 21.1 },
-      { range: '2740-2750', count: 892, percentage: 48.6 },
-      { range: '2750-2770', count: 267, percentage: 14.6 },
-      { range: '2770-2800', count: 45, percentage: 2.5 },
-      { range: '2800-2850', count: 19, percentage: 1.0 }
-    ];
-
-    setContest(mockContest);
-    setDistribution(mockDistribution);
-  }, [contestId]);
+  const setDefaultContestData = useCallback(() => {
+    setContest(null);
+    setDistribution([]);
+    setError('コンテストデータが見つかりませんでした');
+  }, []);
 
   const fetchContestDetails = useCallback(async () => {
     try {
@@ -161,16 +91,15 @@ export default function ContestDetailPage() {
         setContest(response.data.contest);
         setDistribution(response.data.distribution);
       } else {
-        // Generate mock contest details for development
-        generateMockContestDetails();
+        setDefaultContestData();
       }
     } catch (err) {
       console.error('Failed to fetch contest details:', err);
-      generateMockContestDetails();
+      setDefaultContestData();
     } finally {
       setLoading(false);
     }
-  }, [contestId, generateMockContestDetails]);
+  }, [contestId, setDefaultContestData]);
 
   useEffect(() => {
     if (contestId) {

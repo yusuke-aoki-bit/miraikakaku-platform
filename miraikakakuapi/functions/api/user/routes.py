@@ -66,7 +66,8 @@ async def create_user_profile(
 async def get_user_profile(user_id: str, db: Session = Depends(get_db)):
     """ユーザープロファイルを取得"""
     try:
-        user = db.query(UserProfiles).filter(UserProfiles.user_id == user_id).first()
+        user = db.query(UserProfiles).filter(
+            UserProfiles.user_id == user_id).first()
 
         if not user:
             raise HTTPException(
@@ -87,7 +88,8 @@ async def update_user_profile(
 ):
     """ユーザープロファイルを更新"""
     try:
-        user = db.query(UserProfiles).filter(UserProfiles.user_id == user_id).first()
+        user = db.query(UserProfiles).filter(
+            UserProfiles.user_id == user_id).first()
         if not user:
             raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
 
@@ -112,7 +114,8 @@ async def update_user_profile(
     "/predictions/{prediction_id}/factors",
     response_model=List[AiDecisionFactorResponse],
 )
-async def get_ai_decision_factors(prediction_id: int, db: Session = Depends(get_db)):
+async def get_ai_decision_factors(
+        prediction_id: int, db: Session = Depends(get_db)):
     """AI予測の判断根拠を取得"""
     try:
         factors = (
@@ -122,7 +125,8 @@ async def get_ai_decision_factors(prediction_id: int, db: Session = Depends(get_
             .all()
         )
 
-        return [AiDecisionFactorResponse.from_orm(factor) for factor in factors]
+        return [AiDecisionFactorResponse.from_orm(
+            factor) for factor in factors]
     except Exception as e:
         logger.error(f"AI判断根拠取得エラー: {e}")
         raise HTTPException(status_code=500, detail=f"判断根拠取得エラー: {str(e)}")
@@ -142,7 +146,8 @@ async def get_all_ai_factors(
             .all()
         )
 
-        return [AiDecisionFactorResponse.from_orm(factor) for factor in factors]
+        return [AiDecisionFactorResponse.from_orm(
+            factor) for factor in factors]
     except Exception as e:
         logger.error(f"AI決定要因一覧取得エラー: {e}")
         raise HTTPException(status_code=500, detail=f"決定要因取得エラー: {str(e)}")
@@ -171,7 +176,8 @@ async def get_symbol_ai_factors(
             .all()
         )
 
-        return [AiDecisionFactorResponse.from_orm(factor) for factor in factors]
+        return [AiDecisionFactorResponse.from_orm(
+            factor) for factor in factors]
     except Exception as e:
         logger.error(f"銘柄別AI決定要因取得エラー: {e}")
         raise HTTPException(status_code=500, detail=f"決定要因取得エラー: {str(e)}")
@@ -236,7 +242,8 @@ async def add_to_watchlist(
     """ウォッチリストに銘柄を追加"""
     try:
         # ユーザー存在確認
-        user = db.query(UserProfiles).filter(UserProfiles.user_id == user_id).first()
+        user = db.query(UserProfiles).filter(
+            UserProfiles.user_id == user_id).first()
         if not user:
             raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
 
@@ -268,7 +275,8 @@ async def add_to_watchlist(
         )
 
 
-@router.get("/users/{user_id}/watchlist", response_model=List[WatchlistResponse])
+@router.get("/users/{user_id}/watchlist",
+            response_model=List[WatchlistResponse])
 async def get_user_watchlist(user_id: str, db: Session = Depends(get_db)):
     """ユーザーのウォッチリストを取得"""
     try:
@@ -290,7 +298,8 @@ async def get_user_watchlist(user_id: str, db: Session = Depends(get_db)):
 # ポートフォリオ関連エンドポイント
 
 
-@router.get("/users/{user_id}/portfolio", response_model=List[PortfolioResponse])
+@router.get("/users/{user_id}/portfolio",
+            response_model=List[PortfolioResponse])
 async def get_user_portfolio(user_id: str, db: Session = Depends(get_db)):
     """ユーザーのポートフォリオを取得"""
     try:
@@ -322,13 +331,15 @@ async def get_active_contests(db: Session = Depends(get_db)):
             .all()
         )
 
-        return [PredictionContestResponse.from_orm(contest) for contest in contests]
+        return [PredictionContestResponse.from_orm(
+            contest) for contest in contests]
     except Exception as e:
         logger.error(f"アクティブコンテスト取得エラー: {e}")
         raise HTTPException(status_code=500, detail=f"コンテスト取得エラー: {str(e)}")
 
 
-@router.post("/contests/{contest_id}/predict", response_model=ContestPredictionResponse)
+@router.post("/contests/{contest_id}/predict",
+             response_model=ContestPredictionResponse)
 async def submit_contest_prediction(
     contest_id: int, prediction: ContestPredictionCreate, db: Session = Depends(get_db)
 ):
@@ -390,7 +401,8 @@ async def get_available_themes(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"テーマ一覧取得エラー: {str(e)}")
 
 
-@router.get("/insights/themes/{theme_name}", response_model=List[ThemeInsightResponse])
+@router.get("/insights/themes/{theme_name}",
+            response_model=List[ThemeInsightResponse])
 async def get_theme_insights(
     theme_name: str, limit: int = 10, db: Session = Depends(get_db)
 ):

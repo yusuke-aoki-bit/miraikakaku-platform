@@ -118,7 +118,9 @@ const privacyPolicySections = [
         content: [
           'ユーザーは、ブラウザの設定によりCookieの受け入れを拒否することができますが、この場合サービスの一部機能が利用できなくなる可能性があります。',
           '当社は、以下の第三者サービスを利用しており、それぞれがCookieを使用する場合があります：',
+          '・Google AdSense（広告配信）',
           '・Google Analytics（アクセス解析）',
+          '・Amazonアソシエイト（商品紹介）',
           '・その他マーケティング・分析ツール'
         ]
       }
@@ -222,7 +224,7 @@ export default function PrivacyPolicyPage() {
   return (
     <LegalPageLayout
       title="プライバシーポリシー"
-      lastUpdated="2025-08-22"
+      lastUpdated="2025-08-27"
       description="当社が提供するサービスにおける個人情報の収集、利用、管理について説明しています。安心してサービスをご利用いただくため、詳細をご確認ください。"
       icon="privacy"
       sections={privacyPolicySections}

@@ -35,7 +35,8 @@ class StockRepository:
 
     def get_all_active_stocks(self) -> List[StockMaster]:
         """アクティブな全株式を取得"""
-        return self.db.query(StockMaster).filter(StockMaster.is_active == True).all()
+        return self.db.query(StockMaster).filter(
+            StockMaster.is_active == True).all()
 
     def create_or_update_stock(self, stock_data: dict) -> StockMaster:
         """株式マスターを作成または更新"""
@@ -123,7 +124,8 @@ class StockRepository:
                 StockPredictions.prediction_horizon == prediction_horizon
             )
         if start_date:
-            query = query.filter(StockPredictions.prediction_date >= start_date)
+            query = query.filter(
+                StockPredictions.prediction_date >= start_date)
 
         query = query.order_by(StockPredictions.prediction_date.desc())
 

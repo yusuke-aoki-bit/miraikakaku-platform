@@ -993,7 +993,7 @@ class APIClient {
 
   // Sectors API Methods - Complete specification compliance
   async getSectors(): Promise<APIResponse<any[]>> {
-    return this.request('/api/sectors', {
+    return this.request('/api/finance/sectors', {
       method: 'GET'
     });
   }

@@ -37,5 +37,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
-# アプリケーション起動
-CMD ["sh", "-c", "uvicorn production_main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]
+# アプリケーション起動 (統合版を使用)
+CMD ["sh", "-c", "uvicorn integrated_main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]

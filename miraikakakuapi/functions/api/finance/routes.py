@@ -26,7 +26,8 @@ async def get_ml_readiness(db: Session = Depends(get_db)):
     """機械学習の準備状況を評価"""
     try:
         # データ件数取得
-        prices_count = db.execute(text("SELECT COUNT(*) FROM stock_prices")).scalar()
+        prices_count = db.execute(
+            text("SELECT COUNT(*) FROM stock_prices")).scalar()
         predictions_count = db.execute(
             text("SELECT COUNT(*) FROM stock_predictions")
         ).scalar()
@@ -183,8 +184,10 @@ async def get_stock_price(
             StockPriceResponse(
                 symbol=price.symbol,
                 date=price.date,
-                open_price=float(price.open_price) if price.open_price else None,
-                high_price=float(price.high_price) if price.high_price else None,
+                open_price=float(
+                    price.open_price) if price.open_price else None,
+                high_price=float(
+                    price.high_price) if price.high_price else None,
                 low_price=float(price.low_price) if price.low_price else None,
                 close_price=float(price.close_price),
                 volume=price.volume,
@@ -235,7 +238,8 @@ async def get_stock_predictions(
                 prediction_date=pred.prediction_date,
                 predicted_price=float(pred.predicted_price),
                 confidence_score=(
-                    float(pred.confidence_score) if pred.confidence_score else None
+                    float(
+                        pred.confidence_score) if pred.confidence_score else None
                 ),
                 model_type=pred.model_version,
                 prediction_horizon=pred.prediction_days,
@@ -381,7 +385,8 @@ async def get_accuracy_rankings(
                 total_accuracy = sum(
                     float(p.confidence_score) for p in predictions if p.confidence_score
                 )
-                avg_accuracy = total_accuracy / len(predictions) if predictions else 0
+                avg_accuracy = total_accuracy / \
+                    len(predictions) if predictions else 0
 
                 rankings.append(
                     {
@@ -545,7 +550,8 @@ async def get_composite_rankings(
                 ) / current_price_val
 
             # 総合スコア計算（精度と成長ポテンシャルの平均）
-            composite_score = (accuracy_score * 0.5) + (max(0, growth_potential) * 0.5)
+            composite_score = (accuracy_score * 0.5) + \
+                (max(0, growth_potential) * 0.5)
 
             rankings.append(
                 {
@@ -558,7 +564,8 @@ async def get_composite_rankings(
                         accuracy_score * FinanceConfig.PERCENTAGE_MULTIPLIER, 2
                     ),
                     "growth_potential": (
-                        round(growth_potential * FinanceConfig.PERCENTAGE_MULTIPLIER, 2)
+                        round(growth_potential *
+                              FinanceConfig.PERCENTAGE_MULTIPLIER, 2)
                         if growth_potential
                         else 0
                     ),
@@ -653,7 +660,8 @@ async def get_technical_indicators(
         if len(closes) >= FinanceConfig.SMA_SHORT_PERIOD:
             period = FinanceConfig.SMA_SHORT_PERIOD
             sma_20 = sum(closes[-period:]) / period
-            variance = sum((x - sma_20) ** 2 for x in closes[-period:]) / period
+            variance = sum(
+                (x - sma_20) ** 2 for x in closes[-period:]) / period
             std_dev = variance**0.5
 
             indicators["bollinger_upper"] = round(sma_20 + (2 * std_dev), 2)
@@ -763,7 +771,8 @@ async def get_volume_data(
                             "date": date.strftime("%Y-%m-%d"),
                             "symbol": symbol.upper(),
                             "volume": (
-                                int(row["Volume"]) if pd.notna(row["Volume"]) else 0
+                                int(row["Volume"]) if pd.notna(
+                                    row["Volume"]) else 0
                             ),
                             "close_price": float(row["Close"]),
                             "price_change": 0,  # 前日比は別途計算
@@ -777,7 +786,8 @@ async def get_volume_data(
                     "count": len(volume_data),
                 }
             except Exception as yf_error:
-                logger.warning(f"Yahoo Finance error for {symbol}: {str(yf_error)}")
+                logger.warning(
+                    f"Yahoo Finance error for {symbol}: {str(yf_error)}")
                 raise HTTPException(
                     status_code=404, detail="出来高データを取得できませんでした"
                 )
@@ -786,10 +796,12 @@ async def get_volume_data(
         volume_data = []
         for i, price in enumerate(prices):
             prev_price = (
-                prices[i + 1].close_price if i + 1 < len(prices) else price.close_price
+                prices[i + 1].close_price if i +
+                1 < len(prices) else price.close_price
             )
             price_change = (
-                (float(price.close_price) - float(prev_price)) / float(prev_price) * 100
+                (float(price.close_price) - float(prev_price)) /
+                float(prev_price) * 100
                 if float(prev_price) != 0
                 else 0
             )
@@ -808,7 +820,8 @@ async def get_volume_data(
         # 日付順にソート（新しい順）
         volume_data.sort(key=lambda x: x["date"], reverse=True)
 
-        return {"status": "success", "data": volume_data, "count": len(volume_data)}
+        return {"status": "success", "data": volume_data,
+                "count": len(volume_data)}
 
     except HTTPException:
         raise
@@ -849,7 +862,8 @@ async def get_volume_predictions(
         avg_volume = sum(volumes) / len(volumes) if volumes else 0
 
         # 出来高のボラティリティを計算
-        volume_variance = sum((v - avg_volume) ** 2 for v in volumes) / len(volumes)
+        volume_variance = sum(
+            (v - avg_volume) ** 2 for v in volumes) / len(volumes)
         volume_std = volume_variance**0.5
 
         # 予測データを生成
@@ -865,7 +879,8 @@ async def get_volume_predictions(
                 (volume_std / avg_volume) * (0.5 - abs(0.5 - (i / days)))
             )
 
-            predicted_volume = int(avg_volume * trend_factor * volatility_factor)
+            predicted_volume = int(
+                avg_volume * trend_factor * volatility_factor)
             confidence = max(
                 FinanceConfig.MIN_CONFIDENCE,
                 FinanceConfig.DEFAULT_CONFIDENCE_BASE

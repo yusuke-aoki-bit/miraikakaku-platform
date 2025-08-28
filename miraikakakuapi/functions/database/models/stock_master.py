@@ -25,7 +25,10 @@ except ImportError:
         currency = Column(String(10), default="JPY")
         is_active = Column(Boolean, default=True)
         created_at = Column(DateTime, default=datetime.utcnow)
-        updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+        updated_at = Column(
+            DateTime,
+            default=datetime.utcnow,
+            onupdate=datetime.utcnow)
 
         price_history = relationship(
             "StockPriceHistory", back_populates="stock", cascade="all, delete-orphan"

@@ -13,7 +13,9 @@ TEST_DATABASE_URL = "sqlite:///./test_miraikakaku.db"
 @pytest.fixture(scope="session")
 def test_engine():
     """テスト用データベースエンジン"""
-    engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+    engine = create_engine(
+        TEST_DATABASE_URL, connect_args={
+            "check_same_thread": False})
     Base.metadata.create_all(bind=engine)
     yield engine
     Base.metadata.drop_all(bind=engine)

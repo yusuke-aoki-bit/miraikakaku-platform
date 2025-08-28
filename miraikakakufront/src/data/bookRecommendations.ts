@@ -268,8 +268,7 @@ export const getBooksByCategory = (category: BookCategory, limit = 5): BookRecom
     .slice(0, limit);
 };
 
-// ランダム推薦書籍を取得（一般的な推薦用）
+// 推薦書籍を取得（一般的な推薦用）
 export const getRandomBooks = (limit = 4): BookRecommendation[] => {
-  const shuffled = [...BOOK_RECOMMENDATIONS].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, limit);
+  return BOOK_RECOMMENDATIONS.slice(0, limit);
 };

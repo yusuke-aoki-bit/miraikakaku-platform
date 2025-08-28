@@ -20,7 +20,10 @@ class CacheConfig:
 
     DEFAULT_TIMEOUT = int(os.getenv("CACHE_TIMEOUT", "300"))  # 5分
     PRICE_DATA_TIMEOUT = int(os.getenv("CACHE_PRICE_TIMEOUT", "60"))  # 1分
-    PREDICTION_TIMEOUT = int(os.getenv("CACHE_PREDICTION_TIMEOUT", "1800"))  # 30分
+    PREDICTION_TIMEOUT = int(
+        os.getenv(
+            "CACHE_PREDICTION_TIMEOUT",
+            "1800"))  # 30分
     ML_MODEL_TIMEOUT = int(os.getenv("CACHE_ML_TIMEOUT", "3600"))  # 1時間
 
 
@@ -28,9 +31,11 @@ class MLConfig:
     """機械学習設定"""
 
     PRICE_DATA_THRESHOLD = int(os.getenv("ML_PRICE_THRESHOLD", "10000"))
-    PREDICTION_DATA_THRESHOLD = int(os.getenv("ML_PREDICTION_THRESHOLD", "5000"))
+    PREDICTION_DATA_THRESHOLD = int(
+        os.getenv("ML_PREDICTION_THRESHOLD", "5000"))
     MIN_TRAINING_SAMPLES = int(os.getenv("ML_MIN_SAMPLES", "1000"))
-    MODEL_CONFIDENCE_THRESHOLD = float(os.getenv("ML_CONFIDENCE_THRESHOLD", "0.7"))
+    MODEL_CONFIDENCE_THRESHOLD = float(
+        os.getenv("ML_CONFIDENCE_THRESHOLD", "0.7"))
 
 
 class APIConfig:
@@ -108,8 +113,10 @@ class ForexConfig:
     )  # 0.01%
 
     # ボラティリティ設定
-    BASE_VOLATILITY_PERCENTAGE = float(os.getenv("FOREX_BASE_VOLATILITY", "0.01"))  # 1%
-    VOLATILITY_INCREASE_RATE = float(os.getenv("FOREX_VOLATILITY_INCREASE", "0.1"))
+    BASE_VOLATILITY_PERCENTAGE = float(
+        os.getenv("FOREX_BASE_VOLATILITY", "0.01"))  # 1%
+    VOLATILITY_INCREASE_RATE = float(
+        os.getenv("FOREX_VOLATILITY_INCREASE", "0.1"))
     VOLATILITY_BASE_FACTOR = float(os.getenv("FOREX_VOLATILITY_BASE", "0.8"))
 
     # 予測設定
@@ -133,7 +140,9 @@ class WebSocketConfig:
     CONNECTION_TIMEOUT = int(os.getenv("WS_TIMEOUT", "300"))  # 5分
 
     # プロダクション環境でのモックデータ無効化
-    ENABLE_MOCK_DATA = os.getenv("WS_ENABLE_MOCK_DATA", "false").lower() == "true"
+    ENABLE_MOCK_DATA = os.getenv(
+        "WS_ENABLE_MOCK_DATA",
+        "false").lower() == "true"
 
 
 class LoggingConfig:
@@ -159,7 +168,8 @@ class BusinessConfig:
     """ビジネスロジック設定"""
 
     # ユーザー設定
-    DEFAULT_INVESTMENT_STYLE = os.getenv("DEFAULT_INVESTMENT_STYLE", "moderate")
+    DEFAULT_INVESTMENT_STYLE = os.getenv(
+        "DEFAULT_INVESTMENT_STYLE", "moderate")
     DEFAULT_RISK_TOLERANCE = os.getenv("DEFAULT_RISK_TOLERANCE", "medium")
 
     # ポートフォリオ設定
@@ -170,7 +180,8 @@ class BusinessConfig:
     MAX_WATCHLIST_ITEMS = int(os.getenv("MAX_WATCHLIST_ITEMS", "100"))
 
     # コンテスト設定
-    DEFAULT_CONTEST_DURATION_DAYS = int(os.getenv("CONTEST_DURATION_DAYS", "7"))
+    DEFAULT_CONTEST_DURATION_DAYS = int(
+        os.getenv("CONTEST_DURATION_DAYS", "7"))
     MAX_PREDICTIONS_PER_USER = int(os.getenv("MAX_PREDICTIONS_PER_USER", "10"))
 
 

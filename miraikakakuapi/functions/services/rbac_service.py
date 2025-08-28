@@ -87,7 +87,8 @@ class RBACService:
             ],
         }
 
-    def has_permission(self, user_role: str, required_permission: Permission) -> bool:
+    def has_permission(self, user_role: str,
+                       required_permission: Permission) -> bool:
         """ユーザーが特定の権限を持っているかチェック"""
         try:
             role = Role(user_role.lower())
@@ -121,7 +122,8 @@ class RBACService:
         except ValueError:
             return []
 
-    def can_access_endpoint(self, user_role: str, endpoint: str, method: str) -> bool:
+    def can_access_endpoint(self, user_role: str,
+                            endpoint: str, method: str) -> bool:
         """エンドポイント/メソッドへのアクセス権限をチェック"""
         endpoint_permissions = {
             # 株式データエンドポイント
@@ -176,7 +178,8 @@ class RBACService:
         """ロール階層を取得（数値が高いほど上位）"""
         return {Role.READONLY: 1, Role.USER: 2, Role.ANALYST: 3, Role.ADMIN: 4}
 
-    def is_role_higher_or_equal(self, user_role: str, required_role: str) -> bool:
+    def is_role_higher_or_equal(self, user_role: str,
+                                required_role: str) -> bool:
         """ユーザーロールが要求ロール以上かチェック"""
         try:
             hierarchy = self.get_role_hierarchy()

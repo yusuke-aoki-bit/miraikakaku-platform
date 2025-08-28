@@ -19,20 +19,21 @@ router = APIRouter()
 async def get_stock_data_from_db(db: Session, symbol: str, days: int):
     """Get stock data from database"""
     try:
-        # Try stock_prices table (actual DB table name with correct
-        # column names)
+        # Try stock_price_history table (where actual data exists)
         query = text(
             """
             SELECT symbol, date, open_price, high_price, low_price,
                    close_price, volume
-            FROM stock_prices
+            FROM stock_price_history
             WHERE symbol = :symbol
             AND date >= :start_date
             ORDER BY date DESC
         """
         )
         start_date = datetime.now() - timedelta(days=days)
-        result = db.execute(query, {"symbol": symbol, "start_date": start_date})
+        result = db.execute(
+            query, {
+                "symbol": symbol, "start_date": start_date})
         rows = result.fetchall()
 
         if rows:
@@ -116,7 +117,8 @@ async def get_stock_price(
     db_data = await get_stock_data_from_db(db, mapped_symbol, days)
 
     if db_data:
-        logger.info(f"Found {len(db_data)} records in database for {mapped_symbol}")
+        logger.info(
+            f"Found {len(db_data)} records in database for {mapped_symbol}")
         return {
             "symbol": mapped_symbol,
             "data": db_data,
@@ -125,12 +127,13 @@ async def get_stock_price(
         }
 
     # Step 2: Fallback to Yahoo Finance
-    logger.info(f"No database data for {mapped_symbol}, trying Yahoo Finance...")
+    logger.info(
+        f"No database data for {mapped_symbol}, trying Yahoo Finance...")
     yf_data = await get_stock_data_from_yfinance(mapped_symbol, days)
 
     if yf_data:
         logger.info(
-            f"Found {len(yf_data)} records from Yahoo Finance for " f"{mapped_symbol}"
+            f"Found {len(yf_data)} records from Yahoo Finance for {mapped_symbol}"
         )
 
         # Optionally save to database for future use
@@ -139,7 +142,7 @@ async def get_stock_price(
             for record in yf_data[:10]:
                 insert_query = text(
                     """
-                    INSERT IGNORE INTO stock_prices
+                    INSERT IGNORE INTO stock_price_history
                     (symbol, date, open_price, high_price, low_price,
                      close_price, volume)
                     VALUES (:symbol, :date, :open_price, :high_price,
@@ -172,7 +175,9 @@ async def get_stock_price(
         }
 
     # Step 3: No data available
-    raise HTTPException(status_code=404, detail=f"No data available for {symbol}")
+    raise HTTPException(
+        status_code=404,
+        detail=f"No data available for {symbol}")
 
 
 @router.get("/v2/stocks/{symbol}/predictions")
@@ -237,7 +242,8 @@ async def get_stock_predictions(
                         {
                             "date": data_point["date"],
                             "value": (
-                                data_point["close"] * (1 + np.random.normal(0, 0.02))
+                                data_point["close"] *
+                                (1 + np.random.normal(0, 0.02))
                             ),
                             "confidence": round(np.random.uniform(0.7, 0.95), 2),
                             "type": "historical_prediction",
@@ -359,7 +365,7 @@ async def get_database_stats(db: Session = Depends(get_db)):
         stats["by_country"] = {row[0]: row[1] for row in result}
 
         # Count price data
-        result = db.execute(text("SELECT COUNT(*) FROM stock_prices"))
+        result = db.execute(text("SELECT COUNT(*) FROM stock_price_history"))
         stats["total_price_records"] = result.scalar()
 
         # Count predictions

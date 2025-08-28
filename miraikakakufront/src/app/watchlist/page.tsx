@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Star, RefreshCw } from 'lucide-react';
+import { Star, RefreshCw, BookOpen } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import WatchlistToolbar, { ViewMode, SortOption, SortOrder } from '@/components/watchlist/WatchlistToolbar';
 import WatchlistGridView from '@/components/watchlist/WatchlistGridView';
 import WatchlistListView from '@/components/watchlist/WatchlistListView';
 import WatchlistHeatmapView from '@/components/watchlist/WatchlistHeatmapView';
 import { apiClient } from '@/lib/api-client';
+import AdSenseUnit from '@/components/monetization/AdSenseUnit';
+import AmazonProductCard from '@/components/monetization/AmazonProductCard';
+import amazonRecommendations from '@/data/amazon-recommendations.json';
 
 interface WatchlistStock {
   symbol: string;
@@ -85,8 +88,8 @@ export default function WatchlistPage() {
             return {
               symbol: data.symbol,
               company_name: data.company_name,
-              current_price: data.current_price || Math.random() * 200 + 50,
-              change_percent: data.change_percent || (Math.random() - 0.5) * 10,
+              current_price: data.current_price || 0,
+              change_percent: data.change_percent || 0,
               market: data.market || (symbol.match(/^\d/) ? 'TSE' : 'NASDAQ'),
               sector: data.sector || 'Technology',
               market_cap: data.market_cap,
@@ -96,9 +99,9 @@ export default function WatchlistPage() {
               dividend_yield: data.dividend_yield,
               ai_score: data.ai_score,
               chart_data: {
-                historical: data.prices?.slice(-30).map((p: any) => p.close_price) || generateMockChart(30),
-                past_prediction: data.predictions?.slice(-15).map((p: any) => p.predicted_price) || generateMockChart(15),
-                future_prediction: data.predictions?.slice(0, 15).map((p: any) => p.predicted_price) || generateMockChart(15)
+                historical: data.prices?.slice(-30).map((p: any) => p.close_price) || [],
+                past_prediction: data.predictions?.slice(-15).map((p: any) => p.predicted_price) || [],
+                future_prediction: data.predictions?.slice(0, 15).map((p: any) => p.predicted_price) || []
               },
               last_updated: new Date().toLocaleTimeString()
             };
@@ -107,16 +110,16 @@ export default function WatchlistPage() {
           return {
             symbol,
             company_name: `${symbol} Corporation`,
-            current_price: Math.random() * 200 + 50,
-            change_percent: (Math.random() - 0.5) * 10,
+            current_price: 0,
+            change_percent: 0,
             market: symbol.match(/^\d/) ? 'TSE' : 'NASDAQ',
             sector: 'Technology',
-            market_cap: Math.random() * 1000000000000,
-            ai_score: Math.floor(Math.random() * 40) + 60,
+            market_cap: 0,
+            ai_score: 0,
             chart_data: {
-              historical: generateMockChart(30),
-              past_prediction: generateMockChart(15),
-              future_prediction: generateMockChart(15)
+              historical: [],
+              past_prediction: [],
+              future_prediction: []
             },
             last_updated: new Date().toLocaleTimeString()
           };
@@ -129,15 +132,6 @@ export default function WatchlistPage() {
     }
   };
 
-  const generateMockChart = (length: number): number[] => {
-    const data = [];
-    let current = 100;
-    for (let i = 0; i < length; i++) {
-      current += (Math.random() - 0.5) * 5;
-      data.push(Math.max(current, 10));
-    }
-    return data;
-  };
 
   const handleAddStock = async (symbol: string) => {
     try {
@@ -336,6 +330,38 @@ export default function WatchlistPage() {
 
       {/* メインビュー */}
       {renderMainView()}
+
+      {/* AdSense広告 */}
+      <div className="mt-8">
+        <AdSenseUnit
+          adSlot="1234567892"
+          className="mx-auto"
+          style={{ display: 'block', textAlign: 'center', minHeight: '250px' }}
+        />
+      </div>
+
+      {/* Amazon商品推薦 */}
+      <div className="mt-8 bg-gray-800/50 border border-gray-700/50 rounded-lg p-6">
+        <div className="flex items-center mb-4">
+          <BookOpen className="w-6 h-6 text-blue-400 mr-2" />
+          <h2 className="text-2xl font-semibold text-white">
+            {amazonRecommendations.watchlist.title}
+          </h2>
+        </div>
+        <p className="text-gray-300 mb-6">
+          {amazonRecommendations.watchlist.description}
+        </p>
+        
+        <div className="grid grid-cols-1 gap-4">
+          {amazonRecommendations.watchlist.products.map((product) => (
+            <AmazonProductCard
+              key={product.id}
+              product={product}
+              compact={true}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

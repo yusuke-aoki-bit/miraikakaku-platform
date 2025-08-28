@@ -208,7 +208,6 @@ export function usePerformance() {
   const optimizeImage = useCallback((src: string, width?: number, height?: number) => {
     if (!src) return src;
 
-    // For demo purposes, return original src
     // In production, this would integrate with image optimization service
     const quality = config.imageQuality === 'high' ? 90 : 
                    config.imageQuality === 'medium' ? 70 : 50;

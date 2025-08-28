@@ -26,9 +26,26 @@ import threading
 import json
 
 # 新しいモジュールのインポート
-from models.lstm_predictor import LSTMStockPredictor
-from services.report_generator import StockReportGenerator
-from database.cloud_sql import StockDataRepository, db_manager
+try:
+    from models.lstm_predictor import LSTMStockPredictor
+    LSTM_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"LSTMモデル読み込み失敗: {e}")
+    LSTM_AVAILABLE = False
+    
+try:
+    from services.report_generator import StockReportGenerator
+    REPORT_GENERATOR_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"レポート生成機能読み込み失敗: {e}")
+    REPORT_GENERATOR_AVAILABLE = False
+
+try:
+    from database.cloud_sql import StockDataRepository, db_manager
+    DATABASE_MODULE_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"データベースモジュール読み込み失敗: {e}")
+    DATABASE_MODULE_AVAILABLE = False
 
 load_dotenv()
 
@@ -71,23 +88,28 @@ task_status = {
 }
 
 # データベース設定（Cloud SQL統合）
-try:
-    # Cloud SQL経由でデータベース接続
-    db_repository = StockDataRepository()
-    DATABASE_AVAILABLE = True
-    logger.info("Database connection established (Cloud SQL)")
-except Exception as e:
-    logger.error(f"Database connection failed: {e}")
+if DATABASE_MODULE_AVAILABLE:
+    try:
+        # Cloud SQL経由でデータベース接続
+        db_repository = StockDataRepository()
+        DATABASE_AVAILABLE = True
+        logger.info("Database connection established (Cloud SQL)")
+    except Exception as e:
+        logger.error(f"Database connection failed: {e}")
+        DATABASE_AVAILABLE = False
+        db_repository = None
+else:
     DATABASE_AVAILABLE = False
     db_repository = None
+    logger.warning("データベースモジュール未使用")
 
 
 class StockDataProcessor:
     """株価データ処理クラス - LSTM統合版"""
 
     def __init__(self):
-        self.lstm_model = LSTMStockPredictor()
-        self.report_generator = StockReportGenerator()
+        self.lstm_model = LSTMStockPredictor() if LSTM_AVAILABLE else None
+        self.report_generator = StockReportGenerator() if REPORT_GENERATOR_AVAILABLE else None
         self.db_repo = db_repository if DATABASE_AVAILABLE else None
 
     async def fetch_and_store_stock_data(self, symbols: List[str]) -> Dict[str, Any]:

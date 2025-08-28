@@ -6,8 +6,8 @@ import { ArrowLeft, Star, TrendingUp, TrendingDown, BarChart3, Brain, Newspaper,
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import TripleChart from '@/components/charts/TripleChart';
-import AdSenseUnit from '@/components/ads/AdSenseUnit';
-import { AmazonProductGrid } from '@/components/amazon/AmazonProductCard';
+import AdSenseUnit from '@/components/monetization/AdSenseUnit';
+import AmazonProductCard from '@/components/monetization/AmazonProductCard';
 import { apiClient } from '@/lib/api-client';
 import amazonRecommendations from '@/data/amazon-recommendations.json';
 
@@ -322,9 +322,8 @@ export default function StockDetailPage() {
         >
           <AdSenseUnit
             adSlot="1234567892"
-            width={728}
-            height={90}
             className="w-full flex justify-center"
+            style={{ minHeight: '90px' }}
           />
         </motion.div>
 
@@ -568,13 +567,24 @@ function NewsTab({ news, symbol }: { news: NewsItem[]; symbol: string }) {
 function BooksTab() {
   return (
     <div className="space-y-6">
-      <AmazonProductGrid
-        products={amazonRecommendations.stock.products}
-        title={amazonRecommendations.stock.title}
-        description={amazonRecommendations.stock.description}
-        maxItems={4}
-        gridCols={2}
-      />
+      <div className="bg-gray-50 rounded-lg p-6">
+        <div className="flex items-center mb-4">
+          <BookOpen className="w-6 h-6 text-blue-600 mr-2" />
+          <h3 className="text-xl font-semibold text-gray-800">
+            {amazonRecommendations.search.title}
+          </h3>
+        </div>
+        <p className="text-gray-600 mb-4">{amazonRecommendations.search.description}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {amazonRecommendations.search.products.slice(0, 4).map((product) => (
+            <AmazonProductCard
+              key={product.id}
+              product={product}
+              compact={true}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

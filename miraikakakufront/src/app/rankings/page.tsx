@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Trophy } from 'lucide-react';
+import { Trophy, BookOpen } from 'lucide-react';
 import RankingTabs from '@/components/rankings/RankingTabs';
 import RankingFilters, { RankingFilters as RankingFiltersType } from '@/components/rankings/RankingFilters';
 import RankingsTable from '@/components/rankings/RankingsTable';
 import apiClient from '@/lib/api-client';
+import AdSenseUnit from '@/components/monetization/AdSenseUnit';
+import AmazonProductCard from '@/components/monetization/AmazonProductCard';
+import amazonRecommendations from '@/data/amazon-recommendations.json';
 
 interface RankingStock {
   rank: number;
@@ -184,6 +187,38 @@ export default function RankingsPage() {
             onStockClick={handleStockClick}
             onWatchlistToggle={handleWatchlistToggle}
           />
+
+          {/* AdSense広告 */}
+          <div className="mt-8">
+            <AdSenseUnit
+              adSlot="1234567891"
+              className="mx-auto"
+              style={{ display: 'block', textAlign: 'center', minHeight: '250px' }}
+            />
+          </div>
+
+          {/* Amazon商品推薦 */}
+          <div className="mt-8 bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div className="flex items-center mb-4">
+              <BookOpen className="w-6 h-6 text-blue-400 mr-2" />
+              <h2 className="text-2xl font-semibold text-white">
+                {amazonRecommendations.rankings.title}
+              </h2>
+            </div>
+            <p className="text-gray-300 mb-6">
+              {amazonRecommendations.rankings.description}
+            </p>
+            
+            <div className="grid grid-cols-1 gap-4">
+              {amazonRecommendations.rankings.products.map((product) => (
+                <AmazonProductCard
+                  key={product.id}
+                  product={product}
+                  compact={true}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

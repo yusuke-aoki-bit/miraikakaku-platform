@@ -102,7 +102,7 @@ export default function SearchPage() {
           market: stock.market || stock.exchange || '東証',
           sector: stock.sector || 'その他',
           market_cap: stock.market_cap || stock.marketCap,
-          ai_score: stock.ai_score || stock.aiScore || Math.floor(Math.random() * 40) + 60,
+          ai_score: stock.ai_score || stock.aiScore || 0,
           per: stock.per,
           pbr: stock.pbr,
           dividend_yield: stock.dividend_yield || stock.dividendYield

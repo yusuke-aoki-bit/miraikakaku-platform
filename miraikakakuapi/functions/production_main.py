@@ -199,7 +199,8 @@ async def search_stocks(
         }
 
         for symbol, info in major_stocks.items():
-            if query.upper() in symbol or query.lower() in info["name"].lower():
+            if query.upper() in symbol or query.lower(
+            ) in info["name"].lower():
                 search_results.append(
                     {
                         "symbol": symbol,
@@ -238,10 +239,14 @@ async def get_stock_price(
                     "symbol": symbol.upper(),
                     "date": date.strftime("%Y-%m-%d"),
                     "open_price": (
-                        float(row["Open"]) if not pd.isna(row["Open"]) else None
+                        float(
+                            row["Open"]) if not pd.isna(
+                            row["Open"]) else None
                     ),
                     "high_price": (
-                        float(row["High"]) if not pd.isna(row["High"]) else None
+                        float(
+                            row["High"]) if not pd.isna(
+                            row["High"]) else None
                     ),
                     "low_price": (
                         float(row["Low"]) if not pd.isna(row["Low"]) else None
@@ -285,7 +290,8 @@ async def get_stock_predictions(
             # LSTM風の予測価格生成
             trend_factor = np.sin(i * 0.1) * 0.02  # 周期的なトレンド
             random_factor = random.uniform(-0.05, 0.05)  # ランダムな変動
-            predicted_price = current_price * (1 + trend_factor + random_factor)
+            predicted_price = current_price * \
+                (1 + trend_factor + random_factor)
 
             # 信頼度（時間とともに低下）
             confidence = max(0.5, 0.95 - (i * 0.02))
@@ -507,7 +513,7 @@ async def get_stock_volume(
         volumes = [d["volume"] for d in volume_data]
         for i, data_point in enumerate(volume_data):
             if i >= 19:  # 20日分のデータがある場合
-                ma_20 = sum(volumes[i - 19 : i + 1]) / 20
+                ma_20 = sum(volumes[i - 19: i + 1]) / 20
                 data_point["volume_ma_20"] = int(ma_20)
 
         return volume_data
@@ -543,7 +549,8 @@ async def get_volume_predictions(
             # 出来高予測アルゴリズム
             trend_factor = np.sin(i * 0.15) * 0.3  # 周期的な変動
             random_factor = random.uniform(-0.4, 0.6)  # ランダム変動
-            predicted_volume = int(avg_volume * (1 + trend_factor + random_factor))
+            predicted_volume = int(
+                avg_volume * (1 + trend_factor + random_factor))
             predicted_volume = max(
                 predicted_volume, int(avg_volume * 0.1)
             )  # 最小値制限
@@ -634,7 +641,8 @@ async def get_volume_rankings(
                             "current_price": round(hist["Close"].iloc[-1], 2),
                             "price_change_percent": round(
                                 (
-                                    (hist["Close"].iloc[-1] - hist["Close"].iloc[-2])
+                                    (hist["Close"].iloc[-1] -
+                                     hist["Close"].iloc[-2])
                                     / hist["Close"].iloc[-2]
                                 )
                                 * 100,
@@ -858,7 +866,8 @@ async def get_sector_details(
                 if not hist.empty:
                     current_price = hist["Close"].iloc[-1]
                     prev_price = (
-                        hist["Close"].iloc[-2] if len(hist) > 1 else current_price
+                        hist["Close"].iloc[-2] if len(
+                            hist) > 1 else current_price
                     )
                     change_pct = (
                         ((current_price - prev_price) / prev_price) * 100
@@ -1512,7 +1521,8 @@ async def get_currency_rate(pair: str):
             prev_rate = base_rate * (1 + random.uniform(-0.02, 0.02))
         else:
             current_rate = float(hist["Close"].iloc[-1])
-            prev_rate = float(hist["Close"].iloc[-2]) if len(hist) > 1 else current_rate
+            prev_rate = float(hist["Close"].iloc[-2]
+                              ) if len(hist) > 1 else current_rate
 
         change = current_rate - prev_rate
         change_percent = (change / prev_rate) * 100 if prev_rate > 0 else 0
@@ -1615,7 +1625,8 @@ async def get_currency_history(
                         ),
                         "close": round(float(row["Close"]), 4),
                         "volume": (
-                            int(row["Volume"]) if not pd.isna(row["Volume"]) else 0
+                            int(row["Volume"]) if not pd.isna(
+                                row["Volume"]) else 0
                         ),
                     }
                 )
@@ -1643,7 +1654,8 @@ async def get_currency_predictions(
 ):
     """通貨予測取得API"""
     try:
-        logger.info(f"Currency predictions: {pair}, {timeframe}, {limit} periods")
+        logger.info(
+            f"Currency predictions: {pair}, {timeframe}, {limit} periods")
 
         # 現在レート取得
         current_rate_data = await get_currency_rate(pair)
@@ -2239,7 +2251,8 @@ async def get_contest_ranking(contest_id: str):
             ),
             "statistics": {
                 "avg_prediction": round(
-                    sum(p["prediction"] for p in participants) / len(participants),
+                    sum(p["prediction"]
+                        for p in participants) / len(participants),
                     2,
                 ),
                 "median_prediction": round(
@@ -2252,7 +2265,8 @@ async def get_contest_ranking(contest_id: str):
                     np.std([p["prediction"] for p in participants]), 2
                 ),
                 "avg_confidence": round(
-                    sum(p["confidence"] for p in participants) / len(participants),
+                    sum(p["confidence"]
+                        for p in participants) / len(participants),
                     3,
                 ),
             },
@@ -2270,7 +2284,8 @@ async def submit_prediction(
 ):
     """予測投稿API"""
     try:
-        logger.info(f"Submitting prediction for contest {contest_id}: {prediction}")
+        logger.info(
+            f"Submitting prediction for contest {contest_id}: {prediction}")
 
         if confidence is None:
             confidence = 0.7  # デフォルト信頼度
@@ -2311,7 +2326,8 @@ async def update_prediction(
 ):
     """予測更新API"""
     try:
-        logger.info(f"Updating prediction for contest {contest_id}: {prediction}")
+        logger.info(
+            f"Updating prediction for contest {contest_id}: {prediction}")
 
         if confidence is None:
             confidence = 0.7
@@ -2520,7 +2536,9 @@ async def get_symbol_ai_factors(symbol: str, days: int = 30):
         hist = ticker.history(period="3mo")
 
         if hist.empty:
-            raise HTTPException(status_code=404, detail=f"Symbol {symbol} not found")
+            raise HTTPException(
+                status_code=404,
+                detail=f"Symbol {symbol} not found")
 
         current_price = float(hist["Close"].iloc[-1])
         price_change = (
@@ -2618,9 +2636,12 @@ async def get_symbol_ai_factors(symbol: str, days: int = 30):
         ]
 
         # Calculate overall scores
-        overall_confidence = sum(f["confidence"] * f["weight"] for f in symbol_factors)
-        positive_factors = [f for f in symbol_factors if f["impact"] == "positive"]
-        negative_factors = [f for f in symbol_factors if f["impact"] == "negative"]
+        overall_confidence = sum(f["confidence"] * f["weight"]
+                                 for f in symbol_factors)
+        positive_factors = [
+            f for f in symbol_factors if f["impact"] == "positive"]
+        negative_factors = [
+            f for f in symbol_factors if f["impact"] == "negative"]
 
         return {
             "symbol": symbol.upper(),
@@ -2736,7 +2757,8 @@ async def get_news(limit: int = 20, category: str = None, symbol: str = None):
 
         # Filter by category if specified
         if category:
-            all_news = [news for news in all_news if news["category"] == category]
+            all_news = [
+                news for news in all_news if news["category"] == category]
 
         # Filter by symbol if specified
         if symbol:
@@ -2846,7 +2868,8 @@ async def toggle_news_bookmark(news_id: str, action: str = "toggle"):
     try:
         # Mock bookmark operation
         current_status = random.choice([True, False])
-        new_status = not current_status if action == "toggle" else (action == "add")
+        new_status = not current_status if action == "toggle" else (
+            action == "add")
 
         return {
             "news_id": news_id,
@@ -3058,7 +3081,8 @@ async def get_user_watchlist(user_id: str = "user_123"):
         ]
 
         # Calculate summary statistics
-        total_value_change = sum(item["price_change"] for item in watchlist_items)
+        total_value_change = sum(item["price_change"]
+                                 for item in watchlist_items)
         positive_movers = len(
             [item for item in watchlist_items if item["price_change"] > 0]
         )
@@ -3522,8 +3546,7 @@ async def add_transaction(
         }
 
         return {
-            "message": f"{
-                transaction_type.upper()} 取引を記録しました: {quantity} shares of {symbol} @ ${price}",
+            "message": f"{transaction_type.upper()} 取引を記録しました: {quantity} shares of {symbol} @ ${price}",
             "transaction": transaction,
             "timestamp": datetime.now().isoformat(),
         }
@@ -3560,7 +3583,8 @@ async def get_portfolio_transactions(
                 "fees": round(random.uniform(5, 50), 2),
                 "user_id": user_id,
             }
-            transaction["total_amount"] = transaction["quantity"] * transaction["price"]
+            transaction["total_amount"] = transaction["quantity"] * \
+                transaction["price"]
             all_transactions.append(transaction)
 
         # Filter by transaction type if specified
@@ -3822,7 +3846,8 @@ async def get_correlation_matrix(symbols: str, period: str = "1mo"):
                     price_data[symbol] = hist["Close"].pct_change().dropna()
                 else:
                     # Generate mock correlation data
-                    dates = pd.date_range(start="2024-01-01", periods=30, freq="D")
+                    dates = pd.date_range(
+                        start="2024-01-01", periods=30, freq="D")
                     mock_returns = np.random.normal(0, 0.02, len(dates))
                     price_data[symbol] = pd.Series(mock_returns, index=dates)
             except BaseException:
@@ -3874,7 +3899,8 @@ async def get_correlation_matrix(symbols: str, period: str = "1mo"):
                 )
 
         # Find strongest correlations
-        non_diagonal = [c for c in correlations if c["symbol1"] != c["symbol2"]]
+        non_diagonal = [
+            c for c in correlations if c["symbol1"] != c["symbol2"]]
         strongest_positive = max(
             non_diagonal,
             key=lambda x: x["correlation"] if x["correlation"] < 1 else 0,
@@ -3908,14 +3934,8 @@ async def get_correlation_matrix(symbols: str, period: str = "1mo"):
             "insights": [
                 f"平均相関係数: {avg_correlation:.3f}",
                 f"分散効果スコア: {diversification_score:.3f}",
-                f"最強正の相関: {
-                    strongest_positive['symbol1']}-{
-                    strongest_positive['symbol2']} ({
-                    strongest_positive['correlation']:.3f})",
-                f"最強負の相関: {
-                    strongest_negative['symbol1']}-{
-                    strongest_negative['symbol2']} ({
-                    strongest_negative['correlation']:.3f})",
+                f"最強正の相関: {strongest_positive['symbol1']}-{strongest_positive['symbol2']} ({strongest_positive['correlation']:.3f})",
+                f"最強負の相関: {strongest_negative['symbol1']}-{strongest_negative['symbol2']} ({strongest_negative['correlation']:.3f})",
             ],
             "timestamp": datetime.now().isoformat(),
             "data_source": "Yahoo Finance + Miraikakaku Analytics Engine",
@@ -4007,4 +4027,8 @@ if __name__ == "__main__":
 
     port = int(os.getenv("PORT", 8080))
     logger.info(f"Starting Production API server on port {port}")
-    uvicorn.run("production_main:app", host="0.0.0.0", port=port, log_level="info")
+    uvicorn.run(
+        "production_main:app",
+        host="0.0.0.0",
+        port=port,
+        log_level="info")

@@ -100,34 +100,9 @@ export default function CurrencyChart({
           return date.toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' });
         });
       } else {
-        // モックデータ生成
-        const baseRate = pair === 'USD/JPY' ? 150 : 
-                         pair === 'EUR/USD' ? 1.08 : 
-                         pair === 'GBP/USD' ? 1.27 : 1.0;
-        
+        // データがない場合は空のデータセット
         historicalData = [];
         labels = [];
-        let current = baseRate;
-        
-        for (let i = 0; i < config.dataPoints; i++) {
-          const volatility = 0.001 + Math.random() * 0.003; // 0.1%-0.4%の変動
-          const change = (Math.random() - 0.5) * volatility * current;
-          current = Math.max(current + change, baseRate * 0.95); // 最低でも5%以上は維持
-          historicalData.push(current);
-          
-          // 時刻ラベル生成
-          const time = new Date(Date.now() - (config.dataPoints - i) * (
-            selectedTimeframe === '1H' ? 60000 :
-            selectedTimeframe === '4H' ? 240000 :
-            selectedTimeframe === '1D' ? 86400000 : 604800000
-          ));
-          
-          if (selectedTimeframe === '1H' || selectedTimeframe === '4H') {
-            labels.push(time.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }));
-          } else {
-            labels.push(time.toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' }));
-          }
-        }
       }
 
       // 予測データ処理
@@ -144,31 +119,10 @@ export default function CurrencyChart({
         upperBoundData = predictionsArray.map((d: any) => d.upper_bound || d.predicted_rate * 1.002);
         lowerBoundData = predictionsArray.map((d: any) => d.lower_bound || d.predicted_rate * 0.998);
       } else {
-        // モック予測データ
-        const trendStrength = (Math.random() - 0.5) * 0.02; // -1% to +1% trend
-        for (let i = 0; i < predictionLength; i++) {
-          const progress = i / predictionLength;
-          const trend = lastHistoricalRate * (1 + trendStrength * progress);
-          const volatility = Math.random() * 0.001 * trend;
-          const predicted = trend + (Math.random() - 0.5) * volatility;
-          
-          predictionsData.push(predicted);
-          upperBoundData.push(predicted * (1 + 0.002 + Math.random() * 0.001));
-          lowerBoundData.push(predicted * (1 - 0.002 - Math.random() * 0.001));
-          
-          // 予測期間のラベル追加
-          const futureTime = new Date(Date.now() + i * (
-            selectedTimeframe === '1H' ? 60000 :
-            selectedTimeframe === '4H' ? 240000 :
-            selectedTimeframe === '1D' ? 86400000 : 604800000
-          ));
-          
-          if (selectedTimeframe === '1H' || selectedTimeframe === '4H') {
-            labels.push(futureTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }));
-          } else {
-            labels.push(futureTime.toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' }));
-          }
-        }
+        // 予測データがない場合は空のデータセット
+        predictionsData = [];
+        upperBoundData = [];
+        lowerBoundData = [];
       }
 
       // テクニカルレベル計算

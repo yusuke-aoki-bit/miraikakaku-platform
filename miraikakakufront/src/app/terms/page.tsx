@@ -129,7 +129,7 @@ export default function TermsOfServicePage() {
   return (
     <LegalPageLayout
       title="利用規約"
-      lastUpdated="2025-08-22"
+      lastUpdated="2025-08-27"
       description="未来価格分析サービスをご利用いただくにあたって遵守していただく事項について定めています。サービスをご利用になる前に、必ずご一読ください。"
       icon="terms"
       sections={termsOfServiceSections}

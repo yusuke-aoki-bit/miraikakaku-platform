@@ -143,7 +143,8 @@ def require_role(required_role: str):
                 raise HTTPException(status_code=401, detail="認証が必要です")
 
             user = request.state.user
-            if not rbac_service.is_role_higher_or_equal(user.role, required_role):
+            if not rbac_service.is_role_higher_or_equal(
+                    user.role, required_role):
                 raise HTTPException(
                     status_code=403, detail=f"必要なロール: {required_role} 以上"
                 )

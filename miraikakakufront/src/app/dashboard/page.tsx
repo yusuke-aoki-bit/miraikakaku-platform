@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, TrendingUp, DollarSign, Eye, Star, BookOpen } from 'lucide-react';
-import AdSenseUnit from '@/components/ads/AdSenseUnit';
-import { AmazonProductGrid } from '@/components/amazon/AmazonProductCard';
+import AdSenseUnit from '@/components/monetization/AdSenseUnit';
+import AmazonProductCard from '@/components/monetization/AmazonProductCard';
 import WatchlistWidget from '@/components/home/WatchlistWidget';
 import { motion } from 'framer-motion';
 import { apiClient } from '@/lib/api-client';
@@ -277,9 +277,8 @@ export default function DashboardPage() {
             >
               <AdSenseUnit
                 adSlot="1234567890"
-                width={300}
-                height={600}
                 className="w-full"
+                style={{ minHeight: '600px' }}
               />
             </motion.div>
 
@@ -318,13 +317,24 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <AmazonProductGrid
-                products={amazonRecommendations.dashboard.products}
-                title={amazonRecommendations.dashboard.title}
-                description={amazonRecommendations.dashboard.description}
-                maxItems={2}
-                gridCols={1}
-              />
+              <div className="bg-gray-50 rounded-lg p-6">
+                <div className="flex items-center mb-4">
+                  <BookOpen className="w-6 h-6 text-blue-600 mr-2" />
+                  <h3 className="text-xl font-semibold text-gray-800">
+                    {amazonRecommendations.dashboard.title}
+                  </h3>
+                </div>
+                <p className="text-gray-600 mb-4">{amazonRecommendations.dashboard.description}</p>
+                <div className="grid grid-cols-1 gap-4">
+                  {amazonRecommendations.dashboard.products.slice(0, 2).map((product) => (
+                    <AmazonProductCard
+                      key={product.id}
+                      product={product}
+                      compact={true}
+                    />
+                  ))}
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>

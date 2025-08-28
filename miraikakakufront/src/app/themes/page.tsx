@@ -42,12 +42,13 @@ export default function ThemesPage() {
         setThemes(allThemes);
         setFeaturedThemes(allThemes.filter((theme: Theme) => theme.is_featured));
       } else {
-        // Generate mock data for development
-        generateMockThemes();
+        setThemes([]);
+        setFeaturedThemes([]);
       }
     } catch (err) {
       console.error('Failed to fetch themes:', err);
-      generateMockThemes();
+      setThemes([]);
+      setFeaturedThemes([]);
     } finally {
       setLoading(false);
     }
@@ -57,112 +58,6 @@ export default function ThemesPage() {
     fetchThemes();
   }, [fetchThemes]);
 
-  const generateMockThemes = () => {
-    const mockThemes: Theme[] = [
-      {
-        id: 'next-gen-semiconductors',
-        name: '次世代半導体',
-        description: 'AIの進化を支える、演算能力の飛躍的向上に関連する企業群',
-        overview: 'AI、自動運転、IoTの普及により半導体需要が急成長。特に高性能チップ、メモリ技術、製造装置メーカーに注目',
-        category: 'Technology',
-        stock_count: 42,
-        performance_1m: 8.5,
-        performance_3m: 15.2,
-        performance_1y: 45.8,
-        is_featured: true,
-        is_trending: true,
-        background_image: '/themes/semiconductors.jpg',
-        follow_count: 1247,
-        created_at: '2024-01-15',
-        updated_at: '2024-02-20'
-      },
-      {
-        id: 'renewable-energy',
-        name: '再生可能エネルギー',
-        description: '脱炭素社会実現に向けた、次世代エネルギー関連企業',
-        overview: '太陽光、風力、水素などの再生可能エネルギー技術とインフラ企業群。政府政策による後押しも強い',
-        category: 'Energy',
-        stock_count: 38,
-        performance_1m: 12.3,
-        performance_3m: 8.7,
-        performance_1y: 28.9,
-        is_featured: true,
-        is_trending: true,
-        background_image: '/themes/renewable-energy.jpg',
-        follow_count: 982,
-        created_at: '2024-01-20',
-        updated_at: '2024-02-18'
-      },
-      {
-        id: 'digital-transformation',
-        name: 'デジタル変革',
-        description: '企業のDX推進を支援するソフトウェア・サービス企業群',
-        overview: 'クラウド、AI、IoT、ビッグデータ解析など、企業のデジタル化を支える技術・サービス提供企業',
-        category: 'Technology',
-        stock_count: 55,
-        performance_1m: 6.8,
-        performance_3m: 11.4,
-        performance_1y: 32.1,
-        is_featured: true,
-        is_trending: false,
-        background_image: '/themes/digital-transformation.jpg',
-        follow_count: 1156,
-        created_at: '2024-01-10',
-        updated_at: '2024-02-15'
-      },
-      {
-        id: 'healthcare-innovation',
-        name: 'ヘルスケア・イノベーション',
-        description: '医療技術革新と高齢化社会対応企業群',
-        overview: 'バイオテクノロジー、医療機器、デジタルヘルス、創薬支援など次世代医療技術企業',
-        category: 'Healthcare',
-        stock_count: 29,
-        performance_1m: 4.2,
-        performance_3m: 9.8,
-        performance_1y: 18.6,
-        is_featured: false,
-        is_trending: true,
-        follow_count: 734,
-        created_at: '2024-01-25',
-        updated_at: '2024-02-12'
-      },
-      {
-        id: 'fintech',
-        name: 'フィンテック',
-        description: '金融業界のデジタル革命を推進する企業群',
-        overview: 'デジタル決済、ブロックチェーン、暗号資産、オンライン証券・保険など金融×技術企業',
-        category: 'Financial Services',
-        stock_count: 33,
-        performance_1m: 7.9,
-        performance_3m: 13.5,
-        performance_1y: 25.4,
-        is_featured: false,
-        is_trending: false,
-        follow_count: 891,
-        created_at: '2024-01-18',
-        updated_at: '2024-02-10'
-      },
-      {
-        id: 'space-economy',
-        name: '宇宙産業',
-        description: '商業宇宙開発と衛星サービス関連企業群',
-        overview: '衛星打ち上げ、宇宙旅行、衛星通信・観測、宇宙資源開発など新興宇宙産業',
-        category: 'Aerospace',
-        stock_count: 18,
-        performance_1m: 15.7,
-        performance_3m: 22.1,
-        performance_1y: 67.3,
-        is_featured: false,
-        is_trending: true,
-        follow_count: 542,
-        created_at: '2024-02-01',
-        updated_at: '2024-02-19'
-      }
-    ];
-
-    setThemes(mockThemes);
-    setFeaturedThemes(mockThemes.filter(theme => theme.is_featured));
-  };
 
   if (loading) {
     return (

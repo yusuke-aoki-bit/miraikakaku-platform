@@ -74,12 +74,11 @@ export default function ThemeDetailPage() {
         setPerformanceData(response.data.performance_data);
         setIsFollowing(response.data.is_following || false);
       } else {
-        // Generate mock data for development
-        generateMockThemeData();
+        setError('テーマデータが見つかりませんでした');
       }
     } catch (err) {
       console.error('Failed to fetch theme details:', err);
-      generateMockThemeData();
+      setError('テーマデータの取得に失敗しました');
     } finally {
       setLoading(false);
     }
@@ -91,104 +90,6 @@ export default function ThemeDetailPage() {
     }
   }, [themeId, fetchThemeDetails]);
 
-  const generateMockThemeData = () => {
-    // Create mock theme based on theme ID
-    const mockThemes: Record<string, Partial<ThemeDetail>> = {
-      'next-gen-semiconductors': {
-        id: 'next-gen-semiconductors',
-        name: '次世代半導体',
-        description: 'AIの進化を支える、演算能力の飛躍的向上に関連する企業群',
-        overview: 'AI、自動運転、IoTの普及により半導体需要が急成長。特に高性能チップ、メモリ技術、製造装置メーカーに注目',
-        detailed_description: '次世代半導体テーマは、AI処理に特化したGPU、高効率メモリ（HBM）、先端プロセス技術（3nm以下）、パッケージング技術、製造装置などを含む包括的な投資テーマです。データセンターの拡張、エッジAI、自動運転車の普及により、従来の半導体を大幅に上回る性能が求められています。',
-        category: 'Technology',
-        risk_level: 'High' as const,
-        growth_stage: 'Growth' as const
-      },
-      'renewable-energy': {
-        id: 'renewable-energy',
-        name: '再生可能エネルギー',
-        description: '脱炭素社会実現に向けた、次世代エネルギー関連企業',
-        overview: '太陽光、風力、水素などの再生可能エネルギー技術とインフラ企業群。政府政策による後押しも強い',
-        detailed_description: '再生可能エネルギーテーマは、太陽光発電、風力発電、水素エネルギー、蓄電池技術、スマートグリッド、エネルギー管理システムなどを含む総合的なエネルギー転換投資テーマです。世界的な脱炭素政策により長期的な成長が期待されています。',
-        category: 'Energy',
-        risk_level: 'Medium' as const,
-        growth_stage: 'Growth' as const
-      }
-    };
-
-    const baseTheme = mockThemes[themeId] || mockThemes['next-gen-semiconductors'];
-    
-    const mockTheme: ThemeDetail = {
-      ...baseTheme,
-      stock_count: 42,
-      performance_1m: 8.5,
-      performance_3m: 15.2,
-      performance_1y: 45.8,
-      is_featured: true,
-      is_trending: true,
-      follow_count: 1247,
-      market_cap_total: 2500000000000, // 2.5兆円
-      top_stocks: ['NVDA', '7203', 'TSMC', 'ASML'],
-      created_at: '2024-01-15',
-      updated_at: '2024-02-20'
-    } as ThemeDetail;
-
-    const mockStocks: Stock[] = [
-      {
-        symbol: 'NVDA',
-        company_name: 'NVIDIA Corporation',
-        current_price: 875.25,
-        change_percent: 3.4,
-        market_cap: 2100000000000,
-        ai_score: 95,
-        theme_weight: 15.2
-      },
-      {
-        symbol: '7203',
-        company_name: 'トヨタ自動車',
-        current_price: 2845,
-        change_percent: 1.8,
-        market_cap: 45000000000000,
-        ai_score: 78,
-        theme_weight: 8.7
-      },
-      {
-        symbol: 'TSMC',
-        company_name: 'Taiwan Semiconductor',
-        current_price: 142.50,
-        change_percent: 2.1,
-        market_cap: 740000000000,
-        ai_score: 92,
-        theme_weight: 12.4
-      }
-    ];
-
-    const mockPerformanceData: PerformanceData[] = [];
-    const baseDate = new Date();
-    for (let i = 30; i >= 0; i--) {
-      const date = new Date(baseDate);
-      date.setDate(date.getDate() - i);
-      
-      const themeReturn = 1 + (Math.random() - 0.4) * 0.02; // Slight upward bias
-      const marketReturn = 1 + (Math.random() - 0.5) * 0.015;
-      
-      mockPerformanceData.push({
-        date: date.toISOString().split('T')[0],
-        theme_index: 100 * Math.pow(themeReturn, 30 - i),
-        market_index: 100 * Math.pow(marketReturn, 30 - i),
-        outperformance: 0
-      });
-    }
-
-    // Calculate outperformance
-    mockPerformanceData.forEach((item, index) => {
-      item.outperformance = item.theme_index - item.market_index;
-    });
-
-    setTheme(mockTheme);
-    setStocks(mockStocks);
-    setPerformanceData(mockPerformanceData);
-  };
 
   const handleFollowToggle = async () => {
     try {

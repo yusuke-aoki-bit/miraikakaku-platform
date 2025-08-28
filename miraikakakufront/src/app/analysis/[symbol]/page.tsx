@@ -5,8 +5,8 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, Brain, TrendingUp, BarChart3, DollarSign, Target, Settings, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import AdSenseUnit from '@/components/ads/AdSenseUnit';
-import { AmazonProductGrid } from '@/components/amazon/AmazonProductCard';
+import AdSenseUnit from '@/components/monetization/AdSenseUnit';
+import AmazonProductCard from '@/components/monetization/AmazonProductCard';
 import { apiClient } from '@/lib/api-client';
 import amazonRecommendations from '@/data/amazon-recommendations.json';
 
@@ -408,9 +408,8 @@ export default function AIAnalysisPage() {
             >
               <AdSenseUnit
                 adSlot="1234567894"
-                width={300}
-                height={600}
                 className="w-full"
+                style={{ minHeight: '600px' }}
               />
             </motion.div>
 
@@ -426,16 +425,24 @@ export default function AIAnalysisPage() {
                   <h3 className="text-lg font-semibold text-white">専門書籍</h3>
                 </div>
                 
-                <AmazonProductGrid
-                  products={[
-                    ...amazonRecommendations.general.products.filter((_, i) => i < 1),
-                    ...amazonRecommendations.stock.products.filter((_, i) => i < 1)
-                  ]}
-                  title="テクニカル・ファンダメンタルズ分析"
-                  description="投資分析のスキルアップに"
-                  maxItems={2}
-                  gridCols={1}
-                />
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <div className="flex items-center mb-4">
+                    <BookOpen className="w-6 h-6 text-blue-600 mr-2" />
+                    <h3 className="text-xl font-semibold text-gray-800">
+                      テクニカル・ファンダメンタルズ分析
+                    </h3>
+                  </div>
+                  <p className="text-gray-600 mb-4">投資分析のスキルアップに</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {amazonRecommendations.analysis.products.slice(0, 2).map((product) => (
+                      <AmazonProductCard
+                        key={product.id}
+                        product={product}
+                        compact={true}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </motion.div>
 

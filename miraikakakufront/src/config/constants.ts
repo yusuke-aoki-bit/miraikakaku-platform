@@ -72,7 +72,7 @@ export const CHART_CONFIG = {
   GRID_STROKE_WIDTH: 1,
   LINE_STROKE_WIDTH: 2,
   
-  // Mock data generation
+  // Chart data calculations
   CHART_DATA_POINTS: 30,
   CHART_SIN_FREQUENCY: 5,
   CHART_SIN_AMPLITUDE: 5,

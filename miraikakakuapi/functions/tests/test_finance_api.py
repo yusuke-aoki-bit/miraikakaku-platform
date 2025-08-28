@@ -11,7 +11,10 @@ SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine)
 
 
 def override_get_db():
@@ -61,7 +64,9 @@ class TestFinanceAPI:
         """無効な銘柄コード形式のテスト"""
         # 認証ヘッダーを模擬（実際のJWTは別途テスト）
         headers = {"Authorization": "Bearer test-token"}
-        response = client.get("/api/finance/stock/invalid@symbol", headers=headers)
+        response = client.get(
+            "/api/finance/stock/invalid@symbol",
+            headers=headers)
         # 認証エラーが先に発生するため401を期待
         assert response.status_code == 401
 
@@ -80,7 +85,8 @@ class TestStockDataEndpoints:
         # 認証システムが完全でない場合は401を期待
         assert response.status_code in [200, 401]
 
-    def test_get_stock_data_with_date_range(self, client, test_db, auth_headers):
+    def test_get_stock_data_with_date_range(
+            self, client, test_db, auth_headers):
         """期間指定での株価データ取得テスト"""
         params = {"start_date": "2024-01-01", "end_date": "2024-12-31"}
         response = client.get(
@@ -92,7 +98,9 @@ class TestStockDataEndpoints:
         """複数銘柄データ取得テスト"""
         symbols = ["AAPL", "GOOGL", "MSFT"]
         for symbol in symbols:
-            response = client.get(f"/api/finance/stock/{symbol}", headers=auth_headers)
+            response = client.get(
+                f"/api/finance/stock/{symbol}",
+                headers=auth_headers)
             assert response.status_code in [200, 401, 404]
 
 
@@ -104,7 +112,9 @@ class TestPredictionEndpoints:
 
     def test_get_predictions(self, client, test_db, auth_headers):
         """予測データ取得テスト"""
-        response = client.get("/api/finance/predictions/AAPL", headers=auth_headers)
+        response = client.get(
+            "/api/finance/predictions/AAPL",
+            headers=auth_headers)
         assert response.status_code in [200, 401, 404]
 
     def test_create_prediction_request(self, client, test_db, auth_headers):

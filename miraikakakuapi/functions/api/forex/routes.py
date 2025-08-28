@@ -112,7 +112,8 @@ async def get_currency_rate(pair: str):
 
         # 最新と前日のレート
         latest_rate = float(hist["Close"].iloc[-1])
-        previous_rate = float(hist["Close"].iloc[-2]) if len(hist) > 1 else latest_rate
+        previous_rate = float(hist["Close"].iloc[-2]
+                              ) if len(hist) > 1 else latest_rate
 
         change = latest_rate - previous_rate
         change_percent = (
@@ -308,7 +309,8 @@ async def get_currency_predictions(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error generating currency predictions for {pair}: {str(e)}")
+        logger.error(
+            f"Error generating currency predictions for {pair}: {str(e)}")
         raise HTTPException(status_code=500, detail="通貨予測生成エラー")
 
 

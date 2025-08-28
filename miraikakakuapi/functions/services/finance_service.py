@@ -41,7 +41,8 @@ class FinanceService:
                 "info": info if not isinstance(info, Exception) else None,
                 "history": history if not isinstance(history, Exception) else None,
                 "financials": (
-                    financials if not isinstance(financials, Exception) else None
+                    financials if not isinstance(
+                        financials, Exception) else None
                 ),
                 "timestamp": datetime.utcnow(),
             }
@@ -55,7 +56,8 @@ class FinanceService:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(self.executor, lambda: ticker.info)
 
-    async def _get_price_history(self, ticker, period: str = "1y") -> pd.DataFrame:
+    async def _get_price_history(
+            self, ticker, period: str = "1y") -> pd.DataFrame:
         """価格履歴を取得"""
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(
@@ -164,7 +166,8 @@ class FinanceService:
                         )
 
                 if price_records:
-                    count = self.stock_repo.bulk_insert_price_history(price_records)
+                    count = self.stock_repo.bulk_insert_price_history(
+                        price_records)
                     logger.info(f"価格データ挿入: {symbol} - {count}件")
 
                 return True
@@ -178,7 +181,8 @@ class FinanceService:
         results_list = await asyncio.gather(*tasks, return_exceptions=True)
 
         for i, result in enumerate(results_list):
-            results[symbols[i]] = result if not isinstance(result, Exception) else False
+            results[symbols[i]] = result if not isinstance(
+                result, Exception) else False
 
         return results
 
@@ -207,16 +211,20 @@ class FinanceService:
             # テクニカル指標計算
             indicators = {
                 "sma_5": (
-                    df["close"].rolling(5).mean().iloc[-1] if len(df) >= 5 else None
+                    df["close"].rolling(
+                        5).mean().iloc[-1] if len(df) >= 5 else None
                 ),
                 "sma_20": (
-                    df["close"].rolling(20).mean().iloc[-1] if len(df) >= 20 else None
+                    df["close"].rolling(20).mean(
+                    ).iloc[-1] if len(df) >= 20 else None
                 ),
                 "sma_50": (
-                    df["close"].rolling(50).mean().iloc[-1] if len(df) >= 50 else None
+                    df["close"].rolling(50).mean(
+                    ).iloc[-1] if len(df) >= 50 else None
                 ),
                 "rsi": (
-                    self._calculate_rsi(df["close"]).iloc[-1] if len(df) >= 14 else None
+                    self._calculate_rsi(
+                        df["close"]).iloc[-1] if len(df) >= 14 else None
                 ),
                 "macd": self._calculate_macd(df["close"]) if len(df) >= 26 else None,
                 "bollinger_bands": (

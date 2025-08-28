@@ -44,7 +44,8 @@ async def get_users(
             role=user.role,
             is_active=user.is_active,
             created_at=user.created_at.isoformat(),
-            last_login=(user.last_login.isoformat() if user.last_login else None),
+            last_login=(user.last_login.isoformat()
+                        if user.last_login else None),
         )
         for user in users
     ]
@@ -115,7 +116,8 @@ async def update_user(
 
 @router.delete("/users/{user_id}")
 @require_permission(Permission.DELETE_USERS)
-async def delete_user(request: Request, user_id: int, db: Session = Depends(get_db)):
+async def delete_user(request: Request, user_id: int,
+                      db: Session = Depends(get_db)):
     """ユーザー削除"""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -151,7 +153,8 @@ async def get_system_stats(request: Request, db: Session = Depends(get_db)):
         )
 
         today_inferences = (
-            db.query(AIInferenceLog).filter(AIInferenceLog.created_at >= today).count()
+            db.query(AIInferenceLog).filter(
+                AIInferenceLog.created_at >= today).count()
         )
 
         # 最近の活動
@@ -177,7 +180,8 @@ async def get_system_stats(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="統計データ取得に失敗しました")
 
 
-@router.get("/models/performance", response_model=List[ModelPerformanceResponse])
+@router.get("/models/performance",
+            response_model=List[ModelPerformanceResponse])
 @require_permission(Permission.ACCESS_ML_PIPELINE)
 async def get_model_performance(
     request: Request, days: int = Query(30, ge=1, le=365), db: Session = Depends(get_db)

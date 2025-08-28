@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { apiClient } from '@/lib/api-client';
 import { Calendar, Clock, TrendingUp, BookOpen, AlertCircle } from 'lucide-react';
 import BookRecommendationSection from './BookRecommendationSection';
 import { getBooksForEconomicEvent } from '@/data/bookRecommendations';
@@ -20,83 +21,47 @@ interface EconomicEvent {
   forecast_value?: string;
 }
 
-// モックデータ：実際の実装では API から取得
-const UPCOMING_EVENTS: EconomicEvent[] = [
-  {
-    id: 'fomc-1',
-    title: 'FOMC政策金利発表',
-    description: '米連邦公開市場委員会による政策金利決定',
-    date: '2024-12-18',
-    time: '4:00',
-    importance: 'high',
-    country: 'US',
-    category: 'monetary',
-    impact_expected: 'neutral',
-    previous_value: '5.25-5.50%',
-    forecast_value: '5.00-5.25%'
-  },
-  {
-    id: 'employment-1',
-    title: '米国雇用統計（非農業部門雇用者数）',
-    description: '米労働省発表の雇用統計',
-    date: '2024-12-06',
-    time: '22:30',
-    importance: 'high',
-    country: 'US',
-    category: 'employment',
-    impact_expected: 'positive',
-    previous_value: '12,000人',
-    forecast_value: '200,000人'
-  },
-  {
-    id: 'cpi-1',
-    title: '米国消費者物価指数（CPI）',
-    description: '前月比・前年同月比の消費者物価上昇率',
-    date: '2024-12-11',
-    time: '22:30',
-    importance: 'high',
-    country: 'US',
-    category: 'inflation',
-    impact_expected: 'neutral',
-    previous_value: '2.6%',
-    forecast_value: '2.7%'
-  },
-  {
-    id: 'gdp-jp-1',
-    title: '日本GDP（四半期実質）',
-    description: '内閣府発表の四半期GDP成長率',
-    date: '2024-12-09',
-    time: '8:50',
-    importance: 'medium',
-    country: 'JP',
-    category: 'growth',
-    impact_expected: 'positive',
-    previous_value: '-2.9%',
-    forecast_value: '0.9%'
-  }
-];
 
 export default function EconomicEventBooksWidget() {
   const [selectedEvent, setSelectedEvent] = useState<EconomicEvent | null>(null);
   const [upcomingEvents, setUpcomingEvents] = useState<EconomicEvent[]>([]);
 
   useEffect(() => {
-    // 今後1週間のイベントを取得（実際はAPIから）
-    const now = new Date();
-    const oneWeekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    
-    const filtered = UPCOMING_EVENTS.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate >= now && eventDate <= oneWeekLater;
-    });
-    
-    setUpcomingEvents(filtered.slice(0, 4)); // 最大4件表示
-    
-    // 最も重要な直近のイベントを自動選択
-    if (filtered.length > 0) {
-      const highImportanceEvents = filtered.filter(e => e.importance === 'high');
-      setSelectedEvent(highImportanceEvents[0] || filtered[0]);
-    }
+    const fetchEconomicEvents = async () => {
+      try {
+        const response = await apiClient.getEconomicCalendar();
+        
+        if (response.success && response.data) {
+          const events = Array.isArray(response.data) ? response.data : [];
+          const now = new Date();
+          const oneWeekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+          
+          // 今後1週間の重要イベントをフィルタリング
+          const filtered = events.filter(event => {
+            const eventDate = new Date(event.date || event.time);
+            return eventDate >= now && eventDate <= oneWeekLater && 
+                   (event.importance === 'high' || event.importance === 'medium');
+          });
+          
+          setUpcomingEvents(filtered.slice(0, 4));
+          
+          // 最も重要な直近のイベントを自動選択
+          if (filtered.length > 0) {
+            const highImportanceEvents = filtered.filter(e => e.importance === 'high');
+            setSelectedEvent(highImportanceEvents[0] || filtered[0]);
+          }
+        } else {
+          setUpcomingEvents([]);
+          setSelectedEvent(null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch economic events:', error);
+        setUpcomingEvents([]);
+        setSelectedEvent(null);
+      }
+    };
+
+    fetchEconomicEvents();
   }, []);
 
   const getImportanceColor = (importance: string) => {
@@ -158,7 +123,15 @@ export default function EconomicEventBooksWidget() {
   };
 
   if (upcomingEvents.length === 0) {
-    return null; // 近日中にイベントがない場合は非表示
+    return (
+      <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-6">
+        <div className="text-center py-8">
+          <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400 opacity-50" />
+          <h3 className="text-white font-semibold mb-2">今後1週間に重要な経済指標はありません</h3>
+          <p className="text-gray-400">新しいイベントが発表されたら、こちらでお知らせします。</p>
+        </div>
+      </div>
+    );
   }
 
   return (

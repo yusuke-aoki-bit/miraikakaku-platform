@@ -4,7 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { Brain, Target, TrendingUp, TrendingDown, Star, Filter, Calendar, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import AdSenseUnit from '@/components/ads/AdSenseUnit';
+import AdSenseUnit from '@/components/monetization/AdSenseUnit';
+import AmazonProductCard from '@/components/monetization/AmazonProductCard';
+import amazonRecommendations from '@/data/amazon-recommendations.json';
+import { BookOpen } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 
 interface PredictionData {
@@ -234,9 +237,8 @@ export default function PredictionsPage() {
                 <div className="mt-6">
                   <AdSenseUnit
                     adSlot="1234567897"
-                    responsive={true}
-                    adStyle="in-feed"
                     className="w-full"
+                    style={{ minHeight: '200px' }}
                   />
                 </div>
               )}
@@ -261,6 +263,29 @@ export default function PredictionsPage() {
             </p>
           </motion.div>
         )}
+
+        {/* Amazon商品推薦 */}
+        <div className="mt-12 bg-gray-800/50 border border-gray-700/50 rounded-lg p-6">
+          <div className="flex items-center mb-4">
+            <BookOpen className="w-6 h-6 text-blue-400 mr-2" />
+            <h2 className="text-2xl font-semibold text-white">
+              {amazonRecommendations.predictions.title}
+            </h2>
+          </div>
+          <p className="text-gray-300 mb-6">
+            {amazonRecommendations.predictions.description}
+          </p>
+          
+          <div className="grid grid-cols-1 gap-4">
+            {amazonRecommendations.predictions.products.map((product) => (
+              <AmazonProductCard
+                key={product.id}
+                product={product}
+                compact={true}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

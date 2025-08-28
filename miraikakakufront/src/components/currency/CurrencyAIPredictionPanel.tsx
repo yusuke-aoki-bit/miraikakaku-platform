@@ -69,17 +69,8 @@ export default function CurrencyAIPredictionPanel({
       if (rateResponse.success && rateResponse.data) {
         setCurrentRate(rateResponse.data as CurrencyRate);
       } else {
-        // モックデータ
-        const mockRate = pair === 'USD/JPY' ? 150 : 
-                         pair === 'EUR/USD' ? 1.08 : 
-                         pair === 'GBP/USD' ? 1.27 : 1.0;
-        const spread = mockRate * 0.0001;
-        setCurrentRate({
-          bid: mockRate - spread/2,
-          ask: mockRate + spread/2,
-          mid: mockRate,
-          spread: spread
-        });
+        // APIからデータが取得できない場合はレートをnullに設定
+        setCurrentRate(null);
       }
 
       // 各タイムフレームの予測を取得
@@ -95,19 +86,13 @@ export default function CurrencyAIPredictionPanel({
           };
         }
         
-        // モック予測データ
-        const baseRate = currentRate?.mid || 1.0;
-        const changePercent = (Math.random() - 0.5) * 4; // -2% to +2%
-        return {
-          timeframe,
-          predicted_rate: baseRate * (1 + changePercent / 100),
-          confidence: Math.random() * 25 + 70, // 70-95%
-          change_percent: changePercent
-        };
+        // APIからデータが取得できない場合
+        return null;
       });
 
       const predictionResults = await Promise.all(predictionPromises);
-      setPredictions(predictionResults);
+      const validPredictions = predictionResults.filter(p => p !== null);
+      setPredictions(validPredictions);
 
       // AIインサイトの処理
       if (insightsResponse.success && insightsResponse.data) {
@@ -115,23 +100,9 @@ export default function CurrencyAIPredictionPanel({
         setAISignal(insights.ai_signal);
         setKeyDrivers(insights.key_drivers);
       } else {
-        // モックAIシグナル
-        const signals: (keyof typeof SIGNAL_CONFIG)[] = ['strong_buy', 'buy', 'neutral', 'sell', 'strong_sell'];
-        const randomSignal = signals[Math.floor(Math.random() * signals.length)];
-        setAISignal({
-          signal: randomSignal,
-          strength: Math.random() * 40 + 60, // 60-100
-          recommendation: `現在の市場環境とテクニカル分析に基づき、${SIGNAL_CONFIG[randomSignal].label}を推奨します。`
-        });
-
-        // モック要因データ
-        const mockDrivers: KeyDriver[] = [
-          { factor: '日米金利差の拡大', impact: 'positive', weight: 0.85, description: 'FRBの継続的な利上げによりドル高要因' },
-          { factor: '米雇用統計の結果', impact: 'positive', weight: 0.72, description: '好調な雇用データが経済の堅調さを示す' },
-          { factor: '市場センチメント', impact: 'neutral', weight: 0.58, description: 'リスクオン・オフのムードが混在' },
-          { factor: '日銀の政策変更観測', impact: 'negative', weight: 0.43, description: 'YCC政策見直しの可能性でドル売り圧力' }
-        ];
-        setKeyDrivers(mockDrivers.slice(0, Math.floor(Math.random() * 2) + 2));
+        // APIからデータが取得できない場合
+        setAISignal(null);
+        setKeyDrivers([]);
       }
 
       setLastUpdate(new Date());
@@ -163,6 +134,19 @@ export default function CurrencyAIPredictionPanel({
 
   const signalConfig = aiSignal ? SIGNAL_CONFIG[aiSignal.signal] : SIGNAL_CONFIG.neutral;
   const SignalIcon = signalConfig.icon;
+
+  // データが取得できない場合の表示
+  if (!currentRate && !loading) {
+    return (
+      <div className="bg-gray-900/50 border border-gray-800/50 rounded-xl p-6">
+        <div className="text-center py-8">
+          <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-yellow-400 opacity-50" />
+          <h3 className="text-white font-semibold mb-2">データを取得できませんでした</h3>
+          <p className="text-gray-400">通貨レートデータが利用できません。しばらく経ってから再度お試しください。</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -215,7 +199,7 @@ export default function CurrencyAIPredictionPanel({
             <div className="text-right">
               <div className="text-sm text-gray-400">信頼度</div>
               <div className="text-lg font-bold text-white">
-                {aiSignal?.strength.toFixed(0)}%
+                {aiSignal?.strength?.toFixed(0) || '0'}%
               </div>
             </div>
           </div>

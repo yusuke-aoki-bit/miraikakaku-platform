@@ -14,7 +14,8 @@ class AuthService:
         self.jwt_algorithm = "HS256"
         self.access_token_expire_hours = 24
 
-    async def authenticate_user(self, email: str, password: str) -> Optional[User]:
+    async def authenticate_user(self, email: str,
+                                password: str) -> Optional[User]:
         """ユーザー認証"""
         user = self.db.query(User).filter(User.email == email).first()
 
@@ -30,7 +31,8 @@ class AuthService:
 
         return user
 
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+    def verify_password(self, plain_password: str,
+                        hashed_password: str) -> bool:
         """パスワード検証"""
         return bcrypt.checkpw(
             plain_password.encode("utf-8"), hashed_password.encode("utf-8")
@@ -50,7 +52,8 @@ class AuthService:
             "iat": datetime.utcnow(),
             "type": "access",
         }
-        return jwt.encode(payload, self.jwt_secret, algorithm=self.jwt_algorithm)
+        return jwt.encode(payload, self.jwt_secret,
+                          algorithm=self.jwt_algorithm)
 
     async def get_user_by_id(self, user_id: str) -> Optional[User]:
         """IDでユーザーを取得"""

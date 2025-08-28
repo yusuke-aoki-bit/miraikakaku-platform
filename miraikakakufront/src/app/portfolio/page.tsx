@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { apiClient } from '@/lib/api-client';
 import PortfolioToolbar from '@/components/portfolio/PortfolioToolbar';
 import PortfolioSummary from '@/components/portfolio/PortfolioSummary';
 import PortfolioPerformanceChart from '@/components/portfolio/PortfolioPerformanceChart';
@@ -67,92 +68,30 @@ export default function PortfolioPage() {
   const fetchInitialData = useCallback(async () => {
     setLoading(true);
     try {
-      // TODO: Replace with actual API calls
-      // Mock data for demonstration
-      const mockPortfolios: Portfolio[] = [
-        {
-          id: 'default',
-          name: 'メインポートフォリオ',
-          created_at: '2024-01-01T00:00:00Z',
-          is_default: true,
-        },
-        {
-          id: 'trading',
-          name: '短期トレード用',
-          created_at: '2024-02-01T00:00:00Z',
-          is_default: false,
-        },
-      ];
-
-      const mockPortfolioData: PortfolioData = {
-        id: 'default',
-        name: 'メインポートフォリオ',
-        summary: {
-          total_value: 2715000,
-          total_cost: 2650000,
-          total_profit_loss: 65000,
-          total_profit_loss_percent: 2.45,
-          daily_change: 25000,
-          daily_change_percent: 0.93,
-          annual_dividend_estimate: 45000,
-        },
-        holdings: [
-          {
-            id: '1',
-            symbol: '7203',
-            company_name: 'トヨタ自動車',
-            sector: '自動車',
-            quantity: 100,
-            average_cost: 2800,
-            current_price: 2950,
-            market_value: 295000,
-            unrealized_pnl: 15000,
-            unrealized_pnl_percent: 5.36,
-            allocation_percent: 10.86,
-            transactions: [
-              { date: '2024-01-15', type: 'buy', quantity: 100, price: 2800 },
-            ],
-          },
-          {
-            id: '2',
-            symbol: '6758',
-            company_name: 'ソニーグループ',
-            sector: 'テクノロジー',
-            quantity: 50,
-            average_cost: 13500,
-            current_price: 13200,
-            market_value: 660000,
-            unrealized_pnl: -15000,
-            unrealized_pnl_percent: -2.22,
-            allocation_percent: 24.31,
-            transactions: [
-              { date: '2024-02-10', type: 'buy', quantity: 50, price: 13500 },
-            ],
-          },
-          {
-            id: '3',
-            symbol: '9984',
-            company_name: 'ソフトバンクグループ',
-            sector: 'テクノロジー',
-            quantity: 200,
-            average_cost: 8500,
-            current_price: 8800,
-            market_value: 1760000,
-            unrealized_pnl: 60000,
-            unrealized_pnl_percent: 3.53,
-            allocation_percent: 64.83,
-            transactions: [
-              { date: '2024-01-20', type: 'buy', quantity: 150, price: 8400 },
-              { date: '2024-03-05', type: 'buy', quantity: 50, price: 8800 },
-            ],
-          },
-        ],
-        performance_history: [], // Will be populated by component
-      };
-
-      setPortfolios(mockPortfolios);
-      setCurrentPortfolio(mockPortfolioData);
-      setSelectedPortfolioId('default');
+      // API呼び出しでポートフォリオリストを取得
+      const portfoliosResponse = await apiClient.listPortfolios();
+      
+      if (portfoliosResponse.success && portfoliosResponse.data) {
+        const portfolios = Array.isArray(portfoliosResponse.data) ? portfoliosResponse.data : [];
+        setPortfolios(portfolios);
+        
+        // デフォルトポートフォリオまたは最初のポートフォリオを選択
+        const defaultPortfolio = portfolios.find(p => p.is_default) || portfolios[0];
+        if (defaultPortfolio) {
+          setSelectedPortfolioId(defaultPortfolio.id);
+          
+          // 選択されたポートフォリオの詳細データを取得
+          const portfolioDetailResponse = await apiClient.getPortfolio(defaultPortfolio.id);
+          if (portfolioDetailResponse.success && portfolioDetailResponse.data) {
+            setCurrentPortfolio(portfolioDetailResponse.data);
+          }
+        }
+      } else {
+        // データがない場合は空の状態を表示
+        setPortfolios([]);
+        setCurrentPortfolio(null);
+        setSelectedPortfolioId('');
+      }
     } catch (error) {
       console.error('Failed to fetch portfolio data:', error);
     } finally {
@@ -166,12 +105,18 @@ export default function PortfolioPage() {
 
   const handlePortfolioChange = async (portfolioId: string) => {
     setSelectedPortfolioId(portfolioId);
-    // TODO: Fetch specific portfolio data
-    // For now, just simulate loading
     setLoading(true);
-    setTimeout(() => {
+    
+    try {
+      const portfolioDetailResponse = await apiClient.getPortfolio(portfolioId);
+      if (portfolioDetailResponse.success && portfolioDetailResponse.data) {
+        setCurrentPortfolio(portfolioDetailResponse.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch portfolio details:', error);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
   const handleTransactionAdded = (transaction: TransactionData) => {

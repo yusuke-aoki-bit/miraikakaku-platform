@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { CameraIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { apiClient } from '@/lib/api-client';
 
 interface UserProfile {
   id: string;
@@ -13,25 +14,43 @@ interface UserProfile {
 }
 
 export default function ProfileTab() {
-  const [profile, setProfile] = useState<UserProfile>({
-    id: 'user_123',
-    email: 'user@example.com',
-    nickname: 'スマート投資家',
-    avatar_url: '',
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-08-24T00:00:00Z',
-  });
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
-    nickname: profile.nickname,
+    nickname: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailChangeModal, setShowEmailChangeModal] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // プロファイル情報をロード
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        setProfileLoading(true);
+        const response = await apiClient.getUserProfile();
+        
+        if (response.success && response.data) {
+          const userProfile = response.data as UserProfile;
+          setProfile(userProfile);
+          setEditForm({ nickname: userProfile.nickname || '' });
+        }
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, []);
+
   const handleSaveChanges = async () => {
+    if (!profile) return;
+    
     if (!editForm.nickname.trim()) {
       alert('ニックネームを入力してください');
       return;
@@ -52,11 +71,13 @@ export default function ProfileTab() {
       });
 
       if (response.ok) {
-        setProfile(prev => ({
-          ...prev,
-          nickname: editForm.nickname,
-          updated_at: new Date().toISOString(),
-        }));
+        if (profile) {
+          setProfile(prev => prev ? ({
+            ...prev,
+            nickname: editForm.nickname,
+            updated_at: new Date().toISOString(),
+          }) : null);
+        }
         setIsEditing(false);
       } else {
         throw new Error('プロフィールの更新に失敗しました');
@@ -101,11 +122,13 @@ export default function ProfileTab() {
 
       if (response.ok) {
         const data = await response.json();
-        setProfile(prev => ({
-          ...prev,
-          avatar_url: data.avatar_url,
-          updated_at: new Date().toISOString(),
-        }));
+        if (profile) {
+          setProfile(prev => prev ? ({
+            ...prev,
+            avatar_url: data.avatar_url,
+            updated_at: new Date().toISOString(),
+          }) : null);
+        }
       } else {
         throw new Error('アバターのアップロードに失敗しました');
       }
@@ -116,6 +139,28 @@ export default function ProfileTab() {
       setIsLoading(false);
     }
   };
+
+  if (profileLoading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent-primary border-t-transparent"></div>
+          <span className="ml-3 text-text-secondary">プロフィール読み込み中...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-12">
+          <h3 className="text-text-primary font-semibold mb-2">プロフィール情報が見つかりません</h3>
+          <p className="text-text-secondary">しばらく経ってから再度お試しください。</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -264,7 +309,9 @@ export default function ProfileTab() {
           currentEmail={profile.email}
           onClose={() => setShowEmailChangeModal(false)}
           onSuccess={(newEmail: string) => {
-            setProfile(prev => ({ ...prev, email: newEmail }));
+            if (profile) {
+              setProfile(prev => prev ? ({ ...prev, email: newEmail }) : null);
+            }
             setShowEmailChangeModal(false);
           }}
         />

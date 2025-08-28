@@ -106,7 +106,10 @@
       "Bash(./venv_fix/bin/black:*)",
       "Bash(./venv_batch/bin/autopep8:*)",
       "Bash(autopep8:*)",
-      "Bash(black:*)"
+      "Bash(black:*)",
+      "Bash(npm run:*)",
+      "Bash(./venv_batch/bin/black .)",
+      "Bash(gcloud beta run domain-mappings describe:*)"
     ],
     "deny": [],
     "ask": [],

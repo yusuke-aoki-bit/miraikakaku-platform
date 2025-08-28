@@ -2,7 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Calculator, DollarSign, Percent, TrendingUp, Package, ExternalLink } from 'lucide-react';
+import { Calculator, DollarSign, Percent, TrendingUp, Package, ExternalLink, BookOpen } from 'lucide-react';
+import AdSenseUnit from '@/components/monetization/AdSenseUnit';
+import AmazonProductCard from '@/components/monetization/AmazonProductCard';
+import amazonRecommendations from '@/data/amazon-recommendations.json';
 
 export default function ToolsPage() {
   const [investment, setInvestment] = useState(10000);
@@ -197,6 +200,38 @@ export default function ToolsPage() {
               ${(finalAmount * Math.pow(1.03, years)).toLocaleString('en-US', { maximumFractionDigits: 0 })}
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* AdSense広告 */}
+      <div className="mt-8">
+        <AdSenseUnit
+          adSlot="1234567893"
+          className="mx-auto"
+          style={{ display: 'block', textAlign: 'center', minHeight: '250px' }}
+        />
+      </div>
+
+      {/* Amazon商品推薦 */}
+      <div className="mt-8 bg-gray-800/50 border border-gray-700/50 rounded-lg p-6">
+        <div className="flex items-center mb-4">
+          <BookOpen className="w-6 h-6 text-blue-400 mr-2" />
+          <h2 className="text-2xl font-semibold text-white">
+            {amazonRecommendations.tools.title}
+          </h2>
+        </div>
+        <p className="text-gray-300 mb-6">
+          {amazonRecommendations.tools.description}
+        </p>
+        
+        <div className="grid grid-cols-1 gap-4">
+          {amazonRecommendations.tools.products.map((product) => (
+            <AmazonProductCard
+              key={product.id}
+              product={product}
+              compact={true}
+            />
+          ))}
         </div>
       </div>
     </div>

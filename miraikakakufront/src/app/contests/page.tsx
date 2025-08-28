@@ -23,16 +23,13 @@ export default function ContestsPage() {
   const [stats, setStats] = useState<ContestStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const generateMockStats = useCallback(() => {
-    const mockStats: ContestStats = {
-      total_contests: 47,
-      active_contests: 5,
-      total_participants: 2847,
-      user_rank: 156,
-      user_points: 2450,
-      user_badges: 7
+  const getDefaultStats = useCallback(() => {
+    const defaultStats: ContestStats = {
+      total_contests: 0,
+      active_contests: 0,
+      total_participants: 0
     };
-    setStats(mockStats);
+    setStats(defaultStats);
   }, []);
 
   const fetchContestStats = useCallback(async () => {
@@ -43,16 +40,15 @@ export default function ContestsPage() {
       if (response.success && response.data) {
         setStats(response.data);
       } else {
-        // Generate mock stats for development
-        generateMockStats();
+        getDefaultStats();
       }
     } catch (error) {
       console.error('Failed to fetch contest stats:', error);
-      generateMockStats();
+      getDefaultStats();
     } finally {
       setLoading(false);
     }
-  }, [generateMockStats]);
+  }, [getDefaultStats]);
 
   useEffect(() => {
     fetchContestStats();
