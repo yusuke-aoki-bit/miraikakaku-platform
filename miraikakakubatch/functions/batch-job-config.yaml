@@ -1,0 +1,35 @@
+taskGroups:
+- taskSpec:
+    runnables:
+    - script:
+        text: |
+          #!/bin/bash
+          set -e
+          
+          # Install dependencies
+          pip3 install -r /app/requirements.txt
+          
+          # Run massive data collection
+          cd /app
+          python3 massive_full_data_collection.py
+    computeResource:
+      cpuMilli: 4000
+      memoryMib: 8192
+    maxRetryCount: 2
+    maxRunDuration: 14400s  # 4 hours timeout
+  taskCount: 1
+  parallelism: 1
+
+allocationPolicy:
+  instances:
+  - policy:
+      machineType: e2-standard-4
+      provisioningModel: SPOT
+  location:
+    allowedLocations:
+    - regions/us-central1
+
+logsPolicy:
+  destination: CLOUD_LOGGING
+
+priority: 50

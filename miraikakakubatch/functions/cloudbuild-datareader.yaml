@@ -1,0 +1,15 @@
+steps:
+  # Build the Docker image with pandas-datareader
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-f', 'Dockerfile.datareader', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/miraikakaku-docker/batch-datareader:latest', '.']
+
+  # Push the Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/miraikakaku-docker/batch-datareader:latest']
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/miraikakaku-docker/batch-datareader:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'  # より高性能なマシンタイプを使用

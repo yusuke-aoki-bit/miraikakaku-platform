@@ -1,0 +1,13 @@
+# Cloud Scheduler設定ファイル
+# 1時間ごとにバッチジョブを自動実行
+
+schedules:
+  - name: miraikakaku-hourly-real-data
+    schedule: "0 * * * *"  # 毎時0分に実行
+    timeZone: "Asia/Tokyo"
+    description: "実データ収集バッチを1時間ごとに実行"
+    
+  - name: miraikakaku-hourly-update
+    schedule: "30 * * * *"  # 毎時30分に実行（分散実行）
+    timeZone: "Asia/Tokyo"
+    description: "データ更新バッチを1時間ごとに実行"

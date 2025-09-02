@@ -1,0 +1,10 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/pricewise-huqkr/batch-prediction-generator:latest', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/pricewise-huqkr/batch-prediction-generator:latest']
+
+images:
+- 'gcr.io/pricewise-huqkr/batch-prediction-generator:latest'
+
+timeout: 1200s

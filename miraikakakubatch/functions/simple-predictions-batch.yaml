@@ -1,0 +1,88 @@
+taskGroups:
+  - taskSpec:
+      runnables:
+        - container:
+            imageUri: "us-central1-docker.pkg.dev/pricewise-huqkr/miraikakaku-docker/batch-stable:latest"
+            entrypoint: "/bin/bash"
+            commands:
+              - "-c"
+              - |
+                echo "🚀 簡単な予測生成バッチ開始..."
+                cd /app
+                
+                # 軽量な予測データ生成
+                python3 -c "
+                import json
+                from datetime import datetime, timedelta
+                print('🔄 予測データ生成モック実行中...')
+                
+                symbols = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'NVDA']
+                models = ['LSTM_v1', 'XGBoost', 'Ensemble']
+                
+                total_predictions = 0
+                for symbol in symbols:
+                    for model in models:
+                        for day in range(1, 4):  # 1-3日後
+                            prediction_date = datetime.now().date()
+                            target_date = prediction_date + timedelta(days=day)
+                            
+                            prediction = {
+                                'symbol': symbol,
+                                'model': model,
+                                'prediction_date': str(prediction_date),
+                                'target_date': str(target_date),
+                                'horizon_days': day
+                            }
+                            
+                            total_predictions += 1
+                
+                print(f'✅ 予測生成シミュレーション完了: {total_predictions}件')
+                print('📊 対象銘柄:', ', '.join(symbols))
+                print('📈 使用モデル:', ', '.join(models))
+                
+                # ローカルでテスト用のダミーファイルを作成
+                with open('/tmp/predictions_test.json', 'w') as f:
+                    json.dump({
+                        'total_predictions': total_predictions,
+                        'symbols': symbols,
+                        'models': models,
+                        'generated_at': str(datetime.now())
+                    }, f)
+                
+                print('💾 テストファイル作成完了: /tmp/predictions_test.json')
+                
+                # Cloud Loggingに結果出力
+                print(f'🎯 バッチ実行結果:')
+                print(f'  - 予測件数: {total_predictions}')
+                print(f'  - 銘柄数: {len(symbols)}')
+                print(f'  - モデル数: {len(models)}')
+                print('✅ 予測生成バッチ完了')
+                "
+                
+                echo "🎉 バッチ処理完了！"
+      computeResource:
+        cpuMilli: "1000"
+        memoryMib: "2048"
+      maxRetryCount: 1
+      maxRunDuration: "300s"
+      environment:
+        variables:
+          BATCH_MODE: "predictions_test"
+    taskCount: 1
+    parallelism: 1
+
+allocationPolicy:
+  instances:
+    - policy:
+        machineType: "e2-standard-2"
+  location:
+    allowedLocations:
+      - "regions/us-central1"
+
+logsPolicy:
+  destination: "CLOUD_LOGGING"
+
+labels:
+  app: "miraikakaku"
+  type: "predictions-test"
+  environment: "production"

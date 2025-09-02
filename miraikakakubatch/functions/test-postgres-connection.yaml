@@ -1,0 +1,94 @@
+taskGroups:
+  - taskSpec:
+      runnables:
+        - container:
+            imageUri: "us-central1-docker.pkg.dev/pricewise-huqkr/miraikakaku-docker/batch-stable:latest"
+            entrypoint: "/bin/bash"
+            commands:
+              - "-c"
+              - |
+                echo "🔍 PostgreSQL接続テスト..."
+                cd /app
+                
+                # psycopg2をインストール
+                pip install psycopg2-binary
+                
+                # 複数の認証パターンをテスト
+                python3 -c "
+                import psycopg2
+                
+                # テストする認証情報
+                auth_configs = [
+                    {'host': '34.173.9.214', 'user': 'postgres', 'password': 'miraikakaku-secure-pass-2024', 'database': 'miraikakaku', 'port': 5432},
+                    {'host': '34.173.9.214', 'user': 'miraikakaku-user', 'password': 'miraikakaku-secure-pass-2024', 'database': 'miraikakaku', 'port': 5432},
+                    {'host': '34.173.9.214', 'user': 'postgres', 'password': 'postgres', 'database': 'postgres', 'port': 5432},
+                    {'host': '34.173.9.214', 'user': 'postgres', 'password': '', 'database': 'postgres', 'port': 5432}
+                ]
+                
+                for i, config in enumerate(auth_configs):
+                    print(f'\\n🧪 テスト {i+1}: {config[\"user\"]}@{config[\"database\"]}')
+                    try:
+                        connection = psycopg2.connect(**config)
+                        cursor = connection.cursor()
+                        cursor.execute('SELECT version()')
+                        version = cursor.fetchone()[0]
+                        print(f'✅ 接続成功! PostgreSQLバージョン: {version[:50]}...')
+                        
+                        # データベース一覧取得
+                        cursor.execute('SELECT datname FROM pg_database')
+                        databases = cursor.fetchall()
+                        print(f'📊 利用可能なデータベース: {len(databases)}個')
+                        for db in databases[:5]:
+                            print(f'  - {db[0]}')
+                        
+                        # テーブル確認（miraikakakuデータベースの場合）
+                        if config['database'] == 'miraikakaku':
+                            cursor.execute('''
+                                SELECT table_name 
+                                FROM information_schema.tables 
+                                WHERE table_schema = \'public\'
+                                LIMIT 10
+                            ''')
+                            tables = cursor.fetchall()
+                            print(f'📋 miraikakakuテーブル数: {len(tables)}')
+                            for table in tables:
+                                print(f'  - {table[0]}')
+                        
+                        connection.close()
+                        print(f'✅ 正しい認証情報: {config}')
+                        break
+                        
+                    except Exception as e:
+                        print(f'❌ 接続失敗: {str(e)[:100]}...')
+                        continue
+                else:
+                    print('❌ すべての認証情報でテスト失敗')
+                "
+                
+                echo "🎯 接続テスト完了"
+      computeResource:
+        cpuMilli: "1000"
+        memoryMib: "2048"
+      maxRetryCount: 1
+      maxRunDuration: "600s"
+      environment:
+        variables:
+          BATCH_MODE: "postgres_connection_test"
+    taskCount: 1
+    parallelism: 1
+
+allocationPolicy:
+  instances:
+    - policy:
+        machineType: "e2-standard-2"
+  location:
+    allowedLocations:
+      - "regions/us-central1"
+
+logsPolicy:
+  destination: "CLOUD_LOGGING"
+
+labels:
+  app: "miraikakaku"
+  type: "postgres-connection-test"
+  environment: "production"

@@ -1,0 +1,134 @@
+taskGroups:
+  - taskSpec:
+      runnables:
+        - container:
+            imageUri: "us-central1-docker.pkg.dev/pricewise-huqkr/miraikakaku-docker/batch-stable:latest"
+            entrypoint: "/bin/bash"
+            commands:
+              - "-c"
+              - |
+                echo "📊 stock_predictionsテーブル作成開始..."
+                python3 -c "
+                import pymysql
+                
+                db_config = {
+                    'host': '34.58.103.36',
+                    'user': 'miraikakaku-user',
+                    'password': 'miraikakaku-secure-pass-2024',
+                    'database': 'miraikakaku',
+                    'charset': 'utf8mb4'
+                }
+                
+                create_table_sql = '''
+                CREATE TABLE IF NOT EXISTS stock_predictions (
+                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    symbol VARCHAR(20) NOT NULL,
+                    prediction_date DATE NOT NULL,
+                    target_date DATE NOT NULL,
+                    prediction_horizon_days INT NOT NULL,
+                    
+                    predicted_open DECIMAL(10,3),
+                    predicted_high DECIMAL(10,3),
+                    predicted_low DECIMAL(10,3),
+                    predicted_close DECIMAL(10,3),
+                    predicted_volume BIGINT,
+                    
+                    actual_open DECIMAL(10,3),
+                    actual_high DECIMAL(10,3),
+                    actual_low DECIMAL(10,3),
+                    actual_close DECIMAL(10,3),
+                    actual_volume BIGINT,
+                    
+                    accuracy_score DECIMAL(5,4),
+                    mse_score DECIMAL(10,6),
+                    mae_score DECIMAL(10,6),
+                    direction_accuracy DECIMAL(5,4),
+                    
+                    model_name VARCHAR(50) NOT NULL,
+                    model_version VARCHAR(20),
+                    confidence_score DECIMAL(5,4),
+                    
+                    features_used TEXT,
+                    training_data_start DATE,
+                    training_data_end DATE,
+                    
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    
+                    INDEX idx_symbol_date (symbol, prediction_date),
+                    INDEX idx_target_date (target_date),
+                    INDEX idx_model (model_name, model_version),
+                    INDEX idx_accuracy (accuracy_score),
+                    
+                    UNIQUE KEY unique_prediction (symbol, prediction_date, target_date, model_name)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                '''
+                
+                try:
+                    connection = pymysql.connect(**db_config)
+                    with connection.cursor() as cursor:
+                        print('📊 stock_predictionsテーブルを作成中...')
+                        cursor.execute(create_table_sql)
+                        
+                        cursor.execute('DESCRIBE stock_predictions')
+                        columns = cursor.fetchall()
+                        
+                        print('✅ stock_predictionsテーブル作成完了！')
+                        print(f'📋 カラム数: {len(columns)}')
+                        
+                        view_sql = '''
+                        CREATE OR REPLACE VIEW prediction_accuracy_summary AS
+                        SELECT 
+                            model_name,
+                            model_version,
+                            COUNT(*) as total_predictions,
+                            AVG(accuracy_score) as avg_accuracy,
+                            AVG(direction_accuracy) as avg_direction_accuracy,
+                            AVG(confidence_score) as avg_confidence,
+                            MIN(prediction_date) as first_prediction,
+                            MAX(prediction_date) as last_prediction
+                        FROM stock_predictions 
+                        WHERE accuracy_score IS NOT NULL
+                        GROUP BY model_name, model_version
+                        ORDER BY avg_accuracy DESC
+                        '''
+                        
+                        cursor.execute(view_sql)
+                        print('✅ prediction_accuracy_summaryビュー作成完了！')
+                        
+                        connection.commit()
+                        print('🎉 すべての作業が完了しました！')
+                        
+                except Exception as e:
+                    print(f'❌ エラー: {e}')
+                    exit(1)
+                finally:
+                    if 'connection' in locals():
+                        connection.close()
+                "
+      computeResource:
+        cpuMilli: "2000"
+        memoryMib: "4096"
+      maxRetryCount: 1
+      maxRunDuration: "600s"
+      environment:
+        variables:
+          BATCH_MODE: "table_creation"
+    taskCount: 1
+    parallelism: 1
+
+allocationPolicy:
+  instances:
+    - policy:
+        machineType: "e2-standard-2"
+  location:
+    allowedLocations:
+      - "regions/us-central1"
+
+logsPolicy:
+  destination: "CLOUD_LOGGING"
+
+labels:
+  app: "miraikakaku"
+  type: "table-creation"
+  environment: "production"

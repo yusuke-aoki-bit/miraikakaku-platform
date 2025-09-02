@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: batch-job-schedule
+  namespace: default
+data:
+  schedule.sh: |
+    #!/bin/bash
+    set -e
+    
+    echo "🚀 毎日17:00 定期バッチ実行開始: $(date)"
+    
+    # Google Cloud Batch Job実行
+    gcloud batch jobs submit training-data-batch-$(date +%Y%m%d-%H%M) \
+      --config=gcloud-batch-job.yaml \
+      --location=us-central1
+    
+    echo "✅ バッチジョブ投入完了: $(date)"
+    
+    # 実行状況監視（オプション）
+    echo "📊 バッチジョブ状況確認..."
+    gcloud batch jobs list --location=us-central1 --limit=5
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: daily-training-data-batch
+  namespace: default
+spec:
+  schedule: "0 17 * * *"  # 毎日17:00 (UTC)
+  timeZone: "Asia/Tokyo"   # 日本時間
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: batch-runner
+          containers:
+          - name: batch-scheduler
+            image: gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
+            command: ["/bin/bash"]
+            args: ["/scripts/schedule.sh"]
+            volumeMounts:
+            - name: schedule-script
+              mountPath: /scripts
+            env:
+            - name: CLOUDSDK_CORE_PROJECT
+              value: "effective-shore-r41fc"
+            - name: CLOUDSDK_COMPUTE_REGION  
+              value: "us-central1"
+          volumes:
+          - name: schedule-script
+            configMap:
+              name: batch-job-schedule
+              defaultMode: 0755
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3

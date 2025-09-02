@@ -34,7 +34,7 @@ class CloudSQLManager:
             # Cloud SQL接続情報
             project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "pricewise-huqkr")
             region = os.getenv("CLOUD_SQL_REGION", "us-central1")
-            instance_name = os.getenv("CLOUD_SQL_INSTANCE", "miraikakaku")
+            instance_name = os.getenv("CLOUD_SQL_INSTANCE", "miraikakaku-postgres")
             database_name = os.getenv("CLOUD_SQL_DATABASE", "miraikakaku_prod")
             db_user = os.getenv("CLOUD_SQL_USER", "root")
             db_password = os.getenv("CLOUD_SQL_PASSWORD", "miraikakaku2025")
@@ -45,7 +45,7 @@ class CloudSQLManager:
             def get_conn():
                 conn = self.connector.connect(
                     f"{project_id}:{region}:{instance_name}",
-                    "pymysql",
+                    "pg8000",
                     user=db_user,
                     password=db_password,
                     db=database_name,
@@ -54,7 +54,7 @@ class CloudSQLManager:
 
             # SQLAlchemy エンジンの作成
             self.engine = create_engine(
-                "mysql+pymysql://",
+                "postgresql+pg8000://",
                 creator=get_conn,
                 poolclass=NullPool,  # Cloud Runでは接続プールを無効化
                 echo=False,
@@ -122,9 +122,10 @@ class StockDataRepository:
                 # 重複チェックと挿入
                 insert_query = text(
                     """
-                    INSERT IGNORE INTO stock_prices 
+                    INSERT INTO stock_prices 
                     (symbol, date, open_price, high_price, low_price, close_price, volume, adjusted_close)
                     VALUES (:symbol, :date, :open_price, :high_price, :low_price, :close_price, :volume, :adjusted_close)
+                    ON CONFLICT (symbol, date) DO NOTHING
                 """
                 )
 

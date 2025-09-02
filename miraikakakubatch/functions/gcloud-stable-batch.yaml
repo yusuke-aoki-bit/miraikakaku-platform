@@ -1,0 +1,68 @@
+taskGroups:
+- taskSpec:
+    runnables:
+    - container:
+        imageUri: us-central1-docker.pkg.dev/pricewise-huqkr/miraikakaku-docker/batch-stable:latest
+        entrypoint: /bin/bash
+        commands:
+        - -c
+        - |
+          set -e
+          echo "🚀 Stable Container Worker ${BATCH_TASK_INDEX:-0} started"
+          
+          # Environment verification
+          python3 --version
+          pip3 --version
+          python3 -c "import pymysql; print('PyMySQL imported successfully')"
+          python3 -c "import numpy; print('NumPy imported successfully')"
+          
+          # Database connectivity test
+          python3 -c "
+          import pymysql
+          import os
+          try:
+              connection = pymysql.connect(
+                  host=os.getenv('DB_HOST', '34.58.103.36'),
+                  user=os.getenv('DB_USER', 'miraikakaku-user'),
+                  password=os.getenv('DB_PASSWORD', 'miraikakaku-secure-pass-2024'),
+                  database=os.getenv('DB_NAME', 'miraikakaku'),
+                  charset='utf8mb4'
+              )
+              print('✅ Database connection successful')
+              connection.close()
+          except Exception as e:
+              print(f'❌ Database connection failed: {e}')
+              exit(1)
+          "
+          
+          # Execute main batch worker
+          python3 /app/batch_worker_fixed.py
+    computeResource:
+      cpuMilli: 2000
+      memoryMib: 4096
+    maxRetryCount: 3
+    maxRunDuration: 7200s
+    environment:
+      variables:
+        DB_HOST: "34.58.103.36"
+        DB_USER: "miraikakaku-user"
+        DB_PASSWORD: "miraikakaku-secure-pass-2024"
+        DB_NAME: "miraikakaku"
+        PYTHONUNBUFFERED: "1"
+        PYTHONPATH: "/app"
+  taskCount: 3
+  parallelism: 2
+
+allocationPolicy:
+  instances:
+  - policy:
+      machineType: e2-standard-2
+      provisioningModel: STANDARD
+  location:
+    allowedLocations:
+    - regions/us-central1
+
+logsPolicy:
+  destination: CLOUD_LOGGING
+
+priority: 75

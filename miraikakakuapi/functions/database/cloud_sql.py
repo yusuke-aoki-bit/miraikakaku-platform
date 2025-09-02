@@ -31,34 +31,46 @@ class CloudSQLManager:
     def _initialize_connection(self):
         """データベース接続を初期化"""
         try:
-            # Cloud SQL接続情報
-            project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "pricewise-huqkr")
-            region = os.getenv("CLOUD_SQL_REGION", "us-central1")
-            instance_name = os.getenv("CLOUD_SQL_INSTANCE", "miraikakaku")
-            database_name = os.getenv("CLOUD_SQL_DATABASE", "miraikakaku_prod")
-            db_user = os.getenv("CLOUD_SQL_USER", "root")
-            db_password = os.getenv("CLOUD_SQL_PASSWORD")
-
-            # Cloud SQL Connectorを使用
-            self.connector = Connector()
-
-            def get_conn():
-                conn = self.connector.connect(
-                    f"{project_id}:{region}:{instance_name}",
-                    "pymysql",
-                    user=db_user,
-                    password=db_password,
-                    db=database_name,
+            # 環境変数から接続情報取得
+            database_url = os.getenv("DATABASE_URL")
+            
+            if database_url:
+                # DATABASE_URLが設定されている場合は直接接続を試行
+                logger.info("Using DATABASE_URL for direct connection")
+                self.engine = create_engine(
+                    database_url,
+                    poolclass=NullPool,
+                    echo=False,
                 )
-                return conn
+            else:
+                # Cloud SQL Connector使用（従来方式）
+                project_id = os.getenv("GCP_PROJECT_ID", os.getenv("GOOGLE_CLOUD_PROJECT", "pricewise-huqkr"))
+                region = os.getenv("CLOUD_SQL_REGION", "us-central1")
+                instance_name = os.getenv("CLOUD_SQL_INSTANCE", "miraikakaku")
+                database_name = os.getenv("POSTGRES_DATABASE", os.getenv("CLOUD_SQL_DATABASE", "miraikakaku"))
+                db_user = os.getenv("POSTGRES_USER", os.getenv("CLOUD_SQL_USER", "miraikakaku-user"))
+                db_password = os.getenv("POSTGRES_PASSWORD", os.getenv("CLOUD_SQL_PASSWORD", "miraikakaku2024"))
 
-            # SQLAlchemy エンジンの作成
-            self.engine = create_engine(
-                "mysql+pymysql://",
-                creator=get_conn,
-                poolclass=NullPool,  # Cloud Runでは接続プールを無効化
-                echo=False,
-            )
+                # Cloud SQL Connectorを使用
+                self.connector = Connector()
+
+                def get_conn():
+                    conn = self.connector.connect(
+                        f"{project_id}:{region}:{instance_name}-postgres",
+                        "pg8000",
+                        user=db_user,
+                        password=db_password,
+                        db=database_name,
+                    )
+                    return conn
+
+                # SQLAlchemy エンジンの作成
+                self.engine = create_engine(
+                    "postgresql+pg8000://",
+                    creator=get_conn,
+                    poolclass=NullPool,  # Cloud Runでは接続プールを無効化
+                    echo=False,
+                )
 
             # セッションファクトリー作成
             self.SessionLocal = sessionmaker(
@@ -120,14 +132,25 @@ class StockDataRepository:
             records_inserted = 0
 
             for index, row in price_data.iterrows():
-                # 重複チェックと挿入
-                insert_query = text(
+                # データベース種別に応じた重複チェックと挿入
+                if 'sqlite' in str(self.db.bind.url):
+                    # SQLite用のINSERT OR IGNORE
+                    insert_query = text(
+                        """
+                        INSERT OR IGNORE INTO stock_prices
+                        (symbol, date, open_price, high_price, low_price, close_price, volume, adjusted_close)
+                        VALUES (:symbol, :date, :open_price, :high_price, :low_price, :close_price, :volume, :adjusted_close)
                     """
-                    INSERT IGNORE INTO stock_prices
-                    (symbol, date, open_price, high_price, low_price, close_price, volume, adjusted_close)
-                    VALUES (:symbol, :date, :open_price, :high_price, :low_price, :close_price, :volume, :adjusted_close)
-                """
-                )
+                    )
+                else:
+                    # MySQL用のINSERT IGNORE
+                    insert_query = text(
+                        """
+                        INSERT IGNORE INTO stock_prices
+                        (symbol, date, open_price, high_price, low_price, close_price, volume, adjusted_close)
+                        VALUES (:symbol, :date, :open_price, :high_price, :low_price, :close_price, :volume, :adjusted_close)
+                    """
+                    )
 
                 result = self.db.execute(
                     insert_query,
@@ -202,49 +225,47 @@ class StockDataRepository:
 
     def insert_predictions(
             self, predictions_data: List[Dict[str, Any]]) -> int:
-        """予測結果を挿入"""
+        """予測結果を挿入（既存スキーマ対応）"""
         try:
             records_inserted = 0
 
             insert_query = text(
                 """
                 INSERT INTO stock_predictions
-                (symbol, prediction_date, prediction_days, current_price, predicted_price,
-                 confidence_score, prediction_range_low, prediction_range_high,
-                 model_version, model_accuracy, features_used)
-                VALUES (:symbol, :prediction_date, :prediction_days, :current_price, :predicted_price,
-                        :confidence_score, :prediction_range_low, :prediction_range_high,
-                        :model_version, :model_accuracy, :features_used)
+                (symbol, prediction_date, predicted_price, predicted_change,
+                 predicted_change_percent, confidence_score, model_type,
+                 model_version, prediction_horizon, is_active, created_at)
+                VALUES (:symbol, :prediction_date, :predicted_price, :predicted_change,
+                        :predicted_change_percent, :confidence_score, :model_type,
+                        :model_version, :prediction_horizon, :is_active, :created_at)
             """
             )
 
             for pred in predictions_data:
-                predicted_prices = pred.get("predicted_prices", [])
-                if predicted_prices:
-                    self.db.execute(
-                        insert_query,
-                        {
-                            "symbol": pred["symbol"],
-                            "prediction_date": datetime.now().date(),
-                            "prediction_days": pred.get("prediction_days", 7),
-                            "current_price": pred.get("current_price", 0),
-                            # 最終日の予測価格
-                            "predicted_price": predicted_prices[-1],
-                            "confidence_score": pred.get("confidence_score", 0),
-                            "prediction_range_low": min(
-                                pred.get("prediction_range", {}).get("low", [])
-                            ),
-                            "prediction_range_high": max(
-                                pred.get(
-                                    "prediction_range", {}).get(
-                                    "high", [])
-                            ),
-                            "model_version": pred.get("model_version", "LSTM_v1.0"),
-                            "model_accuracy": pred.get("model_accuracy", 0),
-                            "features_used": json.dumps(pred.get("features_used", [])),
-                        },
-                    )
-                    records_inserted += 1
+                predicted_price = pred.get("predicted_price", 0)
+                current_price = pred.get("current_price", 0)
+                
+                # 変化量と変化率を計算
+                predicted_change = predicted_price - current_price if current_price > 0 else 0
+                predicted_change_percent = (predicted_change / current_price * 100) if current_price > 0 else 0
+                
+                self.db.execute(
+                    insert_query,
+                    {
+                        "symbol": pred["symbol"],
+                        "prediction_date": datetime.now(),
+                        "predicted_price": float(predicted_price),
+                        "predicted_change": float(predicted_change),
+                        "predicted_change_percent": float(predicted_change_percent),
+                        "confidence_score": float(pred.get("confidence_score", 0)),
+                        "model_type": pred.get("model_type", "LSTM-Integrated"),
+                        "model_version": pred.get("model_version", "v1.0"),
+                        "prediction_horizon": pred.get("prediction_horizon", 1),
+                        "is_active": 1,
+                        "created_at": datetime.now()
+                    },
+                )
+                records_inserted += 1
 
             self.db.commit()
             logger.info(f"Inserted {records_inserted} prediction records")
@@ -257,18 +278,19 @@ class StockDataRepository:
 
     def get_latest_predictions(self, symbol: str = None,
                                limit: int = 10) -> List[Dict]:
-        """最新の予測結果を取得"""
+        """最新の予測結果を取得（既存スキーマ対応）"""
         try:
             query = """
-                SELECT symbol, prediction_date, prediction_days, current_price, predicted_price,
-                       confidence_score, prediction_range_low, prediction_range_high,
-                       model_version, created_at
+                SELECT symbol, prediction_date, predicted_price, predicted_change,
+                       predicted_change_percent, confidence_score, model_type, 
+                       model_version, prediction_horizon, is_active, created_at
                 FROM stock_predictions
+                WHERE is_active = 1
             """
             params = {}
 
             if symbol:
-                query += " WHERE symbol = :symbol"
+                query += " AND symbol = :symbol"
                 params["symbol"] = symbol
 
             query += " ORDER BY created_at DESC LIMIT :limit"
@@ -281,16 +303,15 @@ class StockDataRepository:
                 predictions.append(
                     {
                         "symbol": row.symbol,
-                        "prediction_date": row.prediction_date,
-                        "prediction_days": row.prediction_days,
-                        "current_price": float(row.current_price),
-                        "predicted_price": float(row.predicted_price),
-                        "confidence_score": float(row.confidence_score),
-                        "prediction_range": {
-                            "low": float(row.prediction_range_low),
-                            "high": float(row.prediction_range_high),
-                        },
+                        "prediction_date": row.prediction_date.strftime('%Y-%m-%d') if row.prediction_date else None,
+                        "predicted_price": float(row.predicted_price) if row.predicted_price else 0,
+                        "predicted_change": float(row.predicted_change) if row.predicted_change else 0,
+                        "predicted_change_percent": float(row.predicted_change_percent) if row.predicted_change_percent else 0,
+                        "confidence_score": float(row.confidence_score) if row.confidence_score else 0,
+                        "model_type": row.model_type,
                         "model_version": row.model_version,
+                        "prediction_horizon": f"{row.prediction_horizon}d" if row.prediction_horizon else "1d",
+                        "is_active": bool(row.is_active),
                         "created_at": row.created_at,
                     }
                 )

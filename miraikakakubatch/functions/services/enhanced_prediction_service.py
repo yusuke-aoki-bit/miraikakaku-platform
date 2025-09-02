@@ -103,7 +103,7 @@ class EnhancedPredictionService:
         return ema
 
     def generate_multiple_predictions(
-        self, symbol: str, db: Session, days_ahead: int = 30
+        self, symbol: str, db: Session, days_ahead: int = 180
     ) -> Dict[str, int]:
         """複数モデルによる株価予測を生成"""
         results = {model: 0 for model in self.model_versions}
@@ -114,7 +114,7 @@ class EnhancedPredictionService:
                 db.query(StockPriceHistory)
                 .filter(StockPriceHistory.symbol == symbol.upper())
                 .order_by(StockPriceHistory.date.desc())
-                .limit(100)
+                .limit(730)
                 .all()
             )
 
@@ -492,7 +492,7 @@ class EnhancedPredictionService:
             return 0
 
     def batch_generate_enhanced_predictions(
-        self, limit: int = 50, days_ahead: int = 30
+        self, limit: int = 50, days_ahead: int = 180
     ) -> Dict:
         """強化された予測の一括生成"""
         results = {

@@ -1,0 +1,52 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* YouTube Music Dark Theme */
+:root {
+  --yt-music-bg: #030303;
+  --yt-music-surface: #0f0f0f;
+  --yt-music-surface-variant: #1a1a1a;
+  --yt-music-surface-hover: #272727;
+  --yt-music-primary: #ff0000;
+  --yt-music-primary-hover: #cc0000;
+  --yt-music-secondary: #f1f1f1;
+  --yt-music-text-primary: #f1f1f1;
+  --yt-music-text-secondary: #aaaaaa;
+  --yt-music-text-disabled: #717171;
+  --yt-music-border: #333333;
+  --yt-music-accent: #3ea6ff;
+}
+
+/* Dark theme styles */
+body {
+  font-family: var(--font-noto-sans-jp), 'Roboto', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  background-color: var(--yt-music-bg);
+  color: var(--yt-music-text-primary);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--yt-music-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--yt-music-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--yt-music-text-disabled);
+}
+
+/* Glass morphism effect */
+.glass-effect {
+  background: rgba(15, 15, 15, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

@@ -1,0 +1,166 @@
+taskGroups:
+  - taskSpec:
+      runnables:
+        - container:
+            imageUri: "us-central1-docker.pkg.dev/pricewise-huqkr/miraikakaku-docker/batch-stable:latest"
+            entrypoint: "/bin/bash"
+            commands:
+              - "-c"
+              - |
+                echo "🔍 データベースカバレッジ確認開始..."
+                cd /app
+                
+                pip install psycopg2-binary
+                
+                python3 -c "
+                import psycopg2
+                from datetime import datetime
+                
+                db_config = {
+                    'host': '34.173.9.214',
+                    'user': 'miraikakaku-user',
+                    'password': 'miraikakaku-secure-pass-2024',
+                    'database': 'miraikakaku',
+                    'port': 5432
+                }
+                
+                try:
+                    connection = psycopg2.connect(**db_config)
+                    cursor = connection.cursor()
+                    print('✅ PostgreSQL接続成功')
+                    
+                    # 各テーブルの状況確認
+                    tables_to_check = ['stock_predictions', 'stock_price_history', 'stock_master']
+                    
+                    print('\\n📊 データベースカバレッジレポート')
+                    print('=' * 60)
+                    
+                    for table in tables_to_check:
+                        try:
+                            cursor.execute(f'SELECT COUNT(*) FROM {table}')
+                            count = cursor.fetchone()[0]
+                            print(f'📋 {table}: {count:,}件')
+                            
+                            if table == 'stock_predictions':
+                                # 予測データの詳細確認
+                                cursor.execute('''
+                                    SELECT 
+                                        COUNT(DISTINCT symbol) as symbols,
+                                        COUNT(DISTINCT model_type) as models,
+                                        MAX(prediction_horizon) as max_days,
+                                        COUNT(*) as total_predictions,
+                                        DATE(MAX(prediction_date)) as latest_prediction
+                                    FROM stock_predictions
+                                ''')
+                                result = cursor.fetchone()
+                                if result[0]:
+                                    symbols, models, max_days, total, latest = result
+                                    print(f'  └─ 銘柄数: {symbols}')
+                                    print(f'  └─ モデル数: {models}')
+                                    print(f'  └─ 最大予測日数: {max_days}日')
+                                    print(f'  └─ 最新予測日: {latest}')
+                                    
+                                    # 180日予測の確認
+                                    cursor.execute('SELECT COUNT(*) FROM stock_predictions WHERE prediction_horizon >= 180')
+                                    long_term = cursor.fetchone()[0]
+                                    print(f'  └─ 180日予測: {long_term}件')
+                            
+                            elif table == 'stock_price_history':
+                                # 価格履歴の確認
+                                cursor.execute('''
+                                    SELECT 
+                                        COUNT(DISTINCT symbol) as symbols,
+                                        DATE(MIN(date)) as earliest_date,
+                                        DATE(MAX(date)) as latest_date,
+                                        COUNT(*) as total_records
+                                    FROM stock_price_history
+                                ''')
+                                result = cursor.fetchone()
+                                if result[0]:
+                                    symbols, earliest, latest, total = result
+                                    print(f'  └─ 銘柄数: {symbols}')
+                                    print(f'  └─ データ期間: {earliest} ～ {latest}')
+                                    
+                        except Exception as e:
+                            print(f'❌ {table}: エラー - {e}')
+                    
+                    # カバレッジ計算
+                    print('\\n🎯 カバレッジ分析')
+                    print('-' * 40)
+                    
+                    # 目標銘柄数（基準）
+                    target_symbols = 25  # 目標銘柄数
+                    target_models = 5    # 目標モデル数
+                    target_predictions_per_symbol = 60  # 180日予測 × 5モデル × 12key日付
+                    
+                    cursor.execute('SELECT COUNT(DISTINCT symbol) FROM stock_predictions')
+                    current_symbols = cursor.fetchone()[0] or 0
+                    
+                    cursor.execute('SELECT COUNT(DISTINCT model_type) FROM stock_predictions')
+                    current_models = cursor.fetchone()[0] or 0
+                    
+                    cursor.execute('SELECT COUNT(*) FROM stock_predictions')
+                    total_predictions = cursor.fetchone()[0] or 0
+                    
+                    # カバレッジ率計算
+                    symbol_coverage = min(100, (current_symbols / target_symbols) * 100)
+                    model_coverage = min(100, (current_models / target_models) * 100)
+                    
+                    expected_total = target_symbols * target_predictions_per_symbol
+                    prediction_coverage = min(100, (total_predictions / expected_total) * 100)
+                    
+                    overall_coverage = (symbol_coverage + model_coverage + prediction_coverage) / 3
+                    
+                    print(f'📊 銘柄カバレッジ: {symbol_coverage:.1f}% ({current_symbols}/{target_symbols})')
+                    print(f'🤖 モデルカバレッジ: {model_coverage:.1f}% ({current_models}/{target_models})')
+                    print(f'🎯 予測カバレッジ: {prediction_coverage:.1f}% ({total_predictions:,}/{expected_total:,})')
+                    print(f'\\n🏆 総合カバレッジ: {overall_coverage:.1f}%')
+                    
+                    if overall_coverage >= 100:
+                        print('\\n🎉 100%達成！データベース補填完了！')
+                    else:
+                        remaining = 100 - overall_coverage
+                        print(f'\\n⏳ あと{remaining:.1f}%の補填が必要')
+                        
+                        # 不足分の詳細
+                        print('\\n📋 補填が必要な項目:')
+                        if symbol_coverage < 100:
+                            needed_symbols = target_symbols - current_symbols
+                            print(f'  - 銘柄: あと{needed_symbols}銘柄')
+                        if model_coverage < 100:
+                            needed_models = target_models - current_models
+                            print(f'  - モデル: あと{needed_models}モデル')
+                        if prediction_coverage < 100:
+                            needed_predictions = expected_total - total_predictions
+                            print(f'  - 予測データ: あと{needed_predictions:,}件')
+                    
+                    connection.close()
+                    
+                except Exception as e:
+                    print(f'❌ データベースエラー: {e}')
+                    import traceback
+                    traceback.print_exc()
+                "
+      computeResource:
+        cpuMilli: "1000"
+        memoryMib: "2048"
+      maxRetryCount: 1
+      maxRunDuration: "300s"
+    taskCount: 1
+    parallelism: 1
+
+allocationPolicy:
+  instances:
+    - policy:
+        machineType: "e2-standard-2"
+  location:
+    allowedLocations:
+      - "regions/us-central1"
+
+logsPolicy:
+  destination: "CLOUD_LOGGING"
+
+labels:
+  app: "miraikakaku"
+  type: "db-coverage-check"
+  environment: "production"

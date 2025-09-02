@@ -1,0 +1,191 @@
+taskGroups:
+  - taskSpec:
+      runnables:
+        - container:
+            imageUri: "us-central1-docker.pkg.dev/pricewise-huqkr/miraikakaku-docker/batch-stable:latest"
+            entrypoint: "/bin/bash"
+            commands:
+              - "-c"
+              - |
+                echo "🔍 全銘柄詳細補填状況確認..."
+                cd /app
+                
+                pip install psycopg2-binary
+                
+                python3 -c "
+                import psycopg2
+                from datetime import datetime
+                
+                db_config = {
+                    'host': '34.173.9.214',
+                    'user': 'miraikakaku-user',
+                    'password': 'miraikakaku-secure-pass-2024',
+                    'database': 'miraikakaku',
+                    'port': 5432
+                }
+                
+                try:
+                    connection = psycopg2.connect(**db_config)
+                    cursor = connection.cursor()
+                    print('✅ PostgreSQL接続成功')
+                    
+                    print('\\n📊 全銘柄補填状況詳細レポート')
+                    print('=' * 80)
+                    
+                    # 1. 予測データが存在する全銘柄を取得
+                    cursor.execute('''
+                        SELECT 
+                            symbol,
+                            COUNT(*) as prediction_count,
+                            COUNT(DISTINCT model_type) as model_count,
+                            MAX(prediction_horizon) as max_horizon,
+                            MIN(prediction_horizon) as min_horizon
+                        FROM stock_predictions 
+                        GROUP BY symbol 
+                        ORDER BY symbol
+                    ''')
+                    
+                    prediction_symbols = cursor.fetchall()
+                    print(f'🎯 予測データが存在する銘柄: {len(prediction_symbols)}銘柄')
+                    
+                    # 各銘柄の詳細表示
+                    print('\\n📈 銘柄別予測データ状況:')
+                    print('-' * 80)
+                    print('銘柄\\t予測数\\tモデル数\\t最小期間\\t最大期間\\t価格データ')
+                    print('-' * 80)
+                    
+                    total_predictions = 0
+                    symbols_with_price_data = 0
+                    
+                    for symbol, pred_count, model_count, max_horizon, min_horizon in prediction_symbols:
+                        total_predictions += pred_count
+                        
+                        # 価格データ存在確認
+                        try:
+                            cursor.execute('SELECT COUNT(*) FROM stock_price_history WHERE symbol = %s', (symbol,))
+                            price_count = cursor.fetchone()[0]
+                            price_status = f'{price_count}件' if price_count > 0 else 'なし'
+                            if price_count > 0:
+                                symbols_with_price_data += 1
+                        except:
+                            price_status = 'エラー'
+                        
+                        print(f'{symbol}\\t{pred_count}\\t{model_count}\\t{min_horizon}日\\t{max_horizon}日\\t{price_status}')
+                    
+                    print('-' * 80)
+                    
+                    # 2. 価格データのみ存在する銘柄確認
+                    try:
+                        cursor.execute('''
+                            SELECT COUNT(DISTINCT symbol) 
+                            FROM stock_price_history 
+                            WHERE symbol NOT IN (SELECT DISTINCT symbol FROM stock_predictions)
+                        ''')
+                        price_only_symbols = cursor.fetchone()[0]
+                        print(f'💰 価格データのみ存在: {price_only_symbols}銘柄')
+                    except:
+                        price_only_symbols = 0
+                    
+                    # 3. 総合統計
+                    print('\\n📊 総合統計:')
+                    print('-' * 40)
+                    print(f'予測データ存在銘柄: {len(prediction_symbols)}')
+                    print(f'価格データ存在銘柄: {symbols_with_price_data}')
+                    print(f'総予測データ: {total_predictions:,}件')
+                    
+                    # モデル別統計
+                    cursor.execute('''
+                        SELECT model_type, COUNT(*) as count, COUNT(DISTINCT symbol) as symbols
+                        FROM stock_predictions 
+                        GROUP BY model_type 
+                        ORDER BY model_type
+                    ''')
+                    
+                    print('\\n🤖 モデル別統計:')
+                    for model, count, symbols in cursor.fetchall():
+                        print(f'  {model}: {count}件 ({symbols}銘柄)')
+                    
+                    # 予測期間別統計
+                    cursor.execute('''
+                        SELECT prediction_horizon, COUNT(*) as count, COUNT(DISTINCT symbol) as symbols
+                        FROM stock_predictions 
+                        GROUP BY prediction_horizon 
+                        ORDER BY prediction_horizon
+                    ''')
+                    
+                    print('\\n📅 予測期間別統計:')
+                    horizon_data = cursor.fetchall()
+                    for horizon, count, symbols in horizon_data:
+                        print(f'  {horizon}日: {count}件 ({symbols}銘柄)')
+                    
+                    # 4. 完全性チェック
+                    print('\\n🎯 完全性チェック:')
+                    print('-' * 40)
+                    
+                    # BATCH.md要件チェック
+                    target_symbols = 25
+                    target_models = 5
+                    current_symbols = len(prediction_symbols)
+                    
+                    cursor.execute('SELECT COUNT(DISTINCT model_type) FROM stock_predictions')
+                    current_models = cursor.fetchone()[0]
+                    
+                    # 180日予測チェック
+                    cursor.execute('SELECT COUNT(DISTINCT symbol) FROM stock_predictions WHERE prediction_horizon >= 180')
+                    symbols_with_180d = cursor.fetchone()[0]
+                    
+                    print(f'銘柄数: {current_symbols}/{target_symbols} ({(current_symbols/target_symbols)*100:.1f}%)')
+                    print(f'モデル数: {current_models}/{target_models} ({(current_models/target_models)*100:.1f}%)')
+                    print(f'180日予測対応銘柄: {symbols_with_180d}/{current_symbols} ({(symbols_with_180d/current_symbols)*100:.1f}%)')
+                    
+                    # 5. 不足銘柄の特定
+                    if current_symbols < target_symbols:
+                        needed = target_symbols - current_symbols
+                        print(f'\\n⚠️ 不足: {needed}銘柄の追加が必要')
+                    else:
+                        print('\\n✅ 銘柄数は十分です')
+                    
+                    if symbols_with_price_data < current_symbols:
+                        price_missing = current_symbols - symbols_with_price_data
+                        print(f'⚠️ 価格データ不足: {price_missing}銘柄')
+                    else:
+                        print('✅ 全銘柄に価格データが存在')
+                    
+                    print('\\n' + '='*80)
+                    
+                    # 最終判定
+                    if current_symbols >= target_symbols and current_models >= target_models and symbols_with_180d >= current_symbols:
+                        print('🎉 全銘柄について完全に補填済み！')
+                    else:
+                        print('⏳ 一部銘柄で補填が不完全です')
+                    
+                    connection.close()
+                    
+                except Exception as e:
+                    print(f'❌ エラー: {e}')
+                    import traceback
+                    traceback.print_exc()
+                "
+      computeResource:
+        cpuMilli: "2000"
+        memoryMib: "4096"
+      maxRetryCount: 1
+      maxRunDuration: "600s"
+    taskCount: 1
+    parallelism: 1
+
+allocationPolicy:
+  instances:
+    - policy:
+        machineType: "e2-standard-2"
+  location:
+    allowedLocations:
+      - "regions/us-central1"
+
+logsPolicy:
+  destination: "CLOUD_LOGGING"
+
+labels:
+  app: "miraikakaku"
+  type: "detailed-symbol-check"
+  environment: "production"
