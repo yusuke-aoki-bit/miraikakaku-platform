@@ -43,7 +43,6 @@ export function AmazonAssociatesWidget() {
         * As an Amazon Associate, we earn from qualifying purchases.
       </p>
     </div>
-  );
 }
 
 export function GoogleAdSenseWidget() {
@@ -82,7 +81,6 @@ export function GoogleAdSenseWidget() {
         </div>
       </div>
     </div>
-  );
 }
 
 export function NewsletterSignup() {
@@ -110,5 +108,4 @@ export function NewsletterSignup() {
         No spam. Unsubscribe at any time.
       </p>
     </div>
-  );
 }

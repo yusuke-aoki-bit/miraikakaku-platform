@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Alpha Vantage & Polygon統合価格データ収集システム"""
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import requests
 import random
 import time
@@ -19,11 +20,11 @@ class AdvancedPriceDataCollector:
     def __init__(self):
         # データベース接続設定
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user", 
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres", 
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
         
         # API設定（デモキー使用）
@@ -36,7 +37,7 @@ class AdvancedPriceDataCollector:
         
     def get_missing_price_symbols(self, limit=1000):
         """価格データが不足している銘柄を取得"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         try:
             with connection.cursor() as cursor:
                 cursor.execute("""
@@ -44,7 +45,7 @@ class AdvancedPriceDataCollector:
                     FROM stock_master sm
                     LEFT JOIN (SELECT DISTINCT symbol FROM stock_price_history) sph 
                         ON sm.symbol = sph.symbol
-                    WHERE sm.is_active = 1 
+                    WHERE sm.is_active = true 
                     AND sph.symbol IS NULL
                     ORDER BY sm.symbol
                     LIMIT %s
@@ -217,7 +218,7 @@ class AdvancedPriceDataCollector:
         if not price_data_list:
             return 0
             
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         try:
             with connection.cursor() as cursor:
                 # バッチ挿入用のデータ準備

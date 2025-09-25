@@ -4,7 +4,8 @@
 生成された予測データの精度を評価し、モデル性能を向上させる
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import numpy as np
 import pandas as pd
 import logging
@@ -18,15 +19,15 @@ logger = logging.getLogger(__name__)
 class AdvancedPredictionAccuracySystem:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user", 
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres", 
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
         
     def get_connection(self):
-        return pymysql.connect(**self.db_config)
+        return psycopg2.connect(**self.db_config)
 
     def evaluate_prediction_accuracy(self, days_back: int = 30) -> Dict:
         """過去の予測精度を評価"""

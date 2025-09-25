@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import logging
 
 # ログ設定
@@ -11,17 +12,17 @@ logger = logging.getLogger(__name__)
 class CollationConstraintFixer:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
 
     def check_foreign_keys(self):
         """外部キー制約の確認"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 cursor.execute("""
                     SELECT CONSTRAINT_NAME, TABLE_NAME, COLUMN_NAME, 
@@ -50,7 +51,7 @@ class CollationConstraintFixer:
     def check_data_length_issues(self):
         """データ長の問題確認"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 
                 # exchange列の長いデータ確認
@@ -83,7 +84,7 @@ class CollationConstraintFixer:
         logger.info("🔗 外部キー制約修正開始")
         
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 
                 # 1. 外部キー制約削除
@@ -119,7 +120,7 @@ class CollationConstraintFixer:
         logger.info("📏 データ長問題修正開始")
         
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 
                 # 1. exchange列を拡張
@@ -161,7 +162,7 @@ class CollationConstraintFixer:
         logger.info("🎯 symbol列最終修正開始")
         
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 
                 # symbol列のコレーション修正（制約削除後）
@@ -215,7 +216,7 @@ class CollationConstraintFixer:
     def test_final_fix(self):
         """最終修正テスト"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 
                 logger.info("🧪 最終修正テスト:")

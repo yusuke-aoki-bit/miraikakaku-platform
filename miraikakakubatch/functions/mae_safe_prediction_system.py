@@ -4,7 +4,8 @@ MAE安全予測システム
 コレーション問題を回避しながらMAE学習を実装
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
@@ -16,14 +17,14 @@ logger = logging.getLogger(__name__)
 class MAESafePredictionSystem:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user", 
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres", 
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
         }
         
     def get_connection(self):
-        return pymysql.connect(**self.db_config)
+        return psycopg2.connect(**self.db_config)
 
     def get_symbols_with_sufficient_data(self) -> List[str]:
         """十分なデータがある銘柄を取得"""

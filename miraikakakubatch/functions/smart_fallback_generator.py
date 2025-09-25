@@ -4,7 +4,8 @@
 実データが取得できない銘柄に対して、合理的な代替データを生成
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import numpy as np
 from datetime import datetime, timedelta
 import os
@@ -21,7 +22,7 @@ class SmartFallbackGenerator:
             "user": os.getenv("DB_USER", "miraikakaku-user"),
             "password": os.getenv("DB_PASSWORD", "miraikakaku-secure-pass-2024"),
             "database": os.getenv("DB_NAME", "miraikakaku"),
-            "charset": "utf8mb4"
+            "port": 5432
         }
         
     def generate_synthetic_data(self, symbol, market, country):
@@ -82,7 +83,7 @@ class SmartFallbackGenerator:
     
     def fill_uncovered_stocks(self, batch_size=500):
         """未収集銘柄を合成データで埋める"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:

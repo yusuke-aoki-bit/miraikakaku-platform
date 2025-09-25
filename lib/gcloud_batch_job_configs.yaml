@@ -1,0 +1,48 @@
+# GCloud Batch Job Configurations for Miraikakaku
+# 複数のバッチジョブタイプに対応
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: miraikakaku-batch-job-template
+spec:
+  taskGroups:
+  - taskSpec:
+      runnables:
+      - container:
+          imageUri: us-central1-docker.pkg.dev/pricewise-huqkr/miraikakaku/miraikakaku-batch-production:latest
+          env:
+            - name: BATCH_TYPE
+              value: "symbol"  # symbol, enhanced_symbol, price, multi_source_price, prediction
+            - name: DB_HOST
+              value: "34.173.9.214"
+            - name: DB_USER
+              value: "postgres"
+            - name: DB_PASSWORD
+              value: "Miraikakaku2024!"
+            - name: DB_NAME
+              value: "miraikakaku"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: PYTHONPATH
+              value: "/app"
+          resources:
+            cpuMilli: 2000    # 2 CPU cores
+            memoryMib: 4096   # 4GB memory
+      computeResource:
+        cpuMilli: 2000
+        memoryMib: 4096
+      maxRetryCount: 3
+      maxRunDuration: "3600s"  # 1 hour timeout
+    taskCount: 1
+    parallelism: 1
+  allocationPolicy:
+    instances:
+    - policy:
+        machineType: e2-standard-2
+        provisioningModel: STANDARD
+    location:
+      allowedLocations:
+      - "regions/us-central1"
+  logsPolicy:
+    destination: CLOUD_LOGGING

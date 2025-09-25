@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import logging
 from datetime import datetime
 
@@ -12,11 +13,11 @@ logger = logging.getLogger(__name__)
 class CollationRootFixer:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
 
     def fix_stock_master_collation(self):
@@ -38,7 +39,7 @@ class CollationRootFixer:
         ]
         
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 
                 success_count = 0
@@ -69,7 +70,7 @@ class CollationRootFixer:
         logger.info("🧪 コレーション修正効果テスト")
         
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 
                 # Test 1: 基本JOIN
@@ -124,7 +125,7 @@ class CollationRootFixer:
     def verify_collation_consistency(self):
         """コレーション一貫性の確認"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 
                 # 重要テーブルのコレーション確認

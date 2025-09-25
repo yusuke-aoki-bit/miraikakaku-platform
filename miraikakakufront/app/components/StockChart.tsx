@@ -2,15 +2,15 @@
 
 import React, { useMemo } from 'react';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  ReferenceLine,
+  LineChart
+  Line
+  XAxis
+  YAxis
+  CartesianGrid
+  Tooltip
+  Legend
+  ResponsiveContainer
+  ReferenceLine
 } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import { StockPrice, StockPrediction, HistoricalPrediction } from '../types';
@@ -22,55 +22,74 @@ interface StockChartProps {
   historicalPredictions: HistoricalPrediction[];
 }
 
-export default function StockChart({ 
-  priceHistory, 
-  predictions, 
-  historicalPredictions 
+export default function StockChart({
+  priceHistory
+  predictions
+  historicalPredictions
 }: StockChartProps) {
-  
-  // Show loading if no price history data
-  if (!priceHistory || priceHistory.length === 0) {
-    return <ChartLoader />;
-  }
-  
+
   const chartData = useMemo(() => {
-    const dataMap = new Map();
-    
+    // Ensure we have data to work with
+    if (!priceHistory || priceHistory.length === 0) {
+      return [];
+    }
+    const dataMap = new Map(
     // Add historical prices
     priceHistory.forEach(price => {
-      dataMap.set(price.date, {
-        date: price.date,
-        actual: price.close_price,
-      });
-    });
-    
+      if (price.date && price.close_price != null) {
+        dataMap.set(price.date, {
+          date: price.date
+          actual: price.close_price
+        }
+      }
+    }
     // Add historical predictions
-    historicalPredictions.forEach(pred => {
-      const existing = dataMap.get(pred.prediction_date) || { date: pred.prediction_date };
-      dataMap.set(pred.prediction_date, {
-        ...existing,
-        historicalPrediction: pred.predicted_price,
-      });
-    });
-    
-    // Add future predictions
-    predictions.forEach(pred => {
-      const existing = dataMap.get(pred.prediction_date) || { date: pred.prediction_date };
-      dataMap.set(pred.prediction_date, {
-        ...existing,
-        predicted: pred.predicted_price,
-      });
-    });
-    
-    // Convert to array and sort by date
-    return Array.from(dataMap.values()).sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-  }, [priceHistory, predictions, historicalPredictions]);
+    if (Array.isArray(historicalPredictions) && historicalPredictions.length > 0) {
+      historicalPredictions.forEach(pred => {
+        if (pred.prediction_date && pred.predicted_price != null) {
+          const existing = dataMap.get(pred.prediction_date) || { date: pred.prediction_date };
+          dataMap.set(pred.prediction_date, {
+            ...existing
+            historicalPrediction: pred.predicted_price
+          }
+        }
+      }
+    }
 
+    // Add future predictions
+    if (Array.isArray(predictions) && predictions.length > 0) {
+      predictions.forEach(pred => {
+        if (pred.prediction_date && pred.predicted_price != null) {
+          const existing = dataMap.get(pred.prediction_date) || { date: pred.prediction_date };
+          dataMap.set(pred.prediction_date, {
+            ...existing
+            predicted: pred.predicted_price
+          }
+        }
+      }
+    }
+
+    // Convert to array and sort by date
+    const result = Array.from(dataMap.values()).sort((a, b) =>
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    return result;
+  }, [priceHistory, predictions, historicalPredictions]
+  // Show loading if no price history data
+  if (!priceHistory || priceHistory.length === 0) {
+    return (
+      <div className="w-full h-96 flex items-center justify-center">
+        <div className="text-center">
+          <ChartLoader />
+          <p className="mt-4 theme-text-secondary">チャートを読み込み中...</p>
+        </div>
+      </div>
+  }
+    predictions: { type: typeof predictions, isArray: Array.isArray(predictions)
+    historicalPredictions: { type: typeof historicalPredictions, isArray: Array.isArray(historicalPredictions)
+  }
   const formatXAxis = (tickItem: string) => {
     try {
-      return format(parseISO(tickItem), 'MMM yyyy');
+      return format(parseISO(tickItem), 'MMM yyyy'
     } catch {
       return tickItem;
     }
@@ -78,7 +97,7 @@ export default function StockChart({
 
   const formatTooltipLabel = (value: string) => {
     try {
-      return format(parseISO(value), 'MMM dd, yyyy');
+      return format(parseISO(value), 'MMM dd, yyyy'
     } catch {
       return value;
     }
@@ -91,15 +110,14 @@ export default function StockChart({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded shadow-lg">
-          <p className="font-semibold mb-1">{formatTooltipLabel(label)}</p>
+        <div className="theme-card p-3">
+          <p className="font-semibold mb-1 theme-text-primary">{formatTooltipLabel(label)}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }}>
               {entry.name}: ${entry.value?.toFixed(2) || 'N/A'}
             </p>
           ))}
         </div>
-      );
     }
     return null;
   };
@@ -107,23 +125,23 @@ export default function StockChart({
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="w-full h-full bg-white rounded-lg shadow-md p-4">
+    <div className="w-full h-full theme-card p-4">
       <ResponsiveContainer width="100%" height={400}>
         <LineChart
           data={chartData}
           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-          <XAxis 
-            dataKey="date" 
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--theme-border))" />
+          <XAxis
+            dataKey="date"
             tickFormatter={formatXAxis}
-            stroke="#666"
-            style={{ fontSize: '12px' }}
+            stroke="rgb(var(--theme-text-secondary))"
+            className="theme-caption"
           />
-          <YAxis 
+          <YAxis
             tickFormatter={formatYAxis}
-            stroke="#666"
-            style={{ fontSize: '12px' }}
+            stroke="rgb(var(--theme-text-secondary))"
+            className="theme-caption"
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend 
@@ -132,10 +150,10 @@ export default function StockChart({
           />
           
           {/* Reference line for today */}
-          <ReferenceLine 
-            x={today} 
-            stroke="#666" 
-            strokeDasharray="5 5" 
+          <ReferenceLine
+            x={today}
+            stroke="rgb(var(--theme-text-secondary))"
+            strokeDasharray="5 5"
             label={{ value: "Today", position: "top" }}
           />
           
@@ -143,7 +161,7 @@ export default function StockChart({
           <Line
             type="monotone"
             dataKey="actual"
-            stroke="#2563eb"
+            stroke="rgb(var(--theme-primary))"
             strokeWidth={2}
             dot={false}
             name="Actual Price"
@@ -154,7 +172,7 @@ export default function StockChart({
           <Line
             type="monotone"
             dataKey="historicalPrediction"
-            stroke="#dc2626"
+            stroke="rgb(var(--theme-error))"
             strokeWidth={1.5}
             strokeDasharray="5 5"
             dot={false}
@@ -166,7 +184,7 @@ export default function StockChart({
           <Line
             type="monotone"
             dataKey="predicted"
-            stroke="#16a34a"
+            stroke="rgb(var(--theme-success))"
             strokeWidth={2}
             strokeDasharray="3 3"
             dot={false}
@@ -176,20 +194,19 @@ export default function StockChart({
         </LineChart>
       </ResponsiveContainer>
       
-      <div className="mt-4 flex justify-center gap-6 text-sm">
+      <div className="mt-4 flex justify-center gap-6 text-sm theme-text-secondary">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-1 bg-blue-600"></div>
+          <div className="w-4 h-1" style={{ backgroundColor: 'rgb(var(--theme-primary))' }}></div>
           <span>Actual Price</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-1 bg-red-600 border-dashed"></div>
+          <div className="w-4 h-1" style={{ backgroundColor: 'rgb(var(--theme-error))', borderStyle: 'dashed' }}></div>
           <span>Past AI Predictions</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-1 bg-green-600 border-dashed"></div>
+          <div className="w-4 h-1" style={{ backgroundColor: 'rgb(var(--theme-success))', borderStyle: 'dashed' }}></div>
           <span>Future AI Predictions</span>
         </div>
       </div>
     </div>
-  );
 }

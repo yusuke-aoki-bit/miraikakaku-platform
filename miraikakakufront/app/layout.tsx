@@ -1,36 +1,50 @@
 
-'use client';
-
-import type { Metadata } from "next";
-import { Inter, Noto_Sans_JP } from "next/font/google";
-import { useEffect } from "react";
-import { I18nextProvider } from "react-i18next";
-import i18n from "./lib/i18n";
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+import ClientLayout from "./components/ClientLayout";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
-const notoSansJP = Noto_Sans_JP({ 
+const inter = Inter({
   subsets: ["latin"],
-  variable: '--font-noto-sans-jp',
-  display: 'swap',
-});
+  display: 'swap'
+})
+export const metadata: Metadata = {
+  title: "未来価格 - Miraikakaku 次世代AI株価予測プラットフォーム",
+  description: "最先端の機械学習による株価予測と金融分析プラットフォーム",
+  metadataBase: new URL('https://www.miraikakaku.com'),
+  openGraph: {
+    title: 'Miraikakaku - 次世代AI株価予測プラットフォーム'
+    description: '最先端の機械学習による株価予測と金融分析'
+    url: 'https://www.miraikakaku.com'
+    siteName: 'Miraikakaku'
+    locale: 'ja_JP'
+    type: 'website'
+  }
+  twitter: {
+    card: 'summary_large_image'
+    title: 'Miraikakaku - 次世代AI株価予測プラットフォーム'
+    description: '最先端の機械学習による株価予測と金融分析'
+  }
+  robots: {
+    index: true
+    follow: true
+  }
+  icons: {
+    icon: '/favicon.ico'
+  }
+};
 
 export default function RootLayout({
-  children,
+  children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
-      <head>
-        <title>未来価格 - AI株価予測プラットフォーム</title>
-        <meta name="description" content="高度な機械学習モデルに基づくAI株価予測" />
-      </head>
-      <body className={`${inter.className} ${notoSansJP.variable}`}>
-        <I18nextProvider i18n={i18n}>
+    <html lang="ja" className={inter.className}>
+      <body className="antialiased">
+        <ClientLayout>
           {children}
-        </I18nextProvider>
+        </ClientLayout>
       </body>
     </html>
-  );
 }

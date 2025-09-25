@@ -1,0 +1,192 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - button "未来価格" [ref=e6] [cursor=pointer]:
+          - img [ref=e7] [cursor=pointer]
+          - generic [ref=e10] [cursor=pointer]: 未来価格
+        - generic [ref=e11]:
+          - button "監視" [ref=e12] [cursor=pointer]:
+            - img [ref=e13] [cursor=pointer]
+            - generic [ref=e15] [cursor=pointer]: 監視
+          - button "通知" [ref=e17] [cursor=pointer]:
+            - img [ref=e18] [cursor=pointer]
+          - button "ログイン" [ref=e22] [cursor=pointer]:
+            - img [ref=e23] [cursor=pointer]
+            - generic [ref=e26] [cursor=pointer]: ログイン
+          - button "🇯🇵 日本語" [ref=e28] [cursor=pointer]:
+            - img [ref=e29] [cursor=pointer]
+            - generic [ref=e32] [cursor=pointer]: 🇯🇵 日本語
+    - main [ref=e33]:
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - img [ref=e39]
+            - heading "未来価格" [level=1] [ref=e42]:
+              - generic [ref=e43]: 未来価格
+          - paragraph [ref=e44]: 高度な機械学習モデルに基づくAI株価予測
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - img [ref=e50]
+            - 'textbox "株式・企業名・ランキングを検索 (例: AAPL, アップル, 値上がり率)" [ref=e53]'
+            - button [ref=e55] [cursor=pointer]:
+              - img [ref=e56] [cursor=pointer]
+          - button "検索" [ref=e58] [cursor=pointer]:
+            - generic [ref=e59] [cursor=pointer]: 検索
+        - generic [ref=e60]:
+          - heading "人気銘柄" [level=3] [ref=e61]
+          - generic [ref=e62]:
+            - button "AAPL" [ref=e63] [cursor=pointer]
+            - button "MSFT" [ref=e64] [cursor=pointer]
+            - button "GOOGL" [ref=e65] [cursor=pointer]
+            - button "AMZN" [ref=e66] [cursor=pointer]
+            - button "TSLA" [ref=e67] [cursor=pointer]
+            - button "NVDA" [ref=e68] [cursor=pointer]
+            - button "META" [ref=e69] [cursor=pointer]
+            - button "NFLX" [ref=e70] [cursor=pointer]
+        - generic [ref=e71]:
+          - heading "カテゴリー" [level=3] [ref=e72]
+          - generic [ref=e73]:
+            - button "📈 成長株" [ref=e74] [cursor=pointer]:
+              - generic [ref=e75] [cursor=pointer]: 📈
+              - generic [ref=e76] [cursor=pointer]: 成長株
+            - button "💰 高配当株" [ref=e77] [cursor=pointer]:
+              - generic [ref=e78] [cursor=pointer]: 💰
+              - generic [ref=e79] [cursor=pointer]: 高配当株
+            - button "💎 バリュー株" [ref=e80] [cursor=pointer]:
+              - generic [ref=e81] [cursor=pointer]: 💎
+              - generic [ref=e82] [cursor=pointer]: バリュー株
+            - button "🚀 小型株" [ref=e83] [cursor=pointer]:
+              - generic [ref=e84] [cursor=pointer]: 🚀
+              - generic [ref=e85] [cursor=pointer]: 小型株
+            - button "💻 テクノロジー" [ref=e86] [cursor=pointer]:
+              - generic [ref=e87] [cursor=pointer]: 💻
+              - generic [ref=e88] [cursor=pointer]: テクノロジー
+            - button "🏥 ヘルスケア" [ref=e89] [cursor=pointer]:
+              - generic [ref=e90] [cursor=pointer]: 🏥
+              - generic [ref=e91] [cursor=pointer]: ヘルスケア
+            - button "🏦 金融" [ref=e92] [cursor=pointer]:
+              - generic [ref=e93] [cursor=pointer]: 🏦
+              - generic [ref=e94] [cursor=pointer]: 金融
+            - button "⚡ エネルギー" [ref=e95] [cursor=pointer]:
+              - generic [ref=e96] [cursor=pointer]: ⚡
+              - generic [ref=e97] [cursor=pointer]: エネルギー
+        - generic [ref=e98]:
+          - heading "ランキング" [level=3] [ref=e99]
+          - generic [ref=e100]:
+            - button "値上がり率ランキング" [ref=e101] [cursor=pointer]
+            - button "値下がり率ランキング" [ref=e102] [cursor=pointer]
+            - button "出来高ランキング" [ref=e103] [cursor=pointer]
+        - generic [ref=e104]:
+          - heading "日本企業" [level=3] [ref=e105]
+          - generic [ref=e106]:
+            - button "トヨタ" [ref=e107] [cursor=pointer]
+            - button "ソニー" [ref=e108] [cursor=pointer]
+            - button "ソフトバンク" [ref=e109] [cursor=pointer]
+            - button "任天堂" [ref=e110] [cursor=pointer]
+        - generic [ref=e112]:
+          - generic [ref=e113]:
+            - generic [ref=e115]: 🧠
+            - heading "AI予測" [level=3] [ref=e116]
+            - paragraph [ref=e117]: LSTMニューラルネットワークが2年間のデータを分析し、6ヶ月先を予測
+          - generic [ref=e118]:
+            - generic [ref=e120]: 📊
+            - heading "ビジュアル分析" [level=3] [ref=e121]
+            - paragraph [ref=e122]: 過去データ、過去の予測、未来予測を表示するインタラクティブチャート
+          - generic [ref=e123]:
+            - generic [ref=e125]: 🔍
+            - heading "判断要因" [level=3] [ref=e126]
+            - paragraph [ref=e127]: 詳細な要因分析でAI予測の理由を理解
+        - generic [ref=e128]:
+          - heading "システム統計" [level=3] [ref=e129]
+          - generic [ref=e130]:
+            - generic [ref=e131]:
+              - generic [ref=e132]:
+                - img [ref=e134]
+                - generic [ref=e138]:
+                  - generic [ref=e139]: 87.3%
+                  - generic [ref=e140]: 7日間平均
+              - heading "予測精度" [level=3] [ref=e141]
+            - generic [ref=e142]:
+              - generic [ref=e143]:
+                - img [ref=e145]
+                - generic [ref=e148]:
+                  - generic [ref=e149]: 1,247
+                  - generic [ref=e150]: 活発追跡中
+              - heading "分析銘柄数" [level=3] [ref=e151]
+            - generic [ref=e152]:
+              - generic [ref=e153]:
+                - img [ref=e155]
+                - generic [ref=e160]:
+                  - generic [ref=e161]: 2,834
+                  - generic [ref=e162]: 月間アクティブ
+              - heading "ユーザー数" [level=3] [ref=e163]
+            - generic [ref=e164]:
+              - generic [ref=e165]:
+                - img [ref=e167]
+                - generic [ref=e170]:
+                  - generic [ref=e171]: 1.2秒
+                  - generic [ref=e172]: 平均レスポンス
+              - heading "予測処理時間" [level=3] [ref=e173]
+        - generic [ref=e174]:
+          - heading "ランキング" [level=3] [ref=e175]
+          - generic [ref=e176]:
+            - generic [ref=e177]:
+              - generic [ref=e178]:
+                - generic [ref=e179]: 🎯
+                - heading "7日間ベスト予測" [level=4] [ref=e180]
+              - generic [ref=e181]:
+                - generic [ref=e182]: ⚠️
+                - heading "接続エラー" [level=5] [ref=e183]
+                - paragraph [ref=e184]: "HTTP 404: {\"detail\":\"Not Found\"}"
+                - paragraph [ref=e185]: データを表示するにはサーバーとの接続が必要です
+            - generic [ref=e186]:
+              - generic [ref=e187]:
+                - generic [ref=e188]: 🔥
+                - heading "高信頼度予測" [level=4] [ref=e189]
+              - generic [ref=e190]:
+                - generic [ref=e191]: ⚠️
+                - heading "接続エラー" [level=5] [ref=e192]
+                - paragraph [ref=e193]: "HTTP 404: {\"detail\":\"Not Found\"}"
+                - paragraph [ref=e194]: データを表示するにはサーバーとの接続が必要です
+            - generic [ref=e195]:
+              - generic [ref=e196]:
+                - generic [ref=e197]: 📈
+                - heading "30日間ベスト予測" [level=4] [ref=e198]
+              - generic [ref=e199]:
+                - generic [ref=e200]: ⚠️
+                - heading "接続エラー" [level=5] [ref=e201]
+                - paragraph [ref=e202]: "HTTP 404: {\"detail\":\"Not Found\"}"
+                - paragraph [ref=e203]: データを表示するにはサーバーとの接続が必要です
+            - generic [ref=e204]:
+              - generic [ref=e205]:
+                - generic [ref=e206]: ⭐
+                - heading "90日間ベスト予測" [level=4] [ref=e207]
+              - generic [ref=e208]:
+                - generic [ref=e209]: ⚠️
+                - heading "接続エラー" [level=5] [ref=e210]
+                - paragraph [ref=e211]: "HTTP 404: {\"detail\":\"Not Found\"}"
+                - paragraph [ref=e212]: データを表示するにはサーバーとの接続が必要です
+    - contentinfo [ref=e213]:
+      - generic [ref=e214]:
+        - generic [ref=e215]:
+          - button "免責事項" [ref=e216] [cursor=pointer]
+          - button "利用規約" [ref=e217] [cursor=pointer]
+          - button "プライバシーポリシー" [ref=e218] [cursor=pointer]
+        - generic [ref=e219]:
+          - paragraph [ref=e220]: © 2024 未来価格. All rights reserved.
+          - paragraph [ref=e221]: このサイトは投資の助言を行うものではありません。
+    - 'button "システム状態 最終更新: 数秒前 ▼" [ref=e224] [cursor=pointer]':
+      - generic [ref=e225] [cursor=pointer]:
+        - img [ref=e226] [cursor=pointer]
+        - generic [ref=e228] [cursor=pointer]:
+          - generic [ref=e229] [cursor=pointer]: システム状態
+          - generic [ref=e230] [cursor=pointer]: "最終更新: 数秒前"
+      - generic [ref=e231] [cursor=pointer]:
+        - img [ref=e232] [cursor=pointer]
+        - generic [ref=e235] [cursor=pointer]: ▼
+  - alert [ref=e236]
+```

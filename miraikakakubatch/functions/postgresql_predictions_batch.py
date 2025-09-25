@@ -24,7 +24,7 @@ class PostgreSQLPredictionGenerator:
         # PostgreSQL接続設定
         self.db_config = {
             "host": "34.173.9.214",
-            "user": "miraikakaku-user", 
+            "user": "postgres", 
             "password": "miraikakaku2024",
             "database": "miraikakaku",
             "port": 5432

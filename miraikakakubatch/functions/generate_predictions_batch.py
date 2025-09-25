@@ -4,7 +4,8 @@
 stock_predictionsテーブルにデータを投入
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import numpy as np
 import pandas as pd
@@ -16,11 +17,11 @@ from typing import List, Dict
 class PredictionGenerator:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
         
         # 予測に使用する人気銘柄リスト
@@ -42,7 +43,7 @@ class PredictionGenerator:
     
     def connect_db(self):
         """データベース接続"""
-        return pymysql.connect(**self.db_config)
+        return psycopg2.connect(**self.db_config)
     
     def get_latest_price(self, symbol: str) -> Dict:
         """最新価格を取得"""

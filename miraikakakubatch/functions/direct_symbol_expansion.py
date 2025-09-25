@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import pandas as pd
 import logging
@@ -15,11 +16,11 @@ logger = logging.getLogger(__name__)
 class DirectSymbolExpansion:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
         
         # 追加したい高確率成功銘柄リスト
@@ -60,7 +61,7 @@ class DirectSymbolExpansion:
     def check_existing_data(self, symbol):
         """既存データの確認（直接クエリ）"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 cursor.execute("""
                     SELECT COUNT(*) FROM stock_price_history 
@@ -78,7 +79,7 @@ class DirectSymbolExpansion:
     def add_symbol_to_master(self, symbol):
         """銘柄をstock_masterに追加"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 # シンボル情報の推定
                 if symbol.endswith('.T'):
@@ -169,7 +170,7 @@ class DirectSymbolExpansion:
             return 0
             
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 insert_data = []
                 for data in price_data_list:

@@ -7,7 +7,8 @@ Uses Alpha Vantage and Polygon APIs for actual market data
 import os
 import sys
 import requests
-import pymysql
+import psycopg2
+import psycopg2.extras
 import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
@@ -132,7 +133,7 @@ class RealDataCollector:
     def save_stock_data_to_db(self, symbol: str, stock_data: Dict, source: str):
         """Save real stock data to database"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 
                 # Process Alpha Vantage data
@@ -201,7 +202,7 @@ class RealDataCollector:
     def save_forex_data_to_db(self, pair: str, forex_data: Dict):
         """Save real forex data to database"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 
                 # Create forex_rates table if it doesn't exist
@@ -314,7 +315,7 @@ class RealDataCollector:
     def get_active_symbols_from_db(self) -> List[str]:
         """Get active stock symbols from database"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 cursor.execute("""
                     SELECT DISTINCT symbol FROM stock_master 

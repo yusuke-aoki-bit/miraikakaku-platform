@@ -7,33 +7,26 @@ import commonEN from '../../public/locales/en/common.json';
 
 const resources = {
   ja: {
-    common: commonJA,
-  },
+    common: commonJA
+  }
   en: {
-    common: commonEN,
-  },
+    common: commonEN
+  }
 };
 
 i18n
   .use(initReactI18next)
   .init({
-    resources,
+    resources
     lng: 'ja', // default language
-    fallbackLng: 'ja',
-    
+    fallbackLng: 'ja'
+    ns: ['common'], // Explicitly set namespaces
+    defaultNS: 'common'
     interpolation: {
-      escapeValue: false,
-    },
-    
-    defaultNS: 'common',
-    
-    debug: process.env.NODE_ENV === 'development',
-    
+      escapeValue: false
+    }
+    debug: process.env.NODE_ENV === 'development'
     // Force synchronous loading
-    initImmediate: false,
-    
-    // Ensure resources are loaded
-    loadPath: false,
-  });
-
+    initImmediate: false
+  }
 export default i18n;

@@ -49,7 +49,8 @@ try:
     logger.info("PostgreSQL connector available")
 except ImportError:
     POSTGRESQL_AVAILABLE = False
-    logger.warning("PostgreSQL connector not available, will use SQLite only")
+    logger.error("PostgreSQL connector not available - this is required for production")
+    sys.exit(1)
 
 # FastAPI app
 app = FastAPI(

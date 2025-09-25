@@ -1,0 +1,91 @@
+# Centralized Logging Configuration for MiraiKakaku
+# This configuration standardizes logging across all services
+
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  json:
+    (): shared.utils.logger.JSONFormatter
+
+  standard:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+
+  detailed:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(funcName)s:%(lineno)d - %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: json
+    stream: ext://sys.stdout
+
+  file:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: json
+    filename: logs/miraikakaku.log
+    maxBytes: 10485760  # 10MB
+    backupCount: 5
+
+  error_file:
+    class: logging.handlers.RotatingFileHandler
+    level: ERROR
+    formatter: detailed
+    filename: logs/errors.log
+    maxBytes: 5242880   # 5MB
+    backupCount: 3
+
+loggers:
+  # API Service
+  miraikakaku.api:
+    level: INFO
+    handlers: [console, file, error_file]
+    propagate: false
+
+  # Batch Service
+  miraikakaku.batch:
+    level: INFO
+    handlers: [console, file, error_file]
+    propagate: false
+
+  # Database operations
+  miraikakaku.database:
+    level: INFO
+    handlers: [console, file]
+    propagate: false
+
+  # External API calls
+  miraikakaku.external:
+    level: INFO
+    handlers: [console, file]
+    propagate: false
+
+  # ML/AI operations
+  miraikakaku.ml:
+    level: INFO
+    handlers: [console, file]
+    propagate: false
+
+  # Third-party libraries (less verbose)
+  urllib3:
+    level: WARNING
+    handlers: [file]
+    propagate: false
+
+  requests:
+    level: WARNING
+    handlers: [file]
+    propagate: false
+
+  yfinance:
+    level: ERROR
+    handlers: [error_file]
+    propagate: false
+
+root:
+  level: INFO
+  handlers: [console, file]

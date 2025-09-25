@@ -3,7 +3,8 @@
 直接カバレッジ向上システム - コレーション問題完全回避
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import random
 from datetime import datetime, timedelta
 import logging
@@ -14,14 +15,14 @@ logger = logging.getLogger(__name__)
 def boost_coverage_directly():
     """コレーション問題を回避してカバレッジ直接向上"""
     db_config = {
-        "host": "34.58.103.36",
-        "user": "miraikakaku-user",
-        "password": "miraikakaku-secure-pass-2024",
+        "host": "34.173.9.214",
+        "user": "postgres",
+        "password": "miraikakaku-postgres-secure-2024",
         "database": "miraikakaku",
-        "charset": "utf8mb4"
+        "port": 5432
     }
     
-    connection = pymysql.connect(**db_config)
+    connection = psycopg2.connect(**db_config)
     
     try:
         with connection.cursor() as cursor:
@@ -134,14 +135,14 @@ def boost_coverage_directly():
 def fix_data_quality_issues():
     """データ品質問題の修正"""
     db_config = {
-        "host": "34.58.103.36",
-        "user": "miraikakaku-user", 
-        "password": "miraikakaku-secure-pass-2024",
+        "host": "34.173.9.214",
+        "user": "postgres", 
+        "password": "miraikakaku-postgres-secure-2024",
         "database": "miraikakaku",
-        "charset": "utf8mb4"
+        "port": 5432
     }
     
-    connection = pymysql.connect(**db_config)
+    connection = psycopg2.connect(**db_config)
     
     try:
         with connection.cursor() as cursor:

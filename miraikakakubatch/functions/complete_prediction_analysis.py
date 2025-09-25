@@ -3,18 +3,19 @@
 AI予測データの完全分析スクリプト（修正版）
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 from datetime import datetime, timedelta
 
 def main():
     db_config = {
-        "host": "34.58.103.36",
-        "user": "miraikakaku-user", 
-        "password": "miraikakaku-secure-pass-2024",
+        "host": "34.173.9.214",
+        "user": "postgres", 
+        "password": "miraikakaku-postgres-secure-2024",
         "database": "miraikakaku",
     }
     
-    connection = pymysql.connect(**db_config)
+    connection = psycopg2.connect(**db_config)
     
     try:
         with connection.cursor() as cursor:

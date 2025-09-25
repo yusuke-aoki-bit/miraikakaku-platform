@@ -5,7 +5,8 @@
 """
 
 import logging
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import numpy as np
 from datetime import datetime, timedelta
@@ -30,13 +31,13 @@ class BatchDataLoader:
             "user": os.getenv("DB_USER", "miraikakaku-user"),
             "password": os.getenv("DB_PASSWORD", "miraikakaku-secure-pass-2024"),
             "database": os.getenv("DB_NAME", "miraikakaku_prod"),
-            "charset": "utf8mb4",
+            "port": 5432,
         }
 
     def get_connection(self):
         """データベース接続を取得"""
         try:
-            return pymysql.connect(**self.db_config)
+            return psycopg2.connect(**self.db_config)
         except Exception as e:
             logger.error(f"DB接続エラー: {e}")
             raise
@@ -54,7 +55,7 @@ class BatchDataLoader:
                     """
                     SELECT symbol FROM stock_master 
                     WHERE market IN ('NASDAQ', 'NYSE')
-                    AND is_active = 1
+                    AND is_active = true
                     ORDER BY RAND()
                     LIMIT %s
                 """,
@@ -68,7 +69,7 @@ class BatchDataLoader:
                     SELECT symbol FROM stock_master 
                     WHERE country = 'Japan'
                     AND symbol REGEXP '^[0-9]{4}$'
-                    AND is_active = 1
+                    AND is_active = true
                     ORDER BY RAND()
                     LIMIT 20
                 """

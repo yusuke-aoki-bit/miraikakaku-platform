@@ -1,0 +1,69 @@
+# MiraiKakaku Unified Python Dependencies
+# 統一された依存関係管理 - セキュリティとバージョンを統一
+
+# Core Web Framework
+fastapi==0.116.1
+uvicorn==0.35.0
+pydantic==2.10.6
+
+# Database
+sqlalchemy==2.0.42
+psycopg2-binary==2.9.10
+alembic==1.16.4
+
+# Data Processing
+pandas>=2.2.3,<3.0.0
+numpy>=2.1.0,<3.0.0
+scipy>=1.11.0
+
+# Machine Learning
+scikit-learn==1.7.1
+xgboost==2.1.1
+tensorflow>=2.14.0,<3.0.0  # For LSTM models
+
+# Google Cloud Platform
+google-cloud-secret-manager>=2.20.0
+google-cloud-storage>=2.18.0
+google-cloud-aiplatform==1.38.0
+
+# Financial Data APIs
+yfinance==0.2.65
+alpha-vantage==3.0.0
+pandas-datareader==0.10.0
+polygon-api-client>=1.0.0
+
+# HTTP Requests & Async
+httpx>=0.28.1
+aiohttp>=3.9.0
+requests>=2.32.3
+
+# Configuration & Environment
+python-dotenv>=1.0.1
+pyyaml>=6.0.2
+
+# Data Validation & Serialization
+marshmallow>=3.20.0
+cattrs>=23.1.0
+
+# Time & Date
+python-dateutil>=2.8.2
+pytz>=2024.1
+
+# Logging & Monitoring
+structlog>=24.1.0
+sentry-sdk>=2.0.0
+
+# Development & Testing
+pytest>=8.0.0
+pytest-asyncio>=0.24.0
+pytest-cov>=6.0.0
+black>=24.0.0
+flake8>=7.0.0
+mypy>=1.8.0
+
+# Security - Fixed Versions
+cryptography>=42.0.0  # Security fix
+requests>=2.32.3      # Security fix
+
+# Optional Performance
+# uvloop>=0.21.0  # Uncomment for Linux/macOS performance boost

@@ -1,7 +1,17 @@
-yfinance==0.2.18
-pymysql==1.1.0
-pandas==2.0.3
-numpy==1.24.3
+# Google Cloud Functions Framework
+functions-framework==3.5.0
+
+# Database
+psycopg2-binary==2.9.9
+
+# Data Processing (matching API versions)
+pandas==2.1.4
+numpy==1.24.4
+yfinance==0.2.27
+
+# Configuration
+python-dotenv==1.0.0
+
+# Additional dependencies for batch processing
 requests==2.31.0
-pandas-datareader==0.10.0
-lxml==4.9.3
+google-cloud-storage==2.10.0

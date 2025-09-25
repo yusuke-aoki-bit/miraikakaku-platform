@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import pandas as pd
 import logging
@@ -17,17 +18,17 @@ logger = logging.getLogger(__name__)
 class ContinuousExpansionUntil100:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
 
     def get_current_coverage(self):
         """現在のカバー率を取得"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 cursor.execute("SELECT COUNT(*) FROM stock_master WHERE is_active = 1")
                 total = cursor.fetchone()[0]
@@ -50,7 +51,7 @@ class ContinuousExpansionUntil100:
     def get_next_batch_symbols(self, batch_size=100):
         """次のバッチ対象銘柄を取得"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 cursor.execute("""
                     SELECT sm.symbol, sm.name, sm.country, sm.exchange, sm.sector
@@ -152,7 +153,7 @@ class ContinuousExpansionUntil100:
             return 0
             
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 insert_data = []
                 for data in price_data_list:

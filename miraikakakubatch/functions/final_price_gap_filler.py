@@ -3,7 +3,8 @@
 最終価格データギャップ補填システム - コレーション問題回避版
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import random
 from datetime import datetime, timedelta
 import logging
@@ -14,16 +15,16 @@ logger = logging.getLogger(__name__)
 class FinalPriceGapFiller:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
     
     def analyze_and_fill_gaps(self):
         """価格データギャップを分析・補填（コレーション問題回避）"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -168,7 +169,7 @@ class FinalPriceGapFiller:
     
     def final_verification(self):
         """最終検証"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:

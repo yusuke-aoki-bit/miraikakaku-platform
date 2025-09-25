@@ -22,14 +22,18 @@ build/
 dist/
 *.egg-info/
 
-# Environment variables
+# Environment variables (CRITICAL - NEVER COMMIT)
 .env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 */functions/.env
 */functions/.env.local
+miraikakakuapi/.env
+miraikakakubatch/.env
+*/.env
 
 # Logs
 npm-debug.log*
@@ -113,8 +117,18 @@ temp/
 ehthumbs.db
 Thumbs.db
 
-# Google Cloud credentials
+# Google Cloud credentials and secrets (CRITICAL - NEVER COMMIT)
 gcp-service-account.json
+*service-account*.json
+*gcp-key*.json
+key.json
+credentials.json
+secrets/
+*.pem
+*.key
+*.crt
+
+# JSON files (exclude common config files)
 *.json
 !package.json
 !package-lock.json
@@ -122,6 +136,8 @@ gcp-service-account.json
 !next.config.js
 !tailwind.config.js
 !postcss.config.js
+!playwright.config.ts
+!lib/bigquery/schemas/*.json
 
 # Database
 *.db

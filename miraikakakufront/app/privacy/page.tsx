@@ -4,33 +4,32 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function PrivacyPolicyPage() {
-  const router = useRouter();
-
+  const router = useRouter(
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-content-bg">
       <div className="max-w-4xl mx-auto p-4 md:p-8">
         {/* Navigation */}
         <button
           onClick={() => router.push('/')}
-          className="flex items-center text-blue-600 hover:text-blue-800 mb-8 transition-colors"
+          className="flex items-center text-primary hover:text-primary-hover mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           ホームに戻る
         </button>
 
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">プライバシーポリシー</h1>
-          <p className="text-gray-600">
+        <div className="bg-surface rounded-lg shadow-md p-8 mb-8">
+          <h1 className="text-3xl font-bold text-text-primary mb-4">プライバシーポリシー</h1>
+          <p className="text-text-secondary">
             最終更新日：2024年1月1日
           </p>
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-lg shadow-md p-8 space-y-8">
+        <div className="bg-surface rounded-lg shadow-md p-8 space-y-8">
           <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. 個人情報の収集</h2>
-            <div className="prose text-gray-700 space-y-4">
+            <h2 className="text-2xl font-semibold text-text-primary mb-4">1. 個人情報の収集</h2>
+            <div className="prose text-content-text space-y-4">
               <p>
                 未来価格（以下「当サービス」）では、サービスの提供および改善のために、以下の個人情報を収集する場合があります。
               </p>
@@ -45,8 +44,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. 個人情報の利用目的</h2>
-            <div className="prose text-gray-700 space-y-4">
+            <h2 className="text-2xl font-semibold text-text-primary mb-4">2. 個人情報の利用目的</h2>
+            <div className="prose text-content-text space-y-4">
               <p>収集した個人情報は、以下の目的で利用いたします。</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>サービスの提供・運営</li>
@@ -60,8 +59,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">3. 個人情報の第三者提供</h2>
-            <div className="prose text-gray-700 space-y-4">
+            <h2 className="text-2xl font-semibold text-text-primary mb-4">3. 個人情報の第三者提供</h2>
+            <div className="prose text-content-text space-y-4">
               <p>
                 当サービスは、法令に基づく場合を除き、ユーザーの同意なしに個人情報を第三者に提供することはありません。
               </p>
@@ -75,8 +74,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">4. Cookie について</h2>
-            <div className="prose text-gray-700 space-y-4">
+            <h2 className="text-2xl font-semibold text-text-primary mb-4">4. Cookie について</h2>
+            <div className="prose text-content-text space-y-4">
               <p>
                 当サービスでは、ユーザーエクスペリエンスの向上のためにCookieを使用しています。
               </p>
@@ -87,8 +86,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">5. データの保管・セキュリティ</h2>
-            <div className="prose text-gray-700 space-y-4">
+            <h2 className="text-2xl font-semibold text-text-primary mb-4">5. データの保管・セキュリティ</h2>
+            <div className="prose text-content-text space-y-4">
               <p>
                 当サービスは、収集した個人情報の安全性を確保するため、適切なセキュリティ対策を実施しています。
               </p>
@@ -102,8 +101,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">6. ユーザーの権利</h2>
-            <div className="prose text-gray-700 space-y-4">
+            <h2 className="text-2xl font-semibold text-text-primary mb-4">6. ユーザーの権利</h2>
+            <div className="prose text-content-text space-y-4">
               <p>ユーザーは、自身の個人情報について以下の権利を有します。</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>個人情報の開示請求</li>
@@ -118,8 +117,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">7. 本ポリシーの変更</h2>
-            <div className="prose text-gray-700 space-y-4">
+            <h2 className="text-2xl font-semibold text-text-primary mb-4">7. 本ポリシーの変更</h2>
+            <div className="prose text-content-text space-y-4">
               <p>
                 当サービスは、法令の変更や事業内容の変更等により、本プライバシーポリシーを変更する場合があります。
               </p>
@@ -130,12 +129,12 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. お問い合わせ</h2>
-            <div className="prose text-gray-700 space-y-4">
+            <h2 className="text-2xl font-semibold text-text-primary mb-4">8. お問い合わせ</h2>
+            <div className="prose text-content-text space-y-4">
               <p>
                 本プライバシーポリシーに関するお問い合わせは、以下までご連絡ください。
               </p>
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-surface-variant p-4 rounded-lg">
                 <p className="font-semibold">未来価格 サポートチーム</p>
                 <p>メール：privacy@miraikakaku.com</p>
               </div>
@@ -144,10 +143,9 @@ export default function PrivacyPolicyPage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 text-center text-gray-500 text-sm">
+        <div className="mt-12 text-center text-content-text-secondary text-sm">
           <p>© 2024 未来価格. All rights reserved.</p>
         </div>
       </div>
     </div>
-  );
 }

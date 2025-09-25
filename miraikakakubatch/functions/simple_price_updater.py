@@ -3,7 +3,8 @@
 シンプル価格更新システム - 外部API不使用版
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import random
 from datetime import datetime, timedelta
 import logging
@@ -15,16 +16,16 @@ logger = logging.getLogger(__name__)
 class SimplePriceUpdater:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
     
     def update_fresh_prices(self):
         """新鮮な価格データの更新"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -101,7 +102,7 @@ class SimplePriceUpdater:
     
     def fill_missing_recent_data(self):
         """不足している最新データの補填"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -185,7 +186,7 @@ class SimplePriceUpdater:
     
     def verify_freshness_improvement(self):
         """鮮度改善の検証"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:

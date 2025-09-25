@@ -3,7 +3,8 @@
 本格的データ収集システム - 実際の株価データ収集とリアルタイム予測
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -19,16 +20,16 @@ logger = logging.getLogger(__name__)
 class ProductionDataCollector:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "os.getenv('DB_PASSWORD', '')",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
         
     def collect_real_price_data(self, symbols_batch=50):
         """実際の株価データを収集"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -36,9 +37,9 @@ class ProductionDataCollector:
                 
                 # US市場の銘柄を優先取得
                 cursor.execute("""
-                    SELECT symbol, name, market FROM stock_master 
-                    WHERE is_active = 1 AND market = 'US'
-                    ORDER BY symbol 
+                    SELECT symbol, name, market FROM stock_master
+                    WHERE is_active = true AND market = 'US'
+                    ORDER BY symbol
                     LIMIT %s
                 """, (symbols_batch,))
                 
@@ -58,17 +59,17 @@ class ProductionDataCollector:
                             
                             # 実データを挿入
                             cursor.execute("""
-                                INSERT INTO stock_price_history 
-                                (symbol, trade_date, open_price, high_price, low_price, 
+                                INSERT INTO stock_price_history
+                                (symbol, trade_date, open_price, high_price, low_price,
                                  close_price, volume, adjusted_close, is_active, created_at, updated_at)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 1, NOW(), NOW())
-                                ON DUPLICATE KEY UPDATE
-                                open_price = VALUES(open_price),
-                                high_price = VALUES(high_price),
-                                low_price = VALUES(low_price),
-                                close_price = VALUES(close_price),
-                                volume = VALUES(volume),
-                                adjusted_close = VALUES(adjusted_close),
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, true, NOW(), NOW())
+                                ON CONFLICT (symbol, trade_date) DO UPDATE SET
+                                open_price = EXCLUDED.open_price,
+                                high_price = EXCLUDED.high_price,
+                                low_price = EXCLUDED.low_price,
+                                close_price = EXCLUDED.close_price,
+                                volume = EXCLUDED.volume,
+                                adjusted_close = EXCLUDED.adjusted_close,
                                 updated_at = NOW()
                             """, (
                                 symbol,
@@ -107,7 +108,7 @@ class ProductionDataCollector:
     
     def generate_advanced_predictions(self, symbols_count=100):
         """高度な予測モデルによる新しい予測生成"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -212,7 +213,7 @@ class ProductionDataCollector:
     
     def update_model_performance(self):
         """モデル性能データを更新"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -229,16 +230,16 @@ class ProductionDataCollector:
                 
                 for model_type, mae, mse, rmse, accuracy in models_performance:
                     cursor.execute("""
-                        INSERT INTO model_performance 
-                        (model_type, model_version, mae, mse, rmse, accuracy, 
-                         evaluation_start_date, evaluation_end_date, symbols_count, 
+                        INSERT INTO model_performance
+                        (model_type, model_version, mae, mse, rmse, accuracy,
+                         evaluation_start_date, evaluation_end_date, symbols_count,
                          is_active, created_at, updated_at)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
-                        ON DUPLICATE KEY UPDATE
-                        mae = VALUES(mae),
-                        mse = VALUES(mse),
-                        rmse = VALUES(rmse),
-                        accuracy = VALUES(accuracy),
+                        ON CONFLICT (model_type, model_version) DO UPDATE SET
+                        mae = EXCLUDED.mae,
+                        mse = EXCLUDED.mse,
+                        rmse = EXCLUDED.rmse,
+                        accuracy = EXCLUDED.accuracy,
                         updated_at = NOW()
                     """, (
                         model_type, 'v2.0', mae, mse, rmse, accuracy,

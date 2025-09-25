@@ -13,15 +13,28 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "downlevelIteration": true,
+    "target": "es2022",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./app/*"],
+      "@/components/*": ["./app/components/*"],
+      "@/hooks/*": ["./app/hooks/*"],
+      "@/lib/*": ["./app/lib/*"],
+      "@/types/*": ["./app/types/*"]
+    },
+    "baseUrl": "."
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts", "tests/**/*"]
 }

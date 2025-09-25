@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """実データのみを使用した包括的価格データ収集システム"""
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import requests
 import time
@@ -19,11 +20,11 @@ class RealDataCollector:
     def __init__(self):
         # データベース接続設定
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024", 
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024", 
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
         
         # レート制限対応
@@ -32,7 +33,7 @@ class RealDataCollector:
         
     def get_missing_symbols_batch(self, limit=500):
         """実データが不足している銘柄を取得"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         try:
             with connection.cursor() as cursor:
                 # 実データがない銘柄を優先度順に取得
@@ -169,7 +170,7 @@ class RealDataCollector:
         if not price_data_list:
             return 0
             
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         try:
             with connection.cursor() as cursor:
                 insert_data = []

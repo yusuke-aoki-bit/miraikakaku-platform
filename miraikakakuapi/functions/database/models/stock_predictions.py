@@ -3,7 +3,7 @@ from sqlalchemy import (
     Integer,
     String,
     DateTime,
-    Float,
+    Numeric,
     ForeignKey,
     Text,
     Boolean,
@@ -21,16 +21,25 @@ class StockPredictions(Base):
         String(20), ForeignKey("stock_master.symbol"), nullable=False, index=True
     )
     prediction_date = Column(DateTime, nullable=False, index=True)
-    prediction_days = Column(Integer, nullable=False)
-    current_price = Column(Float, nullable=False)
-    predicted_price = Column(Float, nullable=False)
-    confidence_score = Column(Float)
-    prediction_range_low = Column(Float)
-    prediction_range_high = Column(Float)
-    model_version = Column(String(50), default="LSTM_v1.0")
-    model_accuracy = Column(Float)
-    features_used = Column(Text)  # JSON as TEXT
+    target_date = Column(DateTime, nullable=False)
+    predicted_price = Column(Numeric(12, 4), nullable=False)
+    current_price = Column(Numeric(12, 4))  # Current price at time of prediction
+    predicted_change = Column(Numeric(12, 4))  # Absolute change predicted
+    predicted_change_percent = Column(Numeric(8, 4))  # Percentage change predicted
+    confidence_score = Column(Numeric(5, 4))
+    prediction_type = Column(String(50), default="daily")  # 'daily', 'weekly', 'monthly'
+    model_name = Column(String(100), nullable=False)
+    model_version = Column(String(50))
+    model_type = Column(String(50))  # Type of model used
+    features_used = Column(Text)  # JSON形式で使用した特徴量を保存
+    prediction_days = Column(Integer)  # Number of days ahead predicted
+    prediction_horizon = Column(Integer)  # Prediction horizon in days
+    actual_price = Column(Numeric(12, 4))  # 実際の価格（後で更新）
+    accuracy_score = Column(Numeric(5, 4))  # 精度スコア
+    is_validated = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # リレーションシップ
     stock = relationship("StockMaster", back_populates="predictions")

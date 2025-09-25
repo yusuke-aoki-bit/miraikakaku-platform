@@ -1,40 +1,46 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
-# Cloud SQL用システム依存関係をインストール（SQLite削除）
+# システム依存関係をインストール（最小限）
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     libffi-dev \
     libssl-dev \
-    cron \
     curl \
     pkg-config \
-    default-libmysqlclient-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libpq-dev \
+    postgresql-client \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
 
 # Python依存関係をインストール
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # アプリケーションコードをコピー
-COPY functions/ ./
+COPY functions/ ./functions/
+
+# 環境変数
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+
+# エントリーポイントスクリプトを作成
+COPY entrypoint.sh /app/
+RUN chmod +x /app/entrypoint.sh
 
 # 非rootユーザーを作成
 RUN groupadd -r batchuser && useradd -r -g batchuser batchuser
-RUN chown -R batchuser:batchuser /app
-USER batchuser
 
 # ログディレクトリ作成
 RUN mkdir -p /app/logs
 
-# HTTPサーバー用のポートを公開
-EXPOSE 8080
+# 権限設定
+RUN chown -R batchuser:batchuser /app
+USER batchuser
 
-# ヘルスチェック
-HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
-
-# バッチ処理メイン実行 (LSTMモデル版を使用)
-CMD ["python", "simple_batch_main.py"]
+# バッチタイプに応じた実行
+ENTRYPOINT ["/app/entrypoint.sh"]

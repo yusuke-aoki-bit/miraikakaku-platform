@@ -78,8 +78,30 @@ async def websocket_endpoint(websocket: WebSocket):
                 await asyncio.sleep(WebSocketConfig.DEFAULT_UPDATE_INTERVAL)
         else:
             # 本番環境: 実際のデータ取得処理を実装
-            # TODO: 実際の株価APIからデータを取得
+            # 統合APIからデータを取得
+            from ...stock_price_api import get_latest_prices
+
             while True:
+                try:
+                    # 主要銘柄の最新価格を取得
+                    major_symbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'NVDA']
+                    latest_data = await get_latest_prices(major_symbols)
+
+                    for symbol_data in latest_data:
+                        price_update = {
+                            "type": "price_update",
+                            "data": {
+                                "symbol": symbol_data["symbol"],
+                                "price": symbol_data["price"],
+                                "change": symbol_data.get("change", 0),
+                                "change_percent": symbol_data.get("change_percent", 0),
+                                "timestamp": datetime.utcnow().isoformat(),
+                            }
+                        }
+                        await manager.broadcast(json.dumps(price_update))
+                except Exception as e:
+                    logger.error(f"データ取得エラー: {e}")
+
                 await asyncio.sleep(WebSocketConfig.DEFAULT_UPDATE_INTERVAL)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
@@ -106,8 +128,28 @@ async def websocket_symbol_endpoint(websocket: WebSocket, symbol: str):
                 await asyncio.sleep(WebSocketConfig.SYMBOL_UPDATE_INTERVAL)
         else:
             # 本番環境: 銘柄固有の実際データ取得
-            # TODO: 銘柄固有の実際データを取得
+            # 指定銘柄の実際データを取得
+            from ...stock_price_api import get_symbol_price
+
             while True:
+                try:
+                    # 指定銘柄の最新価格を取得
+                    symbol_data = await get_symbol_price(symbol.upper())
+                    if symbol_data:
+                        price_update = {
+                            "type": "price_update",
+                            "data": {
+                                "symbol": symbol.upper(),
+                                "price": symbol_data["price"],
+                                "change": symbol_data.get("change", 0),
+                                "change_percent": symbol_data.get("change_percent", 0),
+                                "timestamp": datetime.utcnow().isoformat(),
+                            }
+                        }
+                        await manager.send_personal_message(json.dumps(price_update), websocket)
+                except Exception as e:
+                    logger.error(f"銘柄 {symbol} データ取得エラー: {e}")
+
                 await asyncio.sleep(WebSocketConfig.SYMBOL_UPDATE_INTERVAL)
     except WebSocketDisconnect:
         manager.disconnect(websocket)

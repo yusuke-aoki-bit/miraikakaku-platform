@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import logging
 import time
@@ -16,17 +17,17 @@ logger = logging.getLogger(__name__)
 class OptimizedRealDataExpansion:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024", 
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024", 
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
 
     def get_missing_symbols_optimized(self, limit=500):
         """価格データ不足銘柄を優先度順で取得"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 # 価格データがない銘柄を優先度順で取得
                 cursor.execute("""
@@ -127,7 +128,7 @@ class OptimizedRealDataExpansion:
             return 0
             
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 insert_data = []
                 for data in price_data_list:

@@ -3,7 +3,8 @@
 リアルタイム価格更新システム - Yahoo Finance API使用
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import logging
 from datetime import datetime, timedelta
@@ -17,16 +18,16 @@ logger = logging.getLogger(__name__)
 class RealtimePriceUpdater:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "os.getenv('DB_PASSWORD', '')",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
     
     def update_realtime_prices(self, batch_size=500, max_symbols=2000):
         """リアルタイム価格更新"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -34,12 +35,12 @@ class RealtimePriceUpdater:
                 
                 # アクティブ銘柄取得（優先度順）
                 cursor.execute("""
-                    SELECT symbol FROM stock_master 
-                    WHERE is_active = 1 
-                    AND symbol LIKE '%.%' = FALSE
-                    ORDER BY 
-                        CASE WHEN symbol RLIKE '^[A-Z]{1,5}$' THEN 1 ELSE 2 END,
-                        CHAR_LENGTH(symbol),
+                    SELECT symbol FROM stock_master
+                    WHERE is_active = true
+                    AND symbol NOT LIKE '%.%'
+                    ORDER BY
+                        CASE WHEN symbol ~ '^[A-Z]{1,5}$' THEN 1 ELSE 2 END,
+                        LENGTH(symbol),
                         symbol
                     LIMIT %s
                 """, (max_symbols,))
@@ -149,15 +150,15 @@ class RealtimePriceUpdater:
                 ))
             
             cursor.executemany("""
-                INSERT INTO stock_price_history 
+                INSERT INTO stock_price_history
                 (symbol, date, open_price, high_price, low_price, close_price, volume, updated_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
-                ON DUPLICATE KEY UPDATE
-                open_price = VALUES(open_price),
-                high_price = VALUES(high_price),
-                low_price = VALUES(low_price), 
-                close_price = VALUES(close_price),
-                volume = VALUES(volume),
+                ON CONFLICT (symbol, date) DO UPDATE SET
+                open_price = EXCLUDED.open_price,
+                high_price = EXCLUDED.high_price,
+                low_price = EXCLUDED.low_price,
+                close_price = EXCLUDED.close_price,
+                volume = EXCLUDED.volume,
                 updated_at = NOW()
             """, insert_data)
             
@@ -166,7 +167,7 @@ class RealtimePriceUpdater:
     
     def update_missing_symbols_only(self):
         """価格データが不足している銘柄のみ更新"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -174,12 +175,12 @@ class RealtimePriceUpdater:
                 
                 # 価格データが古いか存在しない銘柄を特定
                 cursor.execute("""
-                    SELECT DISTINCT sm.symbol 
+                    SELECT DISTINCT sm.symbol
                     FROM stock_master sm
                     LEFT JOIN stock_price_history ph ON sm.symbol = ph.symbol
-                    WHERE sm.is_active = 1 
-                    AND (ph.symbol IS NULL OR ph.date < DATE_SUB(CURDATE(), INTERVAL 3 DAY))
-                    AND sm.symbol RLIKE '^[A-Z]{1,5}$'
+                    WHERE sm.is_active = true
+                    AND (ph.symbol IS NULL OR ph.date < CURRENT_DATE - INTERVAL '3 days')
+                    AND sm.symbol ~ '^[A-Z]{1,5}$'
                     ORDER BY sm.symbol
                     LIMIT 1000
                 """)
@@ -219,26 +220,26 @@ class RealtimePriceUpdater:
     
     def verify_update_results(self):
         """更新結果の検証"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
                 # 今日更新されたデータ
                 cursor.execute("""
-                    SELECT COUNT(DISTINCT symbol) FROM stock_price_history 
-                    WHERE date = CURDATE()
+                    SELECT COUNT(DISTINCT symbol) FROM stock_price_history
+                    WHERE date = CURRENT_DATE
                 """)
                 today_updated = cursor.fetchone()[0]
                 
                 # 直近3日以内のデータがある銘柄
                 cursor.execute("""
-                    SELECT COUNT(DISTINCT symbol) FROM stock_price_history 
-                    WHERE date >= DATE_SUB(CURDATE(), INTERVAL 3 DAY)
+                    SELECT COUNT(DISTINCT symbol) FROM stock_price_history
+                    WHERE date >= CURRENT_DATE - INTERVAL '3 days'
                 """)
                 recent_updated = cursor.fetchone()[0]
                 
                 # 総銘柄数
-                cursor.execute("SELECT COUNT(*) FROM stock_master WHERE is_active = 1")
+                cursor.execute("SELECT COUNT(*) FROM stock_master WHERE is_active = true")
                 total_symbols = cursor.fetchone()[0]
                 
                 fresh_rate = (recent_updated / total_symbols) * 100

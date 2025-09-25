@@ -12,9 +12,11 @@ import json
 import sqlalchemy
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import NullPool, QueuePool
 from google.cloud.sql.connector import Connector
 import pandas as pd
+
+from .secure_config import get_secure_db_config, get_secure_database_url
 
 logger = logging.getLogger(__name__)
 
@@ -31,34 +33,68 @@ class CloudSQLManager:
     def _initialize_connection(self):
         """データベース接続を初期化"""
         try:
-            # Cloud SQL接続情報
-            project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "pricewise-huqkr")
-            region = os.getenv("CLOUD_SQL_REGION", "us-central1")
-            instance_name = os.getenv("CLOUD_SQL_INSTANCE", "miraikakaku-postgres")
-            database_name = os.getenv("CLOUD_SQL_DATABASE", "miraikakaku_prod")
-            db_user = os.getenv("CLOUD_SQL_USER", "root")
-            db_password = os.getenv("CLOUD_SQL_PASSWORD", "miraikakaku2025")
+            # 環境変数から接続情報取得
+            database_url = os.getenv("DATABASE_URL")
 
-            # Cloud SQL Connectorを使用
-            self.connector = Connector()
-
-            def get_conn():
-                conn = self.connector.connect(
-                    f"{project_id}:{region}:{instance_name}",
-                    "pg8000",
-                    user=db_user,
-                    password=db_password,
-                    db=database_name,
+            if database_url:
+                # DATABASE_URLが設定されている場合は直接接続を試行
+                logger.info("Using DATABASE_URL for direct connection")
+                self.engine = create_engine(
+                    database_url,
+                    poolclass=QueuePool,
+                    pool_size=10,
+                    max_overflow=20,
+                    pool_timeout=30,
+                    pool_recycle=3600,
+                    pool_pre_ping=True,
+                    echo=False,
                 )
-                return conn
+            else:
+                # Secure Config使用（Secret Manager統合）
+                try:
+                    secure_db_url = get_secure_database_url()
+                    logger.info("Using secure database configuration from Secret Manager")
+                    self.engine = create_engine(
+                        secure_db_url,
+                        poolclass=QueuePool,
+                        pool_size=10,
+                        max_overflow=20,
+                        pool_timeout=30,
+                        pool_recycle=3600,
+                        pool_pre_ping=True,
+                        echo=False,
+                    )
+                except Exception as secure_error:
+                    logger.warning(f"Secure config failed, falling back to legacy method: {secure_error}")
 
-            # SQLAlchemy エンジンの作成
-            self.engine = create_engine(
-                "postgresql+pg8000://",
-                creator=get_conn,
-                poolclass=NullPool,  # Cloud Runでは接続プールを無効化
-                echo=False,
-            )
+                    # Legacy Cloud SQL Connector（フォールバック）
+                    project_id = os.getenv("GCP_PROJECT_ID", os.getenv("GOOGLE_CLOUD_PROJECT", "pricewise-huqkr"))
+                    region = os.getenv("CLOUD_SQL_REGION", "us-central1")
+                    instance_name = os.getenv("CLOUD_SQL_INSTANCE", "miraikakaku")
+                    database_name = os.getenv("POSTGRES_DATABASE", os.getenv("CLOUD_SQL_DATABASE", "miraikakaku"))
+                    db_user = os.getenv("POSTGRES_USER", os.getenv("CLOUD_SQL_USER", "postgres"))
+                    db_password = os.getenv("POSTGRES_PASSWORD", os.getenv("CLOUD_SQL_PASSWORD", "miraikakaku-postgres-secure-2024"))
+
+                    # Cloud SQL Connectorを使用
+                    self.connector = Connector()
+
+                    def get_conn():
+                        conn = self.connector.connect(
+                            f"{project_id}:{region}:{instance_name}-postgres",
+                            "pg8000",
+                            user=db_user,
+                            password=db_password,
+                            db=database_name,
+                        )
+                        return conn
+
+                    # SQLAlchemy エンジンの作成
+                    self.engine = create_engine(
+                        "postgresql+pg8000://",
+                        creator=get_conn,
+                        poolclass=NullPool,  # Cloud Runでは接続プールを無効化
+                        echo=False,
+                    )
 
             # セッションファクトリー作成
             self.SessionLocal = sessionmaker(
@@ -71,18 +107,8 @@ class CloudSQLManager:
                 logger.info("Cloud SQL connection established successfully")
 
         except Exception as e:
-            logger.error(f"Failed to connect to Cloud SQL: {e}")
-            # フォールバック: SQLite接続
-            self._fallback_to_sqlite()
-
-    def _fallback_to_sqlite(self):
-        """SQLiteへのフォールバック"""
-        logger.warning("Falling back to SQLite database")
-        sqlite_path = os.getenv("SQLITE_PATH", "/tmp/miraikakaku.db")
-        self.engine = create_engine(f"sqlite:///{sqlite_path}")
-        self.SessionLocal = sessionmaker(
-            autocommit=False, autoflush=False, bind=self.engine
-        )
+            logger.error(f"Failed to connect to PostgreSQL Cloud SQL: {e}")
+            raise Exception(f"PostgreSQL接続に失敗しました: {e}")
 
     def get_session(self) -> Session:
         """データベースセッション取得"""

@@ -10,7 +10,14 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:ci": "playwright test --config=playwright.config.ci.ts",
+    "test:e2e:smoke": "playwright test --config=playwright.config.ci.ts --grep=\"smoke test\"",
+    "test:e2e:core": "playwright test --config=playwright.config.ci.ts --grep=\"Core Application\"",
+    "test:e2e:api": "playwright test --config=playwright.config.ci.ts --grep=\"API Integration\"",
+    "test:e2e:performance": "playwright test --config=playwright.config.ci.ts --grep=\"Performance\"",
+    "test:e2e:mobile": "playwright test --config=playwright.config.ci.ts --project=mobile-chrome",
+    "test:e2e:enhanced": "playwright test tests/e2e/enhanced-automated-suite.spec.ts"
   },
   "dependencies": {
     "autoprefixer": "^10.4.21",
@@ -18,7 +25,7 @@
     "date-fns": "^4.1.0",
     "i18next": "^25.4.2",
     "lucide-react": "^0.542.0",
-    "next": "14.2.3",
+    "next": "^14.2.33",
     "next-i18next": "^15.4.2",
     "react": "^18",
     "react-dom": "^18",
@@ -26,7 +33,7 @@
     "recharts": "^3.1.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0",
+    "@playwright/test": "^1.55.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

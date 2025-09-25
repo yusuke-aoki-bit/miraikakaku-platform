@@ -1,29 +1,12 @@
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* YouTube Music Dark Theme */
-:root {
-  --yt-music-bg: #030303;
-  --yt-music-surface: #0f0f0f;
-  --yt-music-surface-variant: #1a1a1a;
-  --yt-music-surface-hover: #272727;
-  --yt-music-primary: #ff0000;
-  --yt-music-primary-hover: #cc0000;
-  --yt-music-secondary: #f1f1f1;
-  --yt-music-text-primary: #f1f1f1;
-  --yt-music-text-secondary: #aaaaaa;
-  --yt-music-text-disabled: #717171;
-  --yt-music-border: #333333;
-  --yt-music-accent: #3ea6ff;
-}
+/* Import Theme Framework */
+@import './styles/theme-framework.css';
 
 /* Dark theme styles */
 body {
-  font-family: var(--font-noto-sans-jp), 'Roboto', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  background-color: var(--yt-music-bg);
-  color: var(--yt-music-text-primary);
+  font-family: 'Roboto', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  background-color: rgb(3 3 3);
+  color: rgb(241 241 241);
 }
 
 /* Custom scrollbar */
@@ -32,21 +15,148 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--yt-music-surface);
+  background: rgb(var(--theme-bg-secondary));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--yt-music-border);
+  background: rgb(var(--theme-border));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--yt-music-text-disabled);
+  background: rgb(var(--theme-text-disabled));
 }
 
 /* Glass morphism effect */
 .glass-effect {
-  background: rgba(15, 15, 15, 0.8);
+  background: rgb(var(--theme-bg-secondary) / 0.8);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(var(--theme-border) / 0.3);
+}
+
+/* Skeleton loading animations */
+@keyframes skeleton-wave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-animate {
+  animation: skeleton-wave 1.5s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--theme-bg-tertiary)) 25%,
+    rgb(var(--theme-bg-hover)) 50%,
+    rgb(var(--theme-bg-tertiary)) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* Fade-in animation for progressive content */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Enhanced UI animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Enhanced card hover effects */
+.enhanced-card {
+  background: linear-gradient(135deg, rgb(var(--theme-bg-secondary)) 0%, rgb(var(--theme-bg-tertiary)) 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgb(var(--theme-border) / 0.5);
+}
+
+.enhanced-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgb(0 0 0 / 0.15);
+}
+
+/* Modern gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+  background-size: 200% 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-flow 3s ease infinite;
+}
+
+@keyframes gradient-flow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Skeleton loading shimmer effect (alternative) */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: shimmer 1.5s ease-in-out infinite;
 }

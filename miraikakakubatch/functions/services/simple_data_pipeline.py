@@ -5,7 +5,8 @@
 """
 
 import logging
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
@@ -20,15 +21,15 @@ logger = logging.getLogger(__name__)
 class SimpleDataPipelineService:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
         }
 
     def get_connection(self):
         """データベース接続を取得"""
-        return pymysql.connect(**self.db_config)
+        return psycopg2.connect(**self.db_config)
 
     def get_active_symbols(self):
         """アクティブな銘柄リストを取得"""

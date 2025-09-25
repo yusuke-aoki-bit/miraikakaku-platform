@@ -1,6 +1,6 @@
 """
-Cloud SQL専用データベース設定（Batchサービス用）
-SQLiteフォールバックなし
+PostgreSQL Cloud SQL専用データベース設定（Batchサービス用）
+SQLiteフォールバックなし、MySQL廃止
 """
 
 import os
@@ -9,7 +9,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import NullPool
 from dotenv import load_dotenv
-import pymysql
+from google.cloud.sql.connector import Connector
+import pg8000
 
 load_dotenv()
 
@@ -20,38 +21,44 @@ Base = declarative_base()
 
 
 class CloudSQLConnection:
-    """Cloud SQL専用接続マネージャー（Batch用）"""
+    """PostgreSQL Cloud SQL専用接続マネージャー（Batch用）"""
 
     def __init__(self):
+        self.connector = None
         self.engine = None
         self.SessionLocal = None
         self._initialize_connection()
 
     def _initialize_connection(self):
-        """Cloud SQL接続の初期化"""
+        """PostgreSQL Cloud SQL接続の初期化"""
         try:
-            # 環境変数から接続情報取得
-            if os.getenv("GAE_ENV", "").startswith("standard"):
-                # App Engine本番環境
-                unix_socket = f"/cloudsql/{os.environ['CLOUD_SQL_CONNECTION_NAME']}"
-                connection_string = (
-                    f"mysql+pymysql://root:{os.environ['CLOUD_SQL_PASSWORD']}@/"
-                    f"miraikakaku_prod?unix_socket={unix_socket}"
-                )
-            else:
-                # ローカル開発環境 or Cloud Run
-                host = os.getenv("CLOUD_SQL_HOST", "34.58.103.36")
-                password = os.getenv("CLOUD_SQL_PASSWORD", "Yuuku717")
-                connection_string = (
-                    f"mysql+pymysql://root:{password}@{host}:3306/miraikakaku_prod"
-                )
+            # PostgreSQL接続情報
+            project_id = os.getenv("GCP_PROJECT_ID", "pricewise-huqkr")
+            region = os.getenv("CLOUD_SQL_REGION", "us-central1")
+            instance_name = os.getenv("CLOUD_SQL_INSTANCE", "miraikakaku-postgres")
+            database_name = os.getenv("POSTGRES_DATABASE", "miraikakaku")
+            db_user = os.getenv("POSTGRES_USER", "postgres")
+            db_password = os.getenv("POSTGRES_PASSWORD", "miraikakaku-postgres-secure-2024")
 
-            # エンジン作成
+            # Cloud SQL Connectorを使用
+            self.connector = Connector()
+
+            def get_conn():
+                conn = self.connector.connect(
+                    f"{project_id}:{region}:{instance_name}",
+                    "pg8000",
+                    user=db_user,
+                    password=db_password,
+                    db=database_name,
+                )
+                return conn
+
+            # PostgreSQL SQLAlchemy エンジンの作成
             self.engine = create_engine(
-                connection_string,
+                "postgresql+pg8000://",
+                creator=get_conn,
                 poolclass=NullPool,  # Cloud SQLでは接続プールを無効化
                 echo=os.getenv("LOG_LEVEL") == "DEBUG",
-                connect_args={"connect_timeout": 30, "charset": "utf8mb4"},
             )
 
             # セッション作成
@@ -62,11 +69,11 @@ class CloudSQLConnection:
             # 接続テスト
             with self.engine.connect() as conn:
                 result = conn.execute(text("SELECT 1"))
-                logger.info("✅ Batch: Cloud SQL接続成功")
+                logger.info("✅ Batch: PostgreSQL Cloud SQL接続成功")
 
         except Exception as e:
-            logger.error(f"❌ Batch: Cloud SQL接続エラー: {e}")
-            raise Exception(f"Cloud SQLへの接続に失敗しました: {e}")
+            logger.error(f"❌ Batch: PostgreSQL Cloud SQL接続エラー: {e}")
+            raise Exception(f"PostgreSQL Cloud SQLへの接続に失敗しました: {e}")
 
     def get_session(self):
         """データベースセッション取得"""
@@ -115,6 +122,11 @@ class CloudSQLConnection:
         """銘柄数取得"""
         result = self.execute_query("SELECT COUNT(*) FROM stock_master")
         return result.scalar()
+
+    def close_connection(self):
+        """接続をクローズ"""
+        if self.connector:
+            self.connector.close()
 
 
 # グローバルインスタンス

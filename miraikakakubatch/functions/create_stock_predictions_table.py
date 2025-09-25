@@ -4,15 +4,16 @@ stock_predictionsテーブルの作成
 株価予測データを格納するためのテーブル構造を定義・作成
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 from datetime import datetime
 
 db_config = {
-    "host": "34.58.103.36",
-    "user": "miraikakaku-user",
-    "password": "miraikakaku-secure-pass-2024",
+    "host": "34.173.9.214",
+    "user": "postgres",
+    "password": "miraikakaku-postgres-secure-2024",
     "database": "miraikakaku",
-    "charset": "utf8mb4"
+    "port": 5432
 }
 
 def create_stock_predictions_table():
@@ -73,7 +74,7 @@ def create_stock_predictions_table():
     """
     
     try:
-        connection = pymysql.connect(**db_config)
+        connection = psycopg2.connect(**db_config)
         
         with connection.cursor() as cursor:
             print("📊 stock_predictionsテーブルを作成中...")
@@ -148,7 +149,7 @@ def create_prediction_accuracy_view():
     """
     
     try:
-        connection = pymysql.connect(**db_config)
+        connection = psycopg2.connect(**db_config)
         
         with connection.cursor() as cursor:
             cursor.execute(view_sql)

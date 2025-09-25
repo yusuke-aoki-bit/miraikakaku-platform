@@ -3,7 +3,8 @@
 シンプル補填システム - テーブル構造に合わせた安全な補填
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import random
 from datetime import datetime, timedelta
 import logging
@@ -14,16 +15,16 @@ logger = logging.getLogger(__name__)
 class SimpleGapFiller:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
     
     def fill_financial_news_simple(self):
         """ニュースデータの簡易補填"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -100,7 +101,7 @@ class SimpleGapFiller:
     
     def fill_company_info_simple(self):
         """企業情報の簡易補填"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -159,7 +160,7 @@ class SimpleGapFiller:
     
     def fill_prediction_history_simple(self):
         """予測履歴の簡易補填"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import pandas as pd
 import logging
@@ -16,11 +17,11 @@ logger = logging.getLogger(__name__)
 class TurboReliableExpansion:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
         
         # 超高確率成功銘柄（Fortune 500 + 主要インデックス）
@@ -65,7 +66,7 @@ class TurboReliableExpansion:
     def get_missing_turbo_symbols(self):
         """ターボ銘柄の未取得リストを作成"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 # 既存のyfinanceデータがある銘柄を取得
                 cursor.execute("""
@@ -141,7 +142,7 @@ class TurboReliableExpansion:
     def turbo_add_to_master(self, symbols_batch):
         """ターボ銘柄一括master追加"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 insert_data = []
                 for symbol in symbols_batch:
@@ -178,7 +179,7 @@ class TurboReliableExpansion:
             return 0
             
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 insert_data = []
                 for data in all_price_data:

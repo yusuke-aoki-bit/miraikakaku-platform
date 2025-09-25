@@ -1,0 +1,414 @@
+/* Theme Framework - Tailwind CSS + Custom Properties */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base Theme Variables */
+@layer base {
+  :root {
+    /* Dark Theme - YouTube Music Style */
+    --theme-bg-primary: 3 3 3;           /* #030303 */
+    --theme-bg-secondary: 15 15 15;      /* #0f0f0f */
+    --theme-bg-tertiary: 26 26 26;       /* #1a1a1a */
+    --theme-bg-hover: 33 33 33;          /* #212121 */
+
+    --theme-text-primary: 241 241 241;   /* #f1f1f1 */
+    --theme-text-secondary: 170 170 170; /* #aaaaaa */
+    --theme-text-disabled: 113 113 113;  /* #717171 */
+
+    --theme-primary: 62 166 255;         /* #3ea6ff */
+    --theme-primary-hover: 102 184 255;  /* #66b8ff */
+    --theme-accent: 244 67 54;           /* #f44336 */
+
+    --theme-border: 48 48 48;            /* #303030 */
+    --theme-border-hover: 64 64 64;      /* #404040 */
+
+    --theme-success: 76 175 80;          /* #4caf50 */
+    --theme-error: 244 67 54;            /* #f44336 */
+    --theme-warning: 255 152 0;          /* #ff9800 */
+    --theme-info: 33 150 243;            /* #2196f3 */
+
+    /* Shadows */
+    --theme-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --theme-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    --theme-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+
+    /* Transitions */
+    --theme-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Custom Tailwind Components */
+@layer components {
+  /* Layout Components */
+  .theme-page {
+    @apply min-h-screen p-4;
+    background-color: rgb(var(--theme-bg-primary));
+  }
+
+  .theme-container {
+    @apply max-w-6xl mx-auto;
+  }
+
+  .theme-section {
+    @apply rounded-lg p-6 mb-6;
+    background-color: rgb(var(--theme-bg-tertiary));
+    border: 1px solid rgb(var(--theme-border));
+    box-shadow: var(--theme-shadow-sm);
+  }
+
+  .theme-card {
+    @apply rounded-lg p-4 transition-all duration-200 hover:scale-[1.01];
+    background-color: rgb(var(--theme-bg-secondary));
+    border: 1px solid rgb(var(--theme-border));
+    box-shadow: var(--theme-shadow-sm);
+  }
+
+  .theme-card:hover {
+    background-color: rgb(var(--theme-bg-hover));
+    border-color: rgb(var(--theme-primary));
+    box-shadow: var(--theme-shadow-md);
+  }
+
+  /* Text Components */
+  .theme-text-primary {
+    color: rgb(var(--theme-text-primary));
+  }
+
+  .theme-text-secondary {
+    color: rgb(var(--theme-text-secondary));
+  }
+
+  .theme-text-disabled {
+    color: rgb(var(--theme-text-disabled));
+  }
+
+  .theme-heading-xl {
+    @apply text-3xl font-bold theme-text-primary;
+  }
+
+  .theme-heading-lg {
+    @apply text-2xl font-bold theme-text-primary;
+  }
+
+  .theme-heading-md {
+    @apply text-xl font-bold theme-text-primary;
+  }
+
+  .theme-heading-sm {
+    @apply text-lg font-semibold theme-text-primary;
+  }
+
+  .theme-body {
+    @apply text-base theme-text-primary;
+  }
+
+  .theme-caption {
+    @apply text-sm theme-text-secondary;
+  }
+
+  /* Button Components */
+  .theme-btn-primary {
+    @apply px-4 py-2 rounded font-medium transition-all duration-200;
+    background-color: rgb(var(--theme-primary));
+    color: white;
+  }
+
+  .theme-btn-primary:hover {
+    background-color: rgb(var(--theme-primary-hover));
+    transform: translateY(-1px);
+    box-shadow: var(--theme-shadow-md);
+  }
+
+  .theme-btn-secondary {
+    @apply px-4 py-2 rounded font-medium transition-all duration-200;
+    background-color: rgb(var(--theme-bg-secondary));
+    border: 1px solid rgb(var(--theme-border));
+    color: rgb(var(--theme-text-primary));
+  }
+
+  .theme-btn-secondary:hover {
+    background-color: rgb(var(--theme-bg-hover));
+    border-color: rgb(var(--theme-primary));
+  }
+
+  .theme-btn-ghost {
+    @apply px-4 py-2 rounded font-medium transition-all duration-200;
+    color: rgb(var(--theme-text-primary));
+  }
+
+  .theme-btn-ghost:hover {
+    background-color: rgb(var(--theme-bg-hover));
+  }
+
+  /* Input Components */
+  .theme-input {
+    @apply w-full px-4 py-3 rounded-lg border transition-all duration-200;
+    background-color: rgb(var(--theme-bg-secondary));
+    border-color: rgb(var(--theme-border));
+    color: rgb(var(--theme-text-primary));
+  }
+
+  .theme-input:focus {
+    outline: none;
+    border-color: rgb(var(--theme-primary));
+    box-shadow: 0 0 0 3px rgb(var(--theme-primary) / 0.1);
+  }
+
+  .theme-input::placeholder {
+    color: rgb(var(--theme-text-secondary));
+  }
+
+  /* Table Components */
+  .theme-table {
+    @apply w-full;
+  }
+
+  .theme-table-header {
+    border-bottom: 1px solid rgb(var(--theme-border));
+  }
+
+  .theme-table-header th {
+    @apply px-6 py-3 text-left text-xs font-medium uppercase tracking-wider;
+    color: rgb(var(--theme-text-secondary));
+  }
+
+  .theme-table-row {
+    border-bottom: 1px solid rgb(var(--theme-border));
+    transition: var(--theme-transition);
+  }
+
+  .theme-table-row:nth-child(even) {
+    background-color: rgb(var(--theme-bg-secondary));
+  }
+
+  .theme-table-row:nth-child(odd) {
+    background-color: rgb(var(--theme-bg-tertiary));
+  }
+
+  .theme-table-row:hover {
+    background-color: rgb(var(--theme-bg-hover));
+  }
+
+  .theme-table-cell {
+    @apply px-6 py-4 whitespace-nowrap text-sm;
+    color: rgb(var(--theme-text-primary));
+  }
+
+  /* Status Components */
+  .theme-status-success {
+    color: rgb(var(--theme-success));
+  }
+
+  .theme-status-error {
+    color: rgb(var(--theme-error));
+  }
+
+  .theme-status-warning {
+    color: rgb(var(--theme-warning));
+  }
+
+  .theme-status-info {
+    color: rgb(var(--theme-info));
+  }
+
+  .theme-badge-success {
+    @apply px-3 py-1 rounded-full text-sm font-medium;
+    background-color: rgb(var(--theme-success) / 0.1);
+    color: rgb(var(--theme-success));
+    border: 1px solid rgb(var(--theme-success) / 0.3);
+  }
+
+  .theme-badge-error {
+    @apply px-3 py-1 rounded-full text-sm font-medium;
+    background-color: rgb(var(--theme-error) / 0.1);
+    color: rgb(var(--theme-error));
+    border: 1px solid rgb(var(--theme-error) / 0.3);
+  }
+
+  .theme-badge-warning {
+    @apply px-3 py-1 rounded-full text-sm font-medium;
+    background-color: rgb(var(--theme-warning) / 0.1);
+    color: rgb(var(--theme-warning));
+    border: 1px solid rgb(var(--theme-warning) / 0.3);
+  }
+
+  .theme-badge-info {
+    @apply px-3 py-1 rounded-full text-sm font-medium;
+    background-color: rgb(var(--theme-info) / 0.1);
+    color: rgb(var(--theme-info));
+    border: 1px solid rgb(var(--theme-info) / 0.3);
+  }
+
+  /* Loading Components */
+  .theme-spinner {
+    @apply animate-spin rounded-full border-b-2;
+    border-color: rgb(var(--theme-primary));
+  }
+
+  .theme-skeleton {
+    @apply animate-pulse rounded;
+    background-color: rgb(var(--theme-bg-hover));
+  }
+
+  /* Chart Components */
+  .theme-chart-container {
+    @apply theme-section;
+  }
+
+  .theme-chart-grid {
+    stroke: rgb(var(--theme-border));
+    stroke-width: 1;
+  }
+
+  .theme-chart-line-actual {
+    stroke: rgb(var(--theme-primary));
+    stroke-width: 2;
+    fill: none;
+  }
+
+  .theme-chart-line-predicted {
+    stroke: rgb(var(--theme-accent));
+    stroke-width: 2;
+    stroke-dasharray: 5,5;
+    fill: none;
+  }
+
+  /* Ranking Components */
+  .theme-ranking-card {
+    @apply theme-card mb-4;
+  }
+
+  .theme-ranking-number {
+    @apply font-mono font-bold text-xl w-8 text-center flex-shrink-0;
+    color: rgb(var(--theme-primary));
+  }
+
+  .theme-ranking-symbol {
+    @apply theme-caption;
+  }
+
+  .theme-ranking-company {
+    @apply font-bold text-lg block truncate theme-text-primary;
+  }
+
+  .theme-ranking-price {
+    @apply font-semibold text-base theme-text-primary;
+  }
+
+  .theme-ranking-change-positive {
+    @apply flex items-center text-xl font-bold;
+    color: rgb(var(--theme-success));
+  }
+
+  .theme-ranking-change-negative {
+    @apply flex items-center text-xl font-bold;
+    color: rgb(var(--theme-error));
+  }
+
+  /* Stock Detail Components */
+  .theme-stock-header {
+    @apply theme-section;
+  }
+
+  .theme-stock-metrics {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6;
+  }
+
+  .theme-stock-metric-card {
+    @apply theme-card;
+  }
+
+  .theme-stock-metric-icon {
+    @apply w-5 h-5 mr-2;
+    color: rgb(var(--theme-primary));
+  }
+
+  .theme-stock-metric-label {
+    @apply text-sm theme-text-secondary;
+  }
+
+  .theme-stock-metric-value {
+    @apply text-lg font-bold theme-text-primary;
+  }
+
+  /* Alert Components */
+  .theme-alert {
+    @apply rounded-lg p-4 mb-4;
+  }
+
+  .theme-alert-success {
+    @apply theme-alert;
+    background-color: rgb(var(--theme-success) / 0.1);
+    border: 1px solid rgb(var(--theme-success) / 0.3);
+    color: rgb(var(--theme-success));
+  }
+
+  .theme-alert-error {
+    @apply theme-alert;
+    background-color: rgb(var(--theme-error) / 0.1);
+    border: 1px solid rgb(var(--theme-error) / 0.3);
+    color: rgb(var(--theme-error));
+  }
+
+  .theme-alert-warning {
+    @apply theme-alert;
+    background-color: rgb(var(--theme-warning) / 0.1);
+    border: 1px solid rgb(var(--theme-warning) / 0.3);
+    color: rgb(var(--theme-warning));
+  }
+
+  .theme-alert-info {
+    @apply theme-alert;
+    background-color: rgb(var(--theme-info) / 0.1);
+    border: 1px solid rgb(var(--theme-info) / 0.3);
+    color: rgb(var(--theme-info));
+  }
+}
+
+/* Utility Classes */
+@layer utilities {
+  .theme-border-primary {
+    border-color: rgb(var(--theme-border));
+  }
+
+  .theme-border-hover {
+    border-color: rgb(var(--theme-border-hover));
+  }
+
+  .theme-shadow-theme-sm {
+    box-shadow: var(--theme-shadow-sm);
+  }
+
+  .theme-shadow-theme-md {
+    box-shadow: var(--theme-shadow-md);
+  }
+
+  .theme-shadow-theme-lg {
+    box-shadow: var(--theme-shadow-lg);
+  }
+
+  .theme-transition {
+    transition: var(--theme-transition);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .theme-section {
+    @apply p-4 mb-4;
+  }
+
+  .theme-card {
+    @apply p-3;
+  }
+
+  .theme-heading-xl {
+    @apply text-2xl;
+  }
+
+  .theme-heading-lg {
+    @apply text-xl;
+  }
+}

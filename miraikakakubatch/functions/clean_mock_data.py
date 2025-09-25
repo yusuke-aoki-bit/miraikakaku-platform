@@ -3,7 +3,8 @@
 モック・バルク・サンプルデータ一括削除スクリプト
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -11,13 +12,13 @@ logger = logging.getLogger(__name__)
 
 def main():
     db_config = {
-        "host": "34.58.103.36",
-        "user": "miraikakaku-user", 
-        "password": "miraikakaku-secure-pass-2024",
+        "host": "34.173.9.214",
+        "user": "postgres", 
+        "password": "miraikakaku-postgres-secure-2024",
         "database": "miraikakaku",
     }
     
-    connection = pymysql.connect(**db_config)
+    connection = psycopg2.connect(**db_config)
     
     try:
         with connection.cursor() as cursor:

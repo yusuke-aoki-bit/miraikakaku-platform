@@ -1,0 +1,66 @@
+# Prometheus Configuration for MiraiKakaku System
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # API Server
+  - job_name: 'miraikakaku-api'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Frontend (if metrics enabled)
+  - job_name: 'miraikakaku-frontend'
+    static_configs:
+      - targets: ['frontend:3000']
+    metrics_path: '/api/metrics'
+    scrape_interval: 30s
+
+  # Database metrics (postgres_exporter)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+
+  # Node metrics (system metrics)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+  # Google Cloud Monitoring (if using GCP)
+  - job_name: 'gcp-monitoring'
+    gce_sd_configs:
+      - project: 'your-gcp-project-id'
+        zone: 'us-central1-a'
+    relabel_configs:
+      - source_labels: [__meta_gce_label_monitoring]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 'localhost:9090'
+
+  # Batch job metrics (custom endpoint)
+  - job_name: 'batch-jobs'
+    static_configs:
+      - targets: ['batch-monitor:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 60s

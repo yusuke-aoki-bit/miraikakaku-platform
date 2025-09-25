@@ -3,7 +3,8 @@
 pandas-datareaderを使用した多様なデータソースからの株価データ収集
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import pandas as pd
 import pandas_datareader.data as web
 import numpy as np
@@ -23,7 +24,7 @@ class DataReaderCollector:
             "user": os.getenv("DB_USER", "miraikakaku-user"),
             "password": os.getenv("DB_PASSWORD", "miraikakaku-secure-pass-2024"),
             "database": os.getenv("DB_NAME", "miraikakaku"),
-            "charset": "utf8mb4"
+            "port": 5432
         }
         
         # データソースの優先順位
@@ -106,7 +107,7 @@ class DataReaderCollector:
     
     def collect_stock_data(self, batch_size=50):
         """株価データ収集のメイン処理"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -227,7 +228,7 @@ class DataReaderCollector:
     
     def collect_economic_indicators(self):
         """経済指標データの収集"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:

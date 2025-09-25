@@ -1,13 +1,11 @@
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, ForeignKey, Index
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
-
-Base = declarative_base()
+from .base import Base
 
 
 class StockPriceHistory(Base):
-    __tablename__ = "stock_price_history"
+    __tablename__ = "stock_prices"
 
     id = Column(Integer, primary_key=True, index=True)
     symbol = Column(

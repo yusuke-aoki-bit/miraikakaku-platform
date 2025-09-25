@@ -24,7 +24,7 @@ from functions.database.database import Base
 target_metadata = Base.metadata
 
 def get_url():
-    return os.getenv("DATABASE_URL", "mysql+pymysql://user:password@localhost:3306/miraikakaku")
+    return os.getenv("DATABASE_URL", "postgresql://postgres:miraikakaku-secure-pass-2024@34.173.9.214:5432/miraikakaku")
 
 def run_migrations_offline() -> None:
     """'オフライン'モードでマイグレーションを実行"""

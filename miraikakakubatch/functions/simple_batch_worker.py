@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import pymysql
+import psycopg2
+import psycopg2.extras
 import random
 import numpy as np
 from datetime import datetime, timedelta
@@ -18,11 +19,11 @@ def main():
         "user": os.getenv("DB_USER", "miraikakaku-user"),
         "password": os.getenv("DB_PASSWORD", "miraikakaku-secure-pass-2024"),
         "database": os.getenv("DB_NAME", "miraikakaku"),
-        "charset": "utf8mb4"
+        "port": 5432
     }
     
     try:
-        connection = pymysql.connect(**db_config)
+        connection = psycopg2.connect(**db_config)
         logger.info("Database connected successfully")
         
         with connection.cursor() as cursor:

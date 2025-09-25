@@ -3,7 +3,8 @@
 テーブル構造修正システム - カラム名問題の修正
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -12,16 +13,16 @@ logger = logging.getLogger(__name__)
 class TableStructureFixer:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
     
     def check_and_fix_prediction_history(self):
         """prediction_historyテーブル構造確認・修正"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -70,7 +71,7 @@ class TableStructureFixer:
     
     def simplified_data_fill(self):
         """簡易データ補填（テーブル構造に依存しない）"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:

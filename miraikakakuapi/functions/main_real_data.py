@@ -90,16 +90,9 @@ class Database:
             self.connection = mysql.connector.connect(**DB_CONFIG)
             logger.info("Connected to MySQL database")
         except Exception as e:
-            logger.warning(f"MySQL connection failed: {e}")
-            try:
-                # Fallback to SQLite
-                self.connection = sqlite3.connect(":memory:", check_same_thread=False)
-                self.connection.row_factory = sqlite3.Row
-                self.setup_sqlite_tables()
-                logger.info("Using SQLite fallback database")
-            except Exception as e2:
-                logger.error(f"Database connection failed: {e2}")
-                raise
+            logger.error(f"MySQL connection failed: {e}")
+            # PostgreSQL only - no SQLite fallback
+            raise ConnectionError("Database connection required. Please configure PostgreSQL.")
     
     def setup_sqlite_tables(self):
         """Setup SQLite tables for fallback"""
@@ -114,7 +107,7 @@ class Database:
             full_name TEXT,
             password_hash TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            is_active BOOLEAN DEFAULT 1,
+            is_active BOOLEAN DEFAULT true,
             subscription_plan TEXT DEFAULT 'free'
         )
         """)

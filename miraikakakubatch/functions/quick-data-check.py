@@ -9,7 +9,7 @@ from datetime import datetime
 # PostgreSQL接続設定
 db_config = {
     "host": "34.173.9.214",
-    "user": "miraikakaku-user", 
+    "user": "postgres", 
     "password": "miraikakaku-secure-pass-2024",
     "database": "miraikakaku",
     "port": 5432

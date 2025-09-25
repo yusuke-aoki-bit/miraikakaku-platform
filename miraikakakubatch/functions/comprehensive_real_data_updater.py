@@ -5,7 +5,8 @@ Yahoo Finance、ニュースAPI等から実データを取得してデータベ�
 """
 
 import yfinance as yf
-import pymysql
+import psycopg2
+import psycopg2.extras
 import pandas as pd
 import logging
 import requests
@@ -22,9 +23,9 @@ logger = logging.getLogger(__name__)
 class ComprehensiveRealDataUpdater:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user", 
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres", 
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
         }
         self.updated_items = {
@@ -35,7 +36,7 @@ class ComprehensiveRealDataUpdater:
         }
 
     def get_connection(self):
-        return pymysql.connect(**self.db_config)
+        return psycopg2.connect(**self.db_config)
 
     def update_real_news_data(self):
         """リアルタイムニュースデータの更新"""

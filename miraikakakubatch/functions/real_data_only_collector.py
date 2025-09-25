@@ -4,7 +4,8 @@
 合成データは一切使用しない
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import pandas_datareader.data as web
 from datetime import datetime, timedelta
@@ -22,7 +23,7 @@ class RealDataOnlyCollector:
             "user": os.getenv("DB_USER", "miraikakaku-user"),
             "password": os.getenv("DB_PASSWORD", "miraikakaku-secure-pass-2024"),
             "database": os.getenv("DB_NAME", "miraikakaku"),
-            "charset": "utf8mb4"
+            "port": 5432
         }
         
         self.worker_id = int(os.getenv("BATCH_TASK_INDEX", "0"))
@@ -138,7 +139,7 @@ class RealDataOnlyCollector:
     
     def mark_as_unfetchable(self, symbol, reason="no_real_data_available"):
         """実データが取得できない銘柄をマーク"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -162,7 +163,7 @@ class RealDataOnlyCollector:
     
     def collect_real_data_only(self, batch_size=100):
         """実データのみでコレクション実行"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         
         try:
             with connection.cursor() as cursor:
@@ -231,7 +232,7 @@ class RealDataOnlyCollector:
     
     def save_real_data(self, symbol, df, source, used_symbol):
         """実データをデータベースに保存"""
-        connection = pymysql.connect(**self.db_config)
+        connection = psycopg2.connect(**self.db_config)
         saved_count = 0
         
         try:

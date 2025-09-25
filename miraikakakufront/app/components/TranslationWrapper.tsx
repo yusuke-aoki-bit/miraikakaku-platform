@@ -8,8 +8,7 @@ interface TranslationWrapperProps {
 }
 
 export default function TranslationWrapper({ children }: TranslationWrapperProps) {
-  const { ready } = useTranslation();
-
+  const { ready } = useTranslation(
   if (!ready) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--yt-music-bg)' }}>
@@ -17,7 +16,6 @@ export default function TranslationWrapper({ children }: TranslationWrapperProps
           <LoadingSpinner size="lg" />
         </div>
       </div>
-    );
   }
 
   return <>{children}</>;

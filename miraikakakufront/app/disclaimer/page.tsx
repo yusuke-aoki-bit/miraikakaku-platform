@@ -4,27 +4,36 @@ import { ArrowLeft, AlertTriangle, Shield, Info, TrendingUp, BookOpen } from 'lu
 import { useRouter } from 'next/navigation';
 
 export default function DisclaimerPage() {
-  const router = useRouter();
-
+  const router = useRouter(
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--yt-music-bg)' }}>
       <div className="max-w-4xl mx-auto p-4 md:p-8">
         {/* Navigation */}
         <button
           onClick={() => router.push('/')}
-          className="flex items-center text-blue-600 hover:text-blue-800 mb-8 transition-colors"
+          className="flex items-center mb-8 transition-colors"
+          style={{ color: 'var(--yt-music-primary)' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--yt-music-accent)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--yt-music-primary)';
+          }}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           ホームに戻る
         </button>
 
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+        <div className="rounded-lg shadow-md p-8 mb-8" style={{
+          backgroundColor: 'var(--yt-music-surface)'
+          border: '1px solid var(--yt-music-border)'
+        }}>
           <div className="flex items-center mb-4">
             <AlertTriangle className="w-8 h-8 text-red-600 mr-3" />
-            <h1 className="text-3xl font-bold text-gray-900">免責事項</h1>
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--yt-music-text-primary)' }}>免責事項</h1>
           </div>
-          <p className="text-gray-600">
+          <p style={{ color: 'var(--yt-music-text-secondary)' }}>
             本サービスをご利用になる前に、必ずお読みください
           </p>
         </div>
@@ -46,12 +55,15 @@ export default function DisclaimerPage() {
         {/* Content */}
         <div className="space-y-8">
           {/* Investment Risk */}
-          <div className="bg-white rounded-lg shadow-md p-8">
+          <div className="rounded-lg shadow-md p-8" style={{
+            backgroundColor: 'var(--yt-music-surface)'
+            border: '1px solid var(--yt-music-border)'
+          }}>
             <div className="flex items-center mb-6">
               <TrendingUp className="w-6 h-6 text-orange-600 mr-3" />
-              <h2 className="text-2xl font-semibold text-gray-900">投資リスクについて</h2>
+              <h2 className="text-2xl font-semibold" style={{ color: 'var(--yt-music-text-primary)' }}>投資リスクについて</h2>
             </div>
-            <div className="prose text-gray-700 space-y-4">
+            <div className="prose space-y-4" style={{ color: 'var(--yt-music-text-secondary)' }}>
               <p>
                 株式投資には以下のようなリスクが伴います。投資を行う前に十分ご理解ください。
               </p>
@@ -66,12 +78,15 @@ export default function DisclaimerPage() {
           </div>
 
           {/* AI Prediction Limitations */}
-          <div className="bg-white rounded-lg shadow-md p-8">
+          <div className="rounded-lg shadow-md p-8" style={{
+            backgroundColor: 'var(--yt-music-surface)'
+            border: '1px solid var(--yt-music-border)'
+          }}>
             <div className="flex items-center mb-6">
               <Info className="w-6 h-6 text-blue-600 mr-3" />
-              <h2 className="text-2xl font-semibold text-gray-900">AI予測の限界について</h2>
+              <h2 className="text-2xl font-semibold" style={{ color: 'var(--yt-music-text-primary)' }}>AI予測の限界について</h2>
             </div>
-            <div className="prose text-gray-700 space-y-4">
+            <div className="prose space-y-4" style={{ color: 'var(--yt-music-text-secondary)' }}>
               <p>
                 当サービスで提供するAI株価予測には以下の限界があります。
               </p>
@@ -86,19 +101,22 @@ export default function DisclaimerPage() {
           </div>
 
           {/* Service Limitations */}
-          <div className="bg-white rounded-lg shadow-md p-8">
+          <div className="rounded-lg shadow-md p-8" style={{
+            backgroundColor: 'var(--yt-music-surface)'
+            border: '1px solid var(--yt-music-border)'
+          }}>
             <div className="flex items-center mb-6">
               <Shield className="w-6 h-6 text-green-600 mr-3" />
-              <h2 className="text-2xl font-semibold text-gray-900">サービス提供に関する免責</h2>
+              <h2 className="text-2xl font-semibold" style={{ color: 'var(--yt-music-text-primary)' }}>サービス提供に関する免責</h2>
             </div>
-            <div className="prose text-gray-700 space-y-4">
+            <div className="prose space-y-4" style={{ color: 'var(--yt-music-text-secondary)' }}>
               <p>
                 当社は、本サービスに関して以下の点についてお客様にご理解いただきます。
               </p>
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">1. 情報の正確性</h3>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--yt-music-text-primary)' }}>1. 情報の正確性</h3>
                   <p>
                     提供される情報の正確性、完全性、最新性について保証するものではありません。
                     情報の誤りや遅延により生じた損害について責任を負いません。
@@ -106,7 +124,7 @@ export default function DisclaimerPage() {
                 </div>
                 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">2. サービスの可用性</h3>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--yt-music-text-primary)' }}>2. サービスの可用性</h3>
                   <p>
                     システムメンテナンス、障害、不可抗力等によりサービスが一時的に利用できない場合があります。
                     これらの理由によるサービス中断について責任を負いません。
@@ -114,7 +132,7 @@ export default function DisclaimerPage() {
                 </div>
                 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">3. 投資損失</h3>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--yt-music-text-primary)' }}>3. 投資損失</h3>
                   <p>
                     本サービスの利用により生じた投資損失について、いかなる理由があっても責任を負いません。
                     投資はお客様の自己責任において行ってください。
@@ -122,7 +140,7 @@ export default function DisclaimerPage() {
                 </div>
                 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">4. 第三者への影響</h3>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--yt-music-text-primary)' }}>4. 第三者への影響</h3>
                   <p>
                     お客様が本サービスを利用することにより第三者に与えた損害について、責任を負いません。
                   </p>
@@ -132,22 +150,25 @@ export default function DisclaimerPage() {
           </div>
 
           {/* Legal Compliance */}
-          <div className="bg-white rounded-lg shadow-md p-8">
+          <div className="rounded-lg shadow-md p-8" style={{
+            backgroundColor: 'var(--yt-music-surface)'
+            border: '1px solid var(--yt-music-border)'
+          }}>
             <div className="flex items-center mb-6">
               <BookOpen className="w-6 h-6 text-purple-600 mr-3" />
-              <h2 className="text-2xl font-semibold text-gray-900">法的事項</h2>
+              <h2 className="text-2xl font-semibold" style={{ color: 'var(--yt-music-text-primary)' }}>法的事項</h2>
             </div>
-            <div className="prose text-gray-700 space-y-4">
+            <div className="prose space-y-4" style={{ color: 'var(--yt-music-text-secondary)' }}>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">金融商品取引法について</h3>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--yt-music-text-primary)' }}>金融商品取引法について</h3>
                   <p>
                     当社は金融商品取引業者ではありません。本サービスは投資助言・代理業に該当するサービスを提供するものではありません。
                   </p>
                 </div>
                 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">著作権について</h3>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--yt-music-text-primary)' }}>著作権について</h3>
                   <p>
                     本サービスで提供されるコンテンツの著作権は当社または第三者に帰属します。
                     無断での複製、転載、配布等は禁止されています。
@@ -155,7 +176,7 @@ export default function DisclaimerPage() {
                 </div>
                 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">準拠法・裁判管轄</h3>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--yt-music-text-primary)' }}>準拠法・裁判管轄</h3>
                   <p>
                     本免責事項および本サービスに関する争いについては、日本法を準拠法とし、
                     東京地方裁判所を専属的合意管轄裁判所とします。
@@ -167,9 +188,9 @@ export default function DisclaimerPage() {
 
           {/* Recommendations */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-8">
-            <h2 className="text-2xl font-semibold text-blue-900 mb-6">推奨事項</h2>
-            <div className="prose text-blue-800 space-y-4">
-              <p className="font-semibold">
+            <h2 className="text-2xl font-semibold mb-6" style={{ color: 'var(--yt-music-text-primary)' }}>推奨事項</h2>
+            <div className="prose space-y-4" style={{ color: 'var(--yt-music-text-secondary)' }}>
+              <p className="font-semibold" style={{ color: 'var(--yt-music-text-primary)' }}>
                 安全で適切な投資を行うために、以下の点をお勧めします：
               </p>
               <ul className="list-disc list-inside space-y-2 ml-4">
@@ -184,14 +205,17 @@ export default function DisclaimerPage() {
           </div>
 
           {/* Update Information */}
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">免責事項の更新</h2>
-            <div className="prose text-gray-700 space-y-4">
+          <div className="rounded-lg shadow-md p-8" style={{
+            backgroundColor: 'var(--yt-music-surface)'
+            border: '1px solid var(--yt-music-border)'
+          }}>
+            <h2 className="text-2xl font-semibold mb-6" style={{ color: 'var(--yt-music-text-primary)' }}>免責事項の更新</h2>
+            <div className="prose space-y-4" style={{ color: 'var(--yt-music-text-secondary)' }}>
               <p>
                 本免責事項は予告なく変更される場合があります。
                 重要な変更については、サービス内での通知またはメールにてお知らせいたします。
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm" style={{ color: 'var(--yt-music-text-disabled)' }}>
                 最終更新日：2024年1月1日
               </p>
             </div>
@@ -199,10 +223,9 @@ export default function DisclaimerPage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 text-center text-gray-500 text-sm">
+        <div className="mt-12 text-center text-sm" style={{ color: 'var(--yt-music-text-disabled)' }}>
           <p>© 2024 未来価格. All rights reserved.</p>
         </div>
       </div>
     </div>
-  );
 }

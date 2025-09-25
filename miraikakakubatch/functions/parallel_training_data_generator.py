@@ -6,7 +6,8 @@
 
 import os
 import sys
-import pymysql
+import psycopg2
+import psycopg2.extras
 import pandas as pd
 import numpy as np
 import logging
@@ -35,7 +36,7 @@ class ParallelTrainingDataGenerator:
             "user": os.getenv("DB_USER", "miraikakaku-user"),
             "password": os.getenv("DB_PASSWORD", "miraikakaku-secure-pass-2024"),
             "database": os.getenv("DB_NAME", "miraikakaku"),
-            "charset": "utf8mb4"
+            "port": 5432
         }
         
         self.batch_size = int(os.getenv("BATCH_SIZE", "100"))
@@ -47,7 +48,7 @@ class ParallelTrainingDataGenerator:
         logger.info(f"🔮 予測データ: {self.predictions_per_stock}件/銘柄")
 
     def get_connection(self):
-        return pymysql.connect(**self.db_config)
+        return psycopg2.connect(**self.db_config)
 
     def get_stock_batch(self) -> List[Dict]:
         """このPodが処理すべき銘柄バッチを取得"""

@@ -1,0 +1,80 @@
+[
+    {
+        "name": "metric_date",
+        "type": "DATE",
+        "mode": "REQUIRED",
+        "description": "Date of the metric"
+    },
+    {
+        "name": "metric_type",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Type of performance metric"
+    },
+    {
+        "name": "metric_name",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Name of the specific metric"
+    },
+    {
+        "name": "metric_value",
+        "type": "FLOAT64",
+        "mode": "REQUIRED",
+        "description": "Numeric value of the metric"
+    },
+    {
+        "name": "symbol",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Stock symbol (if metric is symbol-specific)"
+    },
+    {
+        "name": "period",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Time period for the metric (daily, weekly, monthly)"
+    },
+    {
+        "name": "category",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Metric category (prediction, data_quality, system_performance)"
+    },
+    {
+        "name": "subcategory",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Metric subcategory"
+    },
+    {
+        "name": "target_value",
+        "type": "FLOAT64",
+        "mode": "NULLABLE",
+        "description": "Target or benchmark value for the metric"
+    },
+    {
+        "name": "variance_from_target",
+        "type": "FLOAT64",
+        "mode": "NULLABLE",
+        "description": "Difference from target value"
+    },
+    {
+        "name": "trend_direction",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Trend direction (improving, declining, stable)"
+    },
+    {
+        "name": "data_source",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "Source system or component that generated the metric"
+    },
+    {
+        "name": "created_at",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED",
+        "description": "Record creation timestamp"
+    }
+]

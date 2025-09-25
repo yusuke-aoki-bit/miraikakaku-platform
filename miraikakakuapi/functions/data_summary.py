@@ -27,7 +27,7 @@ def generate_data_report():
             text(
                 """
             SELECT
-                (SELECT COUNT(*) FROM stock_master WHERE is_active = 1) as total_symbols,
+                (SELECT COUNT(*) FROM stock_master WHERE is_active = true) as total_symbols,
                 (SELECT COUNT(DISTINCT symbol) FROM stock_prices) as price_symbols,
                 (SELECT COUNT(*) FROM stock_prices) as price_records,
                 (SELECT COUNT(DISTINCT symbol) FROM stock_predictions) as pred_symbols,

@@ -1,39 +1,62 @@
-# マルチステージビルドによる最適化版
+# Dockerfile for Miraikakaku API Service - Production Ready
 # ステージ1: ビルド環境
 FROM python:3.11-slim AS builder
 
 WORKDIR /app
-COPY requirements.txt .
 
-# 依存関係をインストール（仮想環境に）
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install dependencies
+COPY functions/requirements.txt .
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir psutil prometheus-client redis uvicorn[standard] gunicorn
 
 # ステージ2: 実行環境（軽量）
 FROM python:3.11-slim
 
-# 必要最小限のパッケージのみ
+# Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 仮想環境をコピー
+# Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
 
-# アプリケーションコードをコピー
+# Set working directory
 WORKDIR /app
-COPY functions/ ./
 
-# 環境変数設定
+# Copy application code
+COPY . .
+
+# Create models directory for ML models
+RUN mkdir -p /app/models
+
+# Environment variables
 ENV PATH="/opt/venv/bin:$PATH"
+ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+ENV ENVIRONMENT=production
+ENV LOG_LEVEL=INFO
 
-# 非rootユーザーで実行（セキュリティ向上）
+# Create non-root user for security
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 8080
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
 
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]
+# Expose ports
+EXPOSE 8080 8081
+
+# Run the application
+CMD ["uvicorn", "db_based_api:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "4"]

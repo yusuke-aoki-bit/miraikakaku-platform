@@ -4,7 +4,8 @@ MAE強化予測システム
 過去データからのMAEを学習データとして活用する予測システム
 """
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
@@ -21,16 +22,16 @@ logger = logging.getLogger(__name__)
 class MAEEnhancedPredictionSystem:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user", 
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres", 
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
         }
         self.mae_history = {}  # 銘柄別MAE履歴
         self.prediction_models = {}  # 銘柄別予測モデル
         
     def get_connection(self):
-        return pymysql.connect(**self.db_config)
+        return psycopg2.connect(**self.db_config)
 
     def calculate_historical_mae_features(self, symbol: str, days_back: int = 30) -> Dict:
         """

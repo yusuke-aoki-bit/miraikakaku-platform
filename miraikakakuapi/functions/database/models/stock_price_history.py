@@ -18,8 +18,9 @@ class StockPriceHistory(Base):
     close_price = Column(Numeric(12, 4), nullable=False)
     adjusted_close = Column(Numeric(12, 4))
     volume = Column(Integer)
-    # data_source = Column(String(50), default="yfinance")  # 実際のDBには存在しない
+    data_source = Column(String(50), default="yfinance")
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # インデックスの作成
     __table_args__ = (

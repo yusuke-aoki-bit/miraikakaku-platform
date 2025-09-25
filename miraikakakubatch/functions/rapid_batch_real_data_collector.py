@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import pymysql
+import psycopg2
+import psycopg2.extras
 import yfinance as yf
 import pandas as pd
 import logging
@@ -20,11 +21,11 @@ logger = logging.getLogger(__name__)
 class RapidBatchRealDataCollector:
     def __init__(self):
         self.db_config = {
-            "host": "34.58.103.36",
-            "user": "miraikakaku-user",
-            "password": "miraikakaku-secure-pass-2024",
+            "host": "34.173.9.214",
+            "user": "postgres",
+            "password": "miraikakaku-postgres-secure-2024",
             "database": "miraikakaku",
-            "charset": "utf8mb4"
+            "port": 5432
         }
         self.lock = threading.Lock()
         self.batch_results = []
@@ -32,7 +33,7 @@ class RapidBatchRealDataCollector:
     def get_high_priority_missing_symbols(self, limit=500):
         """高優先度で未処理銘柄を取得"""
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 # 優先度付き銘柄取得（US, 日本, 主要取引所優先）
                 cursor.execute("""
@@ -172,7 +173,7 @@ class RapidBatchRealDataCollector:
             return 0
             
         try:
-            connection = pymysql.connect(**self.db_config)
+            connection = psycopg2.connect(**self.db_config)
             with connection.cursor() as cursor:
                 insert_data = []
                 for data in batch_data:

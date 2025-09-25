@@ -1,0 +1,18 @@
+FROM python:3.9-slim
+
+# システム依存関係
+RUN apt-get update && apt-get install -y \
+    gcc g++ curl wget && \
+    rm -rf /var/lib/apt/lists/*
+
+# Python環境（最適化済み）
+RUN pip install --no-cache-dir \
+    psycopg2-binary==2.9.9 \
+    pandas==2.1.4 \
+    numpy==1.24.4 \
+    scikit-learn==1.3.0 \
+    tensorflow-cpu==2.13.0 \
+    google-cloud-aiplatform==1.36.0
+
+WORKDIR /app
+ENTRYPOINT ["/bin/bash"]
