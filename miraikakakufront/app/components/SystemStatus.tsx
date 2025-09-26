@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Database, Server, HardDrive, AlertCircle, CheckCircle, Clock, Activity, Zap, TrendingUp } from 'lucide-react';
+import { Database, Server, AlertCircle, CheckCircle, Clock, Activity, Zap, TrendingUp } from 'lucide-react';
 
 interface SystemHealthData {
   api: {
@@ -36,54 +36,54 @@ interface SystemHealthData {
 }
 
 export default function SystemStatus() {
-  const [systemHealth, setSystemHealth] = useState<SystemHealthData | null>(null
-  const [isLoading, setIsLoading] = useState(true
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date()
-  const [isExpanded, setIsExpanded] = useState(false
+  const [systemHealth, setSystemHealth] = useState<SystemHealthData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [isExpanded, setIsExpanded] = useState(false);
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'healthy'
+      case 'healthy':
         return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'degraded'
+      case 'degraded':
         return <AlertCircle className="w-4 h-4 text-yellow-500" />;
-      case 'down'
+      case 'down':
         return <AlertCircle className="w-4 h-4 text-red-500" />;
-      default
+      default:
         return <Clock className="w-4 h-4 text-gray-400" />;
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'healthy'
+      case 'healthy':
         return '正常';
-      case 'degraded'
+      case 'degraded':
         return '部分的問題';
-      case 'down'
+      case 'down':
         return 'ダウン';
-      default
+      default:
         return '不明';
     }
   };
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case 'healthy'
+      case 'healthy':
         return 'theme-badge-success';
-      case 'degraded'
+      case 'degraded':
         return 'theme-badge-warning';
-      case 'down'
+      case 'down':
         return 'theme-badge-error';
-      default
+      default:
         return 'theme-badge-info';
     }
   };
 
   const formatTimeAgo = (dateString: string) => {
-    const now = new Date(
-    const date = new Date(dateString
-    const diffMs = now.getTime() - date.getTime(
-    const diffMins = Math.floor(diffMs / 60000
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
     if (diffMins < 1) return '数秒前';
     if (diffMins < 60) return `${diffMins}分前`;
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)}時間前`;
@@ -96,58 +96,58 @@ export default function SystemStatus() {
 
   const getMockSystemHealth = (): SystemHealthData => ({
     api: {
-      status: 'healthy'
-      responseTime: 245
-      lastCheck: new Date().toISOString()
+      status: 'healthy',
+      responseTime: 245,
+      lastCheck: new Date().toISOString(),
       uptime: 99.5
-    }
+    },
     database: {
-      status: 'healthy'
-      connections: 12
-      queries: 1450
-      lastCheck: new Date().toISOString()
-      totalRecords: 1250000
+      status: 'healthy',
+      connections: 12,
+      queries: 1450,
+      lastCheck: new Date().toISOString(),
+      totalRecords: 1250000,
       size: '2.4 GB'
-    }
+    },
     batch: {
-      status: 'degraded'
-      lastRun: new Date(Date.now() - 15 * 60 * 1000).toISOString()
-      nextRun: new Date(Date.now() + 45 * 60 * 1000).toISOString()
-      jobsRunning: 2
-      jobsCompleted: 48
+      status: 'degraded',
+      lastRun: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+      nextRun: new Date(Date.now() + 45 * 60 * 1000).toISOString(),
+      jobsRunning: 2,
+      jobsCompleted: 48,
       jobsFailed: 1
-    }
+    },
     predictions: {
-      status: 'healthy'
-      totalPredictions: 125780
-      todayPredictions: 847
-      accuracy: 84.7
+      status: 'healthy',
+      totalPredictions: 125780,
+      todayPredictions: 847,
+      accuracy: 84.7,
       lastUpdate: new Date(Date.now() - 5 * 60 * 1000).toISOString()
     }
-  }
+  });
   useEffect(() => {
     const fetchSystemHealth = async () => {
       try {
         const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-        const response = await fetch(`${apiBaseUrl}/api/system/health`
+        const response = await fetch(`${apiBaseUrl}/api/system/health`);
         if (response.ok) {
-          const data = await response.json(
-          setSystemHealth(data
+          const data = await response.json();
+          setSystemHealth(data);
         } else {
-          setSystemHealth(getMockSystemHealth()
+          setSystemHealth(getMockSystemHealth());
         }
       } catch (error) {
-        setSystemHealth(getMockSystemHealth()
+        setSystemHealth(getMockSystemHealth());
       } finally {
-        setIsLoading(false
-        setLastUpdated(new Date()
+        setIsLoading(false);
+        setLastUpdated(new Date());
       }
     };
 
-    fetchSystemHealth(
-    const interval = setInterval(fetchSystemHealth, 30000
-    return () => clearInterval(interval
-  }, []
+    fetchSystemHealth();
+    const interval = setInterval(fetchSystemHealth, 30000);
+    return () => clearInterval(interval);
+  }, []);
   if (isLoading) {
     return (
       <div className="fixed bottom-4 right-4 z-50">
@@ -158,6 +158,7 @@ export default function SystemStatus() {
           </div>
         </div>
       </div>
+    );
   }
 
   if (!systemHealth) {
@@ -169,9 +170,9 @@ export default function SystemStatus() {
       <div
         className="rounded-lg shadow-lg transition-all duration-300"
         style={{
-          backgroundColor: 'rgb(var(--theme-bg-secondary))'
-          border: '1px solid rgb(var(--theme-border))'
-          maxWidth: isExpanded ? '420px' : '320px'
+          backgroundColor: 'rgb(var(--theme-bg-secondary))',
+          border: '1px solid rgb(var(--theme-border))',
+          maxWidth: isExpanded ? '420px' : '320px',
           width: isExpanded ? '420px' : '320px'
         }}
       >
@@ -293,7 +294,7 @@ export default function SystemStatus() {
             {/* Last Update Info */}
             <div className="flex items-center justify-between p-3 rounded border-t"
                  style={{
-                   backgroundColor: 'rgb(var(--theme-bg-tertiary))'
+                   backgroundColor: 'rgb(var(--theme-bg-tertiary))',
                    borderColor: 'rgb(var(--theme-border))'
                  }}>
               <div className="flex items-center space-x-3">
@@ -310,4 +311,5 @@ export default function SystemStatus() {
         )}
       </div>
     </div>
+  );
 }

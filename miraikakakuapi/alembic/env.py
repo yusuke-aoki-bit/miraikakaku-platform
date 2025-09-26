@@ -18,13 +18,17 @@ if config.config_file_name is not None:
 # パッケージパスを追加
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from functions.database.models import *
-from functions.database.database import Base
+# Import all models to ensure they're registered with Base
+from functions.database.models.stock_master import StockMaster
+from functions.database.models.stock_price_history import StockPriceHistory
+from functions.database.models.stock_predictions import StockPredictions
+from functions.database.models.base import Base
 
 target_metadata = Base.metadata
 
 def get_url():
-    return os.getenv("DATABASE_URL", "postgresql://postgres:miraikakaku-secure-pass-2024@34.173.9.214:5432/miraikakaku")
+    # Use environment variable or secure default
+    return os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/miraikakaku")
 
 def run_migrations_offline() -> None:
     """'オフライン'モードでマイグレーションを実行"""

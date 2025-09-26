@@ -2,17 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Activity
-  Database
-  Server
-  AlertTriangle
-  CheckCircle
-  TrendingUp
-  Clock
-  Users
-  Zap
-  HardDrive
-  Cpu
+  Activity,
+  Database,
+  Server,
+  AlertTriangle,
+  CheckCircle,
+  TrendingUp,
+  Clock,
+  Users,
+  Zap,
+  HardDrive,
+  Cpu,
   MemoryStick
 } from 'lucide-react';
 import { monitoringAPI, type SystemHealth, type PerformanceMetrics, type PerformanceAnalytics } from '../lib/monitoring-api';
@@ -28,14 +28,14 @@ interface MetricCardProps {
 
 const MetricCard: React.FC<MetricCardProps> = ({ title, value, unit, status = 'good', icon, trend }) => {
   const statusColors = {
-    good: 'border-green-200 bg-green-50'
-    warning: 'border-yellow-200 bg-yellow-50'
+    good: 'border-green-200 bg-green-50',
+    warning: 'border-yellow-200 bg-yellow-50',
     error: 'border-red-200 bg-red-50'
   };
 
   const valueColors = {
-    good: 'text-green-600'
-    warning: 'text-yellow-600'
+    good: 'text-green-600',
+    warning: 'text-yellow-600',
     error: 'text-red-600'
   };
 
@@ -59,6 +59,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, unit, status = 'g
         {unit && <span className="text-sm text-gray-500">{unit}</span>}
       </div>
     </div>
+  );
 };
 
 interface StatusIndicatorProps {
@@ -69,30 +70,30 @@ interface StatusIndicatorProps {
 const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status, message }) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'healthy'
-      case 'operational'
+      case 'healthy':
+      case 'operational':
         return 'text-green-500';
-      case 'warning'
+      case 'warning':
         return 'text-yellow-500';
-      case 'critical'
-      case 'error'
+      case 'critical':
+      case 'error':
         return 'text-red-500';
-      default
+      default:
         return 'text-gray-500';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'healthy'
-      case 'operational'
+      case 'healthy':
+      case 'operational':
         return <CheckCircle className="w-5 h-5" />;
-      case 'warning'
+      case 'warning':
         return <AlertTriangle className="w-5 h-5" />;
-      case 'critical'
-      case 'error'
+      case 'critical':
+      case 'error':
         return <AlertTriangle className="w-5 h-5" />;
-      default
+      default:
         return <Activity className="w-5 h-5" />;
     }
   };
@@ -109,54 +110,56 @@ const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status, message }) =>
         <span className="text-sm text-gray-500">- {message}</span>
       )}
     </div>
+  );
 };
 
 export const MonitoringDashboard: React.FC = () => {
-  const [dbHealth, setDbHealth] = useState<SystemHealth | null>(null
-  const [performance, setPerformance] = useState<PerformanceMetrics | null>(null
-  const [analytics, setAnalytics] = useState<PerformanceAnalytics | null>(null
-  const [systemStatus, setSystemStatus] = useState<any>(null
-  const [loading, setLoading] = useState(true
-  const [error, setError] = useState<string | null>(null
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date()
+  const [dbHealth, setDbHealth] = useState<SystemHealth | null>(null);
+  const [performance, setPerformance] = useState<PerformanceMetrics | null>(null);
+  const [analytics, setAnalytics] = useState<PerformanceAnalytics | null>(null);
+  const [systemStatus, setSystemStatus] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const fetchData = async () => {
     try {
-      setError(null
+      setError(null);
       const [dbHealthData, performanceData, analyticsData, systemData] = await Promise.all([
-        monitoringAPI.getDatabaseHealth()
-        monitoringAPI.getCurrentPerformance()
-        monitoringAPI.getPerformanceAnalytics(24)
+        monitoringAPI.getDatabaseHealth(),
+        monitoringAPI.getCurrentPerformance(),
+        monitoringAPI.getPerformanceAnalytics(24),
         monitoringAPI.getSystemStatus()
-      ]
-      setDbHealth(dbHealthData
+      ]);
+      setDbHealth(dbHealthData);
       // Check if performance data has status field (indicating no monitoring data)
       if ('status' in performanceData && performanceData.status === 'no_data') {
-        setPerformance(null
+        setPerformance(null);
       } else {
-        setPerformance(performanceData as PerformanceMetrics
+        setPerformance(performanceData as PerformanceMetrics);
       }
 
-      setAnalytics(analyticsData
-      setSystemStatus(systemData
-      setLastUpdate(new Date()
+      setAnalytics(analyticsData);
+      setSystemStatus(systemData);
+      setLastUpdate(new Date());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch monitoring data'
+      setError(err instanceof Error ? err.message : 'Failed to fetch monitoring data');
     } finally {
-      setLoading(false
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData(
+    fetchData();
     // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchData, 30000
-    return () => clearInterval(interval
-  }, []
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, []);
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
       </div>
+    );
   }
 
   const getMetricStatus = (value: number, thresholds: { warning: number; error: number }): 'good' | 'warning' | 'error' => {
@@ -365,4 +368,5 @@ export const MonitoringDashboard: React.FC = () => {
         </div>
       )}
     </div>
+  );
 };

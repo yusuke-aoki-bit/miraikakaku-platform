@@ -67,12 +67,28 @@ class DatabaseConnectionPool:
         except ImportError:
             logger.warning("python-dotenv not available, using system environment variables only")
 
-        return {
-            'host': os.getenv('DB_HOST', '34.173.9.214'),  # Use production DB as default
-            'port': int(os.getenv('DB_PORT', 5432)),
-            'database': os.getenv('DB_NAME', 'miraikakaku'),
-            'user': os.getenv('DB_USER', 'postgres'),
-            'password': os.getenv('DB_PASSWORD', 'os.getenv('DB_PASSWORD', '')'),  # Use correct working password
+        # Use Secret Manager for production credentials
+        try:
+            from config.secrets_manager import secrets_manager
+            db_config = secrets_manager.get_database_config()
+            config = {
+                'host': db_config.get('host', os.getenv('POSTGRES_HOST', 'localhost')),
+                'port': int(db_config.get('port', os.getenv('POSTGRES_PORT', 5432))),
+                'database': db_config.get('database', os.getenv('POSTGRES_DB', 'miraikakaku')),
+                'user': db_config.get('user', os.getenv('POSTGRES_USER', 'postgres')),
+                'password': db_config.get('password', os.getenv('POSTGRES_PASSWORD', '')),
+            }
+        except ImportError:
+            logger.warning("Secret manager not available, using environment variables")
+            config = {
+                'host': os.getenv('POSTGRES_HOST', 'localhost'),
+                'port': int(os.getenv('POSTGRES_PORT', 5432)),
+                'database': os.getenv('POSTGRES_DB', 'miraikakaku'),
+                'user': os.getenv('POSTGRES_USER', 'postgres'),
+                'password': os.getenv('POSTGRES_PASSWORD', ''),
+            }
+
+        config.update({
             'minconn': int(os.getenv('DB_POOL_MIN_SIZE', 2)),
             'maxconn': int(os.getenv('DB_POOL_SIZE', 20)),
             'maxconnattempts': int(os.getenv('DB_MAX_CONN_ATTEMPTS', 3)),
@@ -81,7 +97,9 @@ class DatabaseConnectionPool:
                 'connect_timeout': int(os.getenv('DB_POOL_TIMEOUT', 30)),
                 'application_name': 'miraikakaku_api'
             }
-        }
+        })
+
+        return config
 
     def _initialize_pool(self):
         """Initialize the connection pool"""

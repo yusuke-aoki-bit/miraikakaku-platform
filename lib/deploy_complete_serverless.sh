@@ -41,7 +41,13 @@ gcloud services enable pubsub.googleapis.com
 
 # Secrets管理
 echo "🔐 Setting up secrets..."
-echo -n "Miraikakaku2024!" | gcloud secrets create miraikakaku-db-password --data-file=-
+# 注意: 実際のパスワードは環境変数から設定してください
+if [ -z "$DB_PASSWORD" ]; then
+    echo "❌ DB_PASSWORD environment variable not set. Please set it before running this script."
+    echo "   Example: export DB_PASSWORD='your-secure-password'"
+    exit 1
+fi
+echo -n "$DB_PASSWORD" | gcloud secrets create miraikakaku-db-password --data-file=-
 
 # 1. Cloud Functions デプロイ
 echo ""

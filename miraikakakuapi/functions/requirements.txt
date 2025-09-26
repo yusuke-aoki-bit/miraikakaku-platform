@@ -11,7 +11,7 @@ alembic==1.13.1
 # Data Processing
 pandas==2.1.4
 numpy==1.24.4
-yfinance==0.2.27
+yfinance==0.2.33
 
 # Machine Learning & AI
 google-cloud-aiplatform==1.38.0

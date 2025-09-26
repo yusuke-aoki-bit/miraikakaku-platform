@@ -2,14 +2,14 @@
 
 import React, { useMemo } from 'react';
 import {
-  LineChart
-  Line
-  XAxis
-  YAxis
-  CartesianGrid
-  Tooltip
-  Legend
-  ResponsiveContainer
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
   ReferenceLine
 } from 'recharts';
 import { format, parseISO } from 'date-fns';
@@ -23,8 +23,8 @@ interface StockChartProps {
 }
 
 export default function StockChart({
-  priceHistory
-  predictions
+  priceHistory,
+  predictions,
   historicalPredictions
 }: StockChartProps) {
 
@@ -33,27 +33,27 @@ export default function StockChart({
     if (!priceHistory || priceHistory.length === 0) {
       return [];
     }
-    const dataMap = new Map(
+    const dataMap = new Map();
     // Add historical prices
     priceHistory.forEach(price => {
       if (price.date && price.close_price != null) {
         dataMap.set(price.date, {
-          date: price.date
+          date: price.date,
           actual: price.close_price
-        }
+        });
       }
-    }
+    });
     // Add historical predictions
     if (Array.isArray(historicalPredictions) && historicalPredictions.length > 0) {
       historicalPredictions.forEach(pred => {
         if (pred.prediction_date && pred.predicted_price != null) {
           const existing = dataMap.get(pred.prediction_date) || { date: pred.prediction_date };
           dataMap.set(pred.prediction_date, {
-            ...existing
+            ...existing,
             historicalPrediction: pred.predicted_price
-          }
+          });
         }
-      }
+      });
     }
 
     // Add future predictions
@@ -62,18 +62,19 @@ export default function StockChart({
         if (pred.prediction_date && pred.predicted_price != null) {
           const existing = dataMap.get(pred.prediction_date) || { date: pred.prediction_date };
           dataMap.set(pred.prediction_date, {
-            ...existing
+            ...existing,
             predicted: pred.predicted_price
-          }
+          });
         }
-      }
+      });
     }
 
     // Convert to array and sort by date
     const result = Array.from(dataMap.values()).sort((a, b) =>
       new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
     return result;
-  }, [priceHistory, predictions, historicalPredictions]
+  }, [priceHistory, predictions, historicalPredictions]);
   // Show loading if no price history data
   if (!priceHistory || priceHistory.length === 0) {
     return (
@@ -83,13 +84,19 @@ export default function StockChart({
           <p className="mt-4 theme-text-secondary">チャートを読み込み中...</p>
         </div>
       </div>
+    );
   }
-    predictions: { type: typeof predictions, isArray: Array.isArray(predictions)
-    historicalPredictions: { type: typeof historicalPredictions, isArray: Array.isArray(historicalPredictions)
+
+  // Debug logging (development only)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Chart debug:', {
+      predictions: { type: typeof predictions, isArray: Array.isArray(predictions) },
+      historicalPredictions: { type: typeof historicalPredictions, isArray: Array.isArray(historicalPredictions) }
+    });
   }
   const formatXAxis = (tickItem: string) => {
     try {
-      return format(parseISO(tickItem), 'MMM yyyy'
+      return format(parseISO(tickItem), 'MMM yyyy');
     } catch {
       return tickItem;
     }
@@ -97,7 +104,7 @@ export default function StockChart({
 
   const formatTooltipLabel = (value: string) => {
     try {
-      return format(parseISO(value), 'MMM dd, yyyy'
+      return format(parseISO(value), 'MMM dd, yyyy');
     } catch {
       return value;
     }
@@ -118,6 +125,7 @@ export default function StockChart({
             </p>
           ))}
         </div>
+      );
     }
     return null;
   };
@@ -150,12 +158,14 @@ export default function StockChart({
           />
           
           {/* Reference line for today */}
-          <ReferenceLine
-            x={today}
-            stroke="rgb(var(--theme-text-secondary))"
-            strokeDasharray="5 5"
-            label={{ value: "Today", position: "top" }}
-          />
+          {today && (
+            <ReferenceLine
+              x={today}
+              stroke="rgb(var(--theme-text-secondary))"
+              strokeDasharray="5 5"
+              label={{ value: "Today", position: "top" }}
+            />
+          )}
           
           {/* Actual price line */}
           <Line
@@ -209,4 +219,5 @@ export default function StockChart({
         </div>
       </div>
     </div>
+  );
 }

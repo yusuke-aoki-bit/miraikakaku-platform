@@ -1,5 +1,5 @@
-functions-framework==3.*
+functions-framework==3.5.0
 psycopg2-binary==2.9.9
 numpy==1.24.4
 pandas==2.1.4
-google-cloud-aiplatform==1.36.0
+google-cloud-aiplatform==1.38.0

@@ -4,26 +4,26 @@ import { useRouter } from 'next/navigation';
 
 // Static translations to avoid i18n dependency
 const translations = {
-  'footer.links.disclaimer': '免責事項'
-  'footer.links.terms': '利用規約'
-  'footer.links.privacy': 'プライバシーポリシー'
-  'footer.copyright': '© 2024 未来価格. All rights reserved.'
+  'footer.links.disclaimer': '免責事項',
+  'footer.links.terms': '利用規約',
+  'footer.links.privacy': 'プライバシーポリシー',
+  'footer.copyright': '© 2024 未来価格. All rights reserved.',
   'footer.disclaimer': 'このサイトは投資の助言を行うものではありません。'
 };
 
-const t = (key: string, fallback?: string) => translations[key] || fallback || key;
+const t = (key: string, fallback?: string) => (translations as Record<string, string>)[key] || fallback || key;
 
 export default function Footer() {
-  const router = useRouter(
+  const router = useRouter();
   const legalLinks = [
-    { href: '/disclaimer', label: t('footer.links.disclaimer', '免責事項') }
-    { href: '/terms', label: t('footer.links.terms', '利用規約') }
+    { href: '/disclaimer', label: t('footer.links.disclaimer', '免責事項') },
+    { href: '/terms', label: t('footer.links.terms', '利用規約') },
     { href: '/privacy', label: t('footer.links.privacy', 'プライバシーポリシー') }
   ];
 
   return (
     <footer className="py-8 px-4 border-t" style={{
-      backgroundColor: 'rgb(var(--theme-bg-secondary))'
+      backgroundColor: 'rgb(var(--theme-bg-secondary))',
       borderColor: 'rgb(var(--theme-border))'
     }}>
       <div className="max-w-6xl mx-auto">
@@ -57,4 +57,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+  );
 }

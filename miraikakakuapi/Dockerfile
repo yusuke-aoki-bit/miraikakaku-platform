@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install dependencies
-COPY functions/requirements.txt .
+COPY requirements.txt .
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --no-cache-dir --upgrade pip && \
@@ -59,4 +59,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 EXPOSE 8080 8081
 
 # Run the application
-CMD ["uvicorn", "db_based_api:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "4"]
+CMD ["python3", "simple_api_server.py"]

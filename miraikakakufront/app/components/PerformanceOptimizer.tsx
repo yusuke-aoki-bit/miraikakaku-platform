@@ -21,19 +21,19 @@ interface OptimizationResult {
 }
 
 export const PerformanceOptimizer: React.FC = () => {
-  const [isOptimizing, setIsOptimizing] = useState(false
-  const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null
-  const [realTimeMetrics, setRealTimeMetrics] = useState<PerformanceMetrics | null>(null
-  const optimizationWorker = useRef<Worker | null>(null
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
+  const [realTimeMetrics, setRealTimeMetrics] = useState<PerformanceMetrics | null>(null);
+  const optimizationWorker = useRef<Worker | null>(null);
   useEffect(() => {
-    initializeOptimizer(
-    startPerformanceMonitoring(
+    initializeOptimizer();
+    startPerformanceMonitoring();
     return () => {
       if (optimizationWorker.current) {
-        optimizationWorker.current.terminate(
+        optimizationWorker.current.terminate();
       }
     };
-  }, []
+  }, []);
   const initializeOptimizer = () => {
     // Create optimization worker for background processing
     if (typeof Worker !== 'undefined') {
@@ -41,7 +41,7 @@ export const PerformanceOptimizer: React.FC = () => {
         const workerCode = `
           class PerformanceOptimizer {
             constructor() {
-              this.cache = new Map(
+              this.cache = new Map();
               this.optimizations = [];
             }
 
@@ -56,9 +56,9 @@ export const PerformanceOptimizer: React.FC = () => {
             optimizeCache() {
               // Cache optimization strategies
               const cacheStrategies = [
-                'Preload critical resources'
-                'Implement service worker caching'
-                'Optimize localStorage usage'
+                'Preload critical resources',
+                'Implement service worker caching',
+                'Optimize localStorage usage',
                 'Compress cached data'
               ];
               return { type: 'cache', improvement: 25, strategies: cacheStrategies };
@@ -89,43 +89,44 @@ export const PerformanceOptimizer: React.FC = () => {
             async performFullOptimization() {
               const results = [];
 
-              results.push(this.optimizeMemory()
-              results.push(this.optimizeCache()
-              results.push(this.optimizeRendering()
-              results.push(this.optimizeNetwork()
-              const totalImprovement = results.reduce((sum, r) => sum + r.improvement, 0
-              const score = Math.min(100, 60 + totalImprovement
+              results.push(this.optimizeMemory());
+              results.push(this.optimizeCache());
+              results.push(this.optimizeRendering());
+              results.push(this.optimizeNetwork());
+              const totalImprovement = results.reduce((sum, r) => sum + r.improvement, 0);
+              const score = Math.min(100, 60 + totalImprovement);
               return {
-                results
-                totalImprovement
-                score
+                results,
+                totalImprovement,
+                score,
                 optimizations: results.flatMap(r => r.strategies || r.optimizations || [])
               };
             }
           }
 
-          const optimizer = new PerformanceOptimizer(
+          const optimizer = new PerformanceOptimizer();
           self.onmessage = async function(e) {
             const { type } = e.data;
 
             if (type === 'optimize') {
-              const result = await optimizer.performFullOptimization(
-              self.postMessage({ type: 'optimization-complete', result }
+              const result = await optimizer.performFullOptimization();
+              self.postMessage({ type: 'optimization-complete', result });
             }
           };
         `;
 
-        const blob = new Blob([workerCode], { type: 'application/javascript' }
-        optimizationWorker.current = new Worker(URL.createObjectURL(blob)
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        optimizationWorker.current = new Worker(URL.createObjectURL(blob));
         optimizationWorker.current.onmessage = (e) => {
           const { type, result } = e.data;
           if (type === 'optimization-complete') {
-            handleOptimizationComplete(result
+            handleOptimizationComplete(result);
           }
         };
 
       } catch (error) {
-        }
+        console.warn('Performance optimization worker not available:', error);
+      }
     }
   };
 
@@ -134,61 +135,61 @@ export const PerformanceOptimizer: React.FC = () => {
     const memory = (performance as any).memory;
 
     return {
-      loadTime: navigation ? navigation.loadEventEnd - navigation.fetchStart : 0
-      renderTime: navigation ? navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart : 0
+      loadTime: navigation ? navigation.loadEventEnd - navigation.fetchStart : 0,
+      renderTime: navigation ? navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart : 0,
       cacheHitRate: Math.random() * 40 + 60, // Simulated cache hit rate
-      memoryUsage: memory ? memory.usedJSHeapSize / 1024 / 1024 : 0
-      networkLatency: navigation ? navigation.responseStart - navigation.requestStart : 0
-      jsHeapSize: memory ? memory.totalJSHeapSize / 1024 / 1024 : 0
+      memoryUsage: memory ? memory.usedJSHeapSize / 1024 / 1024 : 0,
+      networkLatency: navigation ? navigation.responseStart - navigation.requestStart : 0,
+      jsHeapSize: memory ? memory.totalJSHeapSize / 1024 / 1024 : 0,
       domNodes: document.querySelectorAll('*').length
     };
   };
 
   const startPerformanceMonitoring = () => {
     const updateMetrics = () => {
-      setRealTimeMetrics(getPerformanceMetrics()
+      setRealTimeMetrics(getPerformanceMetrics());
     };
 
-    updateMetrics(
-    const interval = setInterval(updateMetrics, 2000
-    return () => clearInterval(interval
+    updateMetrics();
+    const interval = setInterval(updateMetrics, 2000);
+    return () => clearInterval(interval);
   };
 
   const runOptimization = async () => {
-    setIsOptimizing(true
-    const beforeMetrics = getPerformanceMetrics(
+    setIsOptimizing(true);
+    getPerformanceMetrics();
     // Trigger optimization worker
     if (optimizationWorker.current) {
-      optimizationWorker.current.postMessage({ type: 'optimize' }
+      optimizationWorker.current.postMessage({ type: 'optimize' });
     } else {
       // Fallback optimization without worker
       setTimeout(() => {
         const result = {
           results: [
-            { type: 'cache', improvement: 25 }
-            { type: 'rendering', improvement: 30 }
-            { type: 'memory', improvement: 15 }
+            { type: 'cache', improvement: 25 },
+            { type: 'rendering', improvement: 30 },
+            { type: 'memory', improvement: 15 },
             { type: 'network', improvement: 20 }
-          ]
-          totalImprovement: 90
-          score: 100
+          ],
+          totalImprovement: 90,
+          score: 100,
           optimizations: [
-            'キャッシュストラテジー最適化'
-            'コンポーネントメモ化実装'
-            'メモリ使用量削減'
+            'キャッシュストラテジー最適化',
+            'コンポーネントメモ化実装',
+            'メモリ使用量削減',
             'ネットワーク要求最適化'
           ]
         };
-        handleOptimizationComplete(result
-      }, 2000
+        handleOptimizationComplete(result);
+      }, 2000);
     }
   };
 
   const handleOptimizationComplete = (result: any) => {
-    const afterMetrics = getPerformanceMetrics(
+    const afterMetrics = getPerformanceMetrics();
     // Simulate improvements in metrics
     const improvedMetrics: PerformanceMetrics = {
-      ...afterMetrics
+      ...afterMetrics,
       loadTime: Math.max(50, afterMetrics.loadTime * 0.4), // 60% improvement
       renderTime: Math.max(10, afterMetrics.renderTime * 0.5), // 50% improvement
       cacheHitRate: Math.min(100, afterMetrics.cacheHitRate * 1.2), // 20% improvement
@@ -197,25 +198,25 @@ export const PerformanceOptimizer: React.FC = () => {
     };
 
     setOptimizationResult({
-      before: afterMetrics
-      after: improvedMetrics
+      before: afterMetrics,
+      after: improvedMetrics,
       improvements: result.optimizations || [
-        '🚀 ページ読み込み速度 60% 向上'
-        '⚡ レンダリング時間 50% 短縮'
-        '💾 キャッシュヒット率 20% 向上'
-        '🧠 メモリ使用量 30% 削減'
+        '🚀 ページ読み込み速度 60% 向上',
+        '⚡ レンダリング時間 50% 短縮',
+        '💾 キャッシュヒット率 20% 向上',
+        '🧠 メモリ使用量 30% 削減',
         '🌐 ネットワーク遅延 40% 改善'
-      ]
+      ],
       score: result.score || 100
-    }
-    setRealTimeMetrics(improvedMetrics
-    setIsOptimizing(false
+    });
+    setRealTimeMetrics(improvedMetrics);
+    setIsOptimizing(false);
     // Store optimization results
     localStorage.setItem('performance-optimization', JSON.stringify({
-      timestamp: Date.now()
-      score: result.score || 100
+      timestamp: Date.now(),
+      score: result.score || 100,
       improvements: result.totalImprovement || 90
-    })
+    }));
   };
 
   const formatMetric = (value: number, unit: string = '', decimals: number = 1): string => {
@@ -401,4 +402,5 @@ export const PerformanceOptimizer: React.FC = () => {
         </div>
       </div>
     </div>
+  );
 };

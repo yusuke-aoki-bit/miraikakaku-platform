@@ -5,18 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
 
 export default function LanguageSwitcher() {
-  const { i18n } = useTranslation(
-  const [isOpen, setIsOpen] = useState(false
+  const { i18n } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
   const languages = [
-    { code: 'ja', name: '日本語', flag: '🇯🇵' }
+    { code: 'ja', name: '日本語', flag: '🇯🇵' },
     { code: 'en', name: 'English', flag: '🇺🇸' }
   ];
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
   const handleLanguageChange = (langCode: string) => {
-    i18n.changeLanguage(langCode
-    setIsOpen(false
+    i18n.changeLanguage(langCode);
+    setIsOpen(false);
   };
 
   return (
@@ -25,8 +25,8 @@ export default function LanguageSwitcher() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors"
         style={{
-          backgroundColor: 'var(--yt-music-surface-variant)'
-          color: 'var(--yt-music-text-primary)'
+          backgroundColor: 'var(--yt-music-surface-variant)',
+          color: 'var(--yt-music-text-primary)',
           border: '1px solid var(--yt-music-border)'
         }}
         onMouseEnter={(e) => {
@@ -38,7 +38,7 @@ export default function LanguageSwitcher() {
       >
         <Globe className="w-4 h-4" />
         <span className="text-sm font-medium">
-          {currentLanguage.flag} {currentLanguage.name}
+          {currentLanguage?.flag} {currentLanguage?.name}
         </span>
       </button>
 
@@ -46,7 +46,7 @@ export default function LanguageSwitcher() {
         <div
           className="absolute top-full right-0 mt-2 min-w-[140px] rounded-lg shadow-lg z-50"
           style={{
-            backgroundColor: 'var(--yt-music-surface)'
+            backgroundColor: 'var(--yt-music-surface)',
             border: '1px solid var(--yt-music-border)'
           }}
         >
@@ -76,4 +76,5 @@ export default function LanguageSwitcher() {
         </div>
       )}
     </div>
+  );
 }

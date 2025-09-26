@@ -2,17 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  User
-  Star
-  Bell
-  Settings
-  Plus
-  Trash2
-  TrendingUp
-  TrendingDown
-  AlertTriangle
-  BarChart3
-  Briefcase
+  User,
+  Star,
+  Bell,
+  Settings,
+  Plus,
+  AlertTriangle,
+  BarChart3,
   LogOut
 } from 'lucide-react';
 
@@ -53,42 +49,43 @@ interface UserDashboardProps {
 }
 
 export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'watchlists' | 'alerts' | 'settings'>('overview'
-  const [watchlists, setWatchlists] = useState<Watchlist[]>([]
-  const [alerts, setAlerts] = useState<PriceAlert[]>([]
-  const [loading, setLoading] = useState(false
-  const [newWatchlist, setNewWatchlist] = useState({ name: '', symbols: '', description: '' }
-  const [newAlert, setNewAlert] = useState({ symbol: '', alertType: 'above', targetPrice: '', percentageChange: '' }
+  const [activeTab, setActiveTab] = useState<'overview' | 'watchlists' | 'alerts' | 'settings'>('overview');
+  const [watchlists, setWatchlists] = useState<Watchlist[]>([]);
+  const [alerts, setAlerts] = useState<PriceAlert[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [newWatchlist, setNewWatchlist] = useState({ name: '', symbols: '', description: '' });
+  const [newAlert, setNewAlert] = useState({ symbol: '', alertType: 'above', targetPrice: '', percentageChange: '' });
   useEffect(() => {
-    fetchUserData(
-  }, []
+    fetchUserData();
+  }, []);
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('auth_token'
+    const token = localStorage.getItem('auth_token');
     return {
-      'Content-Type': 'application/json'
-      'Authorization'
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
     };
   };
 
   const fetchUserData = async () => {
-    setLoading(true
+    setLoading(true);
     try {
       const [watchlistsRes, alertsRes] = await Promise.all([
-        fetch('http://localhost:8080/api/user/watchlists', { headers: getAuthHeaders() })
+        fetch('http://localhost:8080/api/user/watchlists', { headers: getAuthHeaders() }),
         fetch('http://localhost:8080/api/user/alerts', { headers: getAuthHeaders() })
-      ]
+      ]);
       if (watchlistsRes.ok) {
-        const watchlistsData = await watchlistsRes.json(
-        setWatchlists(watchlistsData.watchlists || []
+        const watchlistsData = await watchlistsRes.json();
+        setWatchlists(watchlistsData.watchlists || []);
       }
 
       if (alertsRes.ok) {
-        const alertsData = await alertsRes.json(
-        setAlerts(alertsData.alerts || []
+        const alertsData = await alertsRes.json();
+        setAlerts(alertsData.alerts || []);
       }
     } catch (error) {
-      } finally {
-      setLoading(false
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,23 +93,24 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onLogout }) 
     if (!newWatchlist.name.trim()) return;
 
     try {
-      const symbols = newWatchlist.symbols.split(',').map(s => s.trim().toUpperCase()).filter(s => s
+      const symbols = newWatchlist.symbols.split(',').map(s => s.trim().toUpperCase()).filter(s => s);
       const response = await fetch('http://localhost:8080/api/user/watchlists', {
-        method: 'POST'
-        headers: getAuthHeaders()
+        method: 'POST',
+        headers: getAuthHeaders(),
         body: JSON.stringify({
-          name: newWatchlist.name
-          description: newWatchlist.description
-          symbols: symbols
+          name: newWatchlist.name,
+          description: newWatchlist.description,
+          symbols: symbols,
           is_public: false
         })
-      }
+      });
       if (response.ok) {
-        setNewWatchlist({ name: '', symbols: '', description: '' }
-        fetchUserData(
+        setNewWatchlist({ name: '', symbols: '', description: '' });
+        fetchUserData();
       }
     } catch (error) {
-      }
+      console.error('Error:', error);
+    }
   };
 
   const createAlert = async () => {
@@ -120,32 +118,33 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onLogout }) 
 
     try {
       const payload: any = {
-        symbol: newAlert.symbol.toUpperCase()
+        symbol: newAlert.symbol.toUpperCase(),
         alert_type: newAlert.alertType
       };
 
       if (newAlert.targetPrice) {
-        payload.target_price = parseFloat(newAlert.targetPrice
+        payload.target_price = parseFloat(newAlert.targetPrice);
       }
       if (newAlert.percentageChange) {
-        payload.percentage_change = parseFloat(newAlert.percentageChange
+        payload.percentage_change = parseFloat(newAlert.percentageChange);
       }
 
       const response = await fetch('http://localhost:8080/api/user/alerts', {
-        method: 'POST'
-        headers: getAuthHeaders()
+        method: 'POST',
+        headers: getAuthHeaders(),
         body: JSON.stringify(payload)
-      }
+      });
       if (response.ok) {
-        setNewAlert({ symbol: '', alertType: 'above', targetPrice: '', percentageChange: '' }
-        fetchUserData(
+        setNewAlert({ symbol: '', alertType: 'above', targetPrice: '', percentageChange: '' });
+        fetchUserData();
       }
     } catch (error) {
-      }
+      console.error('Error:', error);
+    }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP'
+    return new Date(dateString).toLocaleDateString('ja-JP');
   };
 
   const renderOverview = () => (
@@ -178,9 +177,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onLogout }) 
             <span className="text-gray-500">投資経験:</span>
             <span className="ml-2 font-medium">
               {user.investment_experience
-                (user.investment_experience === 'beginner' ? '初心者'
-                 user.investment_experience === 'intermediate' ? '中級者' : '上級者')
-                '未設定'
+                ? (user.investment_experience === 'beginner' ? '初心者'
+                 : user.investment_experience === 'intermediate' ? '中級者' : '上級者')
+                : '未設定'
               }
             </span>
           </div>
@@ -188,9 +187,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onLogout }) 
             <span className="text-gray-500">リスク許容度:</span>
             <span className="ml-2 font-medium">
               {user.risk_tolerance
-                (user.risk_tolerance === 'conservative' ? '保守的'
-                 user.risk_tolerance === 'moderate' ? '中程度' : '積極的')
-                '未設定'
+                ? (user.risk_tolerance === 'conservative' ? '保守的'
+                 : user.risk_tolerance === 'moderate' ? '中程度' : '積極的')
+                : '未設定'
               }
             </span>
           </div>
@@ -232,6 +231,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onLogout }) 
         </div>
       </div>
     </div>
+  );
+
   const renderWatchlists = () => (
     <div className="space-y-6">
       {/* Create New Watchlist */}
@@ -291,6 +292,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onLogout }) 
         ))}
       </div>
     </div>
+  );
+
   const renderAlerts = () => (
     <div className="space-y-6">
       {/* Create New Alert */}
@@ -370,6 +373,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onLogout }) 
         ))}
       </div>
     </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -393,9 +398,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onLogout }) 
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex space-x-8">
             {[
-              { key: 'overview', label: '概要', icon: User }
-              { key: 'watchlists', label: 'ウォッチリスト', icon: Star }
-              { key: 'alerts', label: 'アラート', icon: Bell }
+              { key: 'overview', label: '概要', icon: User },
+              { key: 'watchlists', label: 'ウォッチリスト', icon: Star },
+              { key: 'alerts', label: 'アラート', icon: Bell },
               { key: 'settings', label: '設定', icon: Settings }
             ].map(({ key, label, icon: Icon }) => (
               <button
@@ -436,4 +441,5 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ user, onLogout }) 
         )}
       </div>
     </div>
+  );
 };

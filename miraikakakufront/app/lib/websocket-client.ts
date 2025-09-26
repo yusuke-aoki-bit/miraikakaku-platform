@@ -72,8 +72,10 @@ export class RealtimeAIClient extends EventEmitter {
         const wsUrl = this.token ? `${this.apiUrl}?token=${this.token}` : this.apiUrl;
         this.ws = new WebSocket(wsUrl);
 
-        this.ws.onopen = (event) => {
-          console.log('🔗 WebSocket connected');
+        this.ws.onopen = () => {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔗 WebSocket connected');
+          }
           this.reconnectAttempts = 0;
           this.startHeartbeat();
           this.emit('connected');
@@ -85,7 +87,9 @@ export class RealtimeAIClient extends EventEmitter {
         };
 
         this.ws.onclose = (event) => {
-          console.log('🔌 WebSocket disconnected:', event.code, event.reason);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔌 WebSocket disconnected:', event.code, event.reason);
+          }
           this.cleanup();
           this.emit('disconnected', { code: event.code, reason: event.reason });
 
@@ -134,7 +138,9 @@ export class RealtimeAIClient extends EventEmitter {
       timestamp: new Date().toISOString()
     });
 
-    console.log(`📈 Subscribed to predictions for ${symbol}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📈 Subscribed to predictions for ${symbol}`);
+    }
   }
 
   /**
@@ -155,7 +161,9 @@ export class RealtimeAIClient extends EventEmitter {
       timestamp: new Date().toISOString()
     });
 
-    console.log(`📉 Unsubscribed from predictions for ${symbol}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📉 Unsubscribed from predictions for ${symbol}`);
+    }
   }
 
   /**
@@ -178,7 +186,9 @@ export class RealtimeAIClient extends EventEmitter {
       timestamp: new Date().toISOString()
     });
 
-    console.log(`📊 Subscribed to market data for ${symbols.join(', ')}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📊 Subscribed to market data for ${symbols.join(', ')}`);
+    }
   }
 
   /**
@@ -199,7 +209,9 @@ export class RealtimeAIClient extends EventEmitter {
       timestamp: new Date().toISOString()
     });
 
-    console.log(`🚨 Subscribed to alerts for user ${userId}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🚨 Subscribed to alerts for user ${userId}`);
+    }
   }
 
   /**
@@ -218,7 +230,9 @@ export class RealtimeAIClient extends EventEmitter {
       timestamp: new Date().toISOString()
     });
 
-    console.log('🏥 Subscribed to system health updates');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🏥 Subscribed to system health updates');
+    }
   }
 
   /**
@@ -244,7 +258,9 @@ export class RealtimeAIClient extends EventEmitter {
       timestamp: new Date().toISOString()
     });
 
-    console.log(`🤖 Requested prediction for ${symbol}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🤖 Requested prediction for ${symbol}`);
+    }
   }
 
   /**
@@ -356,11 +372,15 @@ export class RealtimeAIClient extends EventEmitter {
     this.reconnectAttempts++;
     const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1), 30000);
 
-    console.log(`🔄 Scheduling reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 Scheduling reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
+    }
 
     setTimeout(() => {
       if (this.reconnectAttempts <= this.maxReconnectAttempts) {
-        console.log(`🔄 Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔄 Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+        }
         this.connect().catch(error => {
           console.error('❌ Reconnect failed:', error);
         });

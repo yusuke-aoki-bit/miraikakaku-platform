@@ -2,14 +2,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Bell
-  X
-  AlertTriangle
-  Info
-  CheckCircle
-  XCircle
-  Settings
-  Volume2
+  Bell,
+  X,
+  AlertTriangle,
+  Info,
+  CheckCircle,
+  XCircle,
+  Volume2,
   VolumeX
 } from 'lucide-react';
 
@@ -30,53 +29,57 @@ interface NotificationToast extends Notification {
 }
 
 export const NotificationSystem: React.FC = () => {
-  const [isConnected, setIsConnected] = useState(false
-  const [notifications, setNotifications] = useState<Notification[]>([]
-  const [toasts, setToasts] = useState<NotificationToast[]>([]
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false
-  const [soundEnabled, setSoundEnabled] = useState(true
-  const [unreadCount, setUnreadCount] = useState(0
-  const wsRef = useRef<WebSocket | null>(null
-  const audioRef = useRef<HTMLAudioElement | null>(null
+  const [isConnected, setIsConnected] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [toasts, setToasts] = useState<NotificationToast[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const wsRef = useRef<WebSocket | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   useEffect(() => {
     // Create audio element for notification sounds
-    audioRef.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBQ=='
+    audioRef.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBTuR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBQ==');
     audioRef.current.volume = 0.3;
 
-    connectWebSocket(
+    connectWebSocket();
     return () => {
       if (wsRef.current) {
-        wsRef.current.close(
+        wsRef.current.close();
       }
     };
-  }, []
+  }, []);
+
   const connectWebSocket = () => {
     const wsUrl = `ws://localhost:8080/ws/notifications`;
-    const ws = new WebSocket(wsUrl
-    ws.onopen = () => {
-      setIsConnected(true
-      };
+    const ws = new WebSocket(wsUrl);
 
-    ws.onclose = () => {
-      setIsConnected(false
-      // Attempt to reconnect after 5 seconds
-      setTimeout(connectWebSocket, 5000
+    ws.onopen = () => {
+      setIsConnected(true);
     };
 
-    ws.onerror = (error) => {
-      setIsConnected(false
+    ws.onclose = () => {
+      setIsConnected(false);
+      // Attempt to reconnect after 5 seconds
+      setTimeout(connectWebSocket, 5000);
+    };
+
+    ws.onerror = () => {
+      setIsConnected(false);
     };
 
     ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data
+        const data = JSON.parse(event.data);
         if (data.type === 'notification') {
-          handleNewNotification(data.notification
+          handleNewNotification(data.notification);
         } else if (data.type === 'notification_history') {
-          setNotifications(data.notifications
+          setNotifications(data.notifications);
         }
       } catch (error) {
-        }
+        console.error('WebSocket message parsing error:', error);
+      }
     };
 
     wsRef.current = ws;
@@ -88,24 +91,24 @@ export const NotificationSystem: React.FC = () => {
 
     // Create toast
     const toast: NotificationToast = {
-      ...notification
+      ...notification,
       isVisible: true
     };
 
     // Play sound if enabled
     if (soundEnabled && audioRef.current) {
-      audioRef.current.play().catch(console.error
+      audioRef.current.play().catch(console.error);
     }
 
     // Add toast
-    setToasts(prev => [toast, ...prev]
+    setToasts(prev => [toast, ...prev]);
     // Auto-remove toast after delay
-    const delay = getSeverityDelay(notification.severity
+    const delay = getSeverityDelay(notification.severity);
     toast.timeoutId = setTimeout(() => {
-      removeToast(toast.id
-    }, delay
+      removeToast(toast.id);
+    }, delay);
     // Update unread count
-    setUnreadCount(prev => prev + 1
+    setUnreadCount(prev => prev + 1);
   };
 
   const getSeverityDelay = (severity: string): number => {
@@ -122,53 +125,53 @@ export const NotificationSystem: React.FC = () => {
     setToasts(prev => prev.filter(toast => {
       if (toast.id === id) {
         if (toast.timeoutId) {
-          clearTimeout(toast.timeoutId
+          clearTimeout(toast.timeoutId);
         }
         return false;
       }
       return true;
-    })
+    }));
   };
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical'
-      case 'error'
+      case 'critical':
+      case 'error':
         return <XCircle className="w-5 h-5 text-red-500" />;
-      case 'warning'
+      case 'warning':
         return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-      case 'info'
+      case 'info':
         return <Info className="w-5 h-5 text-blue-500" />;
-      default
+      default:
         return <CheckCircle className="w-5 h-5 text-green-500" />;
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical'
-      case 'error'
+      case 'critical':
+      case 'error':
         return 'border-red-200 bg-red-50';
-      case 'warning'
+      case 'warning':
         return 'border-yellow-200 bg-yellow-50';
-      case 'info'
+      case 'info':
         return 'border-blue-200 bg-blue-50';
-      default
+      default:
         return 'border-green-200 bg-green-50';
     }
   };
 
   const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString('ja-JP'
+    return new Date(timestamp).toLocaleString('ja-JP');
   };
 
   const clearAllNotifications = () => {
-    setNotifications([]
-    setUnreadCount(0
+    setNotifications([]);
+    setUnreadCount(0);
   };
 
   const markAsRead = () => {
-    setUnreadCount(0
+    setUnreadCount(0);
   };
 
   return (
@@ -177,8 +180,8 @@ export const NotificationSystem: React.FC = () => {
       <div className="relative">
         <button
           onClick={() => {
-            setIsDropdownOpen(!isDropdownOpen
-            markAsRead(
+            setIsDropdownOpen(!isDropdownOpen);
+            markAsRead();
           }}
           className="p-2 rounded-full hover:bg-gray-100 transition-colors relative"
           title="通知"
@@ -304,4 +307,5 @@ export const NotificationSystem: React.FC = () => {
         />
       )}
     </>
+  );
 };

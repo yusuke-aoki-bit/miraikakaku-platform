@@ -6,7 +6,7 @@ SQLiteフォールバックなし、MySQL廃止
 import os
 import logging
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from sqlalchemy.pool import NullPool
 from dotenv import load_dotenv
 from google.cloud.sql.connector import Connector
@@ -17,7 +17,8 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
 
 class CloudSQLConnection:

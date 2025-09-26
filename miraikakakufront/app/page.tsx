@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import SearchBar from './components/SearchBar';
 import LoadingSpinner from './components/LoadingSpinner';
 import { ProgressiveLoader } from './components/ProgressiveLoader';
@@ -13,23 +13,23 @@ import { TrendingUp } from 'lucide-react';
 
 // Static translations to avoid i18n dependency
 const translations = {
-  'hero.title': '未来価格'
-  'hero.description': '高度な機械学習モデルに基づくAI株価予測'
-  'search.placeholder': '株式・企業名・ランキングを検索 (例: AAPL, アップル, 値上がり率)'
-  'hero.features.ai.title': 'AI予測'
-  'hero.features.ai.description': 'LSTMニューラルネットワークが2年間のデータを分析し、6ヶ月先を予測'
-  'hero.features.visual.title': 'ビジュアル分析'
-  'hero.features.visual.description': '過去データ、過去の予測、未来予測を表示するインタラクティブチャート'
-  'hero.features.factors.title': '判断要因'
-  'hero.features.factors.description': '詳細な要因分析でAI予測の理由を理解'
-  'hero.rankings.title': 'ランキング'
-  'hero.rankings.bestPredictions7d': '7日間ベスト予測'
-  'hero.rankings.highConfidence': '高信頼度予測'
-  'hero.rankings.bestPredictions30d': '30日間ベスト予測'
+  'hero.title': '未来価格',
+  'hero.description': '高度な機械学習モデルに基づくAI株価予測',
+  'search.placeholder': '株式・企業名・ランキングを検索 (例: AAPL, アップル, 値上がり率)',
+  'hero.features.ai.title': 'AI予測',
+  'hero.features.ai.description': 'LSTMニューラルネットワークが2年間のデータを分析し、6ヶ月先を予測',
+  'hero.features.visual.title': 'ビジュアル分析',
+  'hero.features.visual.description': '過去データ、過去の予測、未来予測を表示するインタラクティブチャート',
+  'hero.features.factors.title': '判断要因',
+  'hero.features.factors.description': '詳細な要因分析でAI予測の理由を理解',
+  'hero.rankings.title': 'ランキング',
+  'hero.rankings.bestPredictions7d': '7日間ベスト予測',
+  'hero.rankings.highConfidence': '高信頼度予測',
+  'hero.rankings.bestPredictions30d': '30日間ベスト予測',
   'hero.rankings.bestPredictions90d': '90日間ベスト予測'
 };
 
-const t = (key: string) => translations[key] || key;
+const t = (key: string) => (translations as Record<string, string>)[key] || key;
 
 interface UserData {
   id: number;
@@ -40,39 +40,30 @@ interface UserData {
 }
 
 export default function Home() {
-  const router = useRouter(
-  const [isReady, setIsReady] = useState(true
-  const [currentUser, setCurrentUser] = useState<UserData | null>(null
-  const [showProgressiveLoader, setShowProgressiveLoader] = useState(false
-  const [performanceMetrics, setPerformanceMetrics] = useState<any>({}
+  const router = useRouter();
+  const [isReady, setIsReady] = useState(true);
+  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
+  const [showProgressiveLoader, setShowProgressiveLoader] = useState(false);
   // Progressive loader disabled for performance and E2E testing
 
   const handleSelectStock = (symbol: string) => {
-    router.push(`/details/${symbol}`
+    router.push(`/details/${symbol}`);
   };
 
   const handleUserAuthenticated = (user: UserData) => {
-    setCurrentUser(user
+    setCurrentUser(user);
   };
 
   const handleProgressiveLoadingComplete = () => {
     // Mark progressive loading as shown today
-    const today = new Date().toDateString(
-    localStorage.setItem('progressive-loader-shown', today
-    setShowProgressiveLoader(false
-    setIsReady(true
+    const today = new Date().toDateString();
+    localStorage.setItem('progressive-loader-shown', today);
+    setShowProgressiveLoader(false);
+    setIsReady(true);
   };
 
-  const handleStageUpdate = (stage: any, progress: number) => {
-    // Track performance metrics
-    setPerformanceMetrics(prev => ({
-      ...prev
-      [`stage_${stage.id}`]: {
-        duration: stage.duration
-        status: stage.status
-      }
-      overallProgress: progress
-    })
+  const handleStageUpdate = () => {
+    // Performance tracking disabled
   };
 
   // Show Progressive Loader
@@ -83,6 +74,7 @@ export default function Home() {
         onStageUpdate={handleStageUpdate}
         enablePerformanceMode={true}
       />
+    );
   }
 
   // Show fallback loader for quick subsequent loads
@@ -93,6 +85,7 @@ export default function Home() {
           <LoadingSpinner size="lg" />
         </div>
       </div>
+    );
   }
 
   return (
@@ -149,13 +142,13 @@ export default function Home() {
             <h3 className="theme-heading-md mb-4">カテゴリー</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { name: '成長株', icon: '📈' }
-                { name: '高配当株', icon: '💰' }
-                { name: 'バリュー株', icon: '💎' }
-                { name: '小型株', icon: '🚀' }
-                { name: 'テクノロジー', icon: '💻' }
-                { name: 'ヘルスケア', icon: '🏥' }
-                { name: '金融', icon: '🏦' }
+                { name: '成長株', icon: '📈' },
+                { name: '高配当株', icon: '💰' },
+                { name: 'バリュー株', icon: '💎' },
+                { name: '小型株', icon: '🚀' },
+                { name: 'テクノロジー', icon: '💻' },
+                { name: 'ヘルスケア', icon: '🏥' },
+                { name: '金融', icon: '🏦' },
                 { name: 'エネルギー', icon: '⚡' }
               ].map(category => (
                 <button
@@ -191,9 +184,9 @@ export default function Home() {
             <h3 className="theme-heading-md mb-4">日本企業</h3>
             <div className="flex flex-wrap gap-3 justify-center">
               {[
-                { name: 'トヨタ', symbol: '7203.T' }
-                { name: 'ソニー', symbol: '6758.T' }
-                { name: 'ソフトバンク', symbol: '9984.T' }
+                { name: 'トヨタ', symbol: '7203.T' },
+                { name: 'ソニー', symbol: '6758.T' },
+                { name: 'ソフトバンク', symbol: '9984.T' },
                 { name: '任天堂', symbol: '7974.T' }
               ].map(company => (
                 <button
@@ -280,9 +273,9 @@ export default function Home() {
             </h3>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 max-w-7xl mx-auto">
               {[
-                { key: 'bestPredictions', icon: '🎯', timeframe: '7d' as const, type: 'best_predictions' as const, title: t('hero.rankings.bestPredictions7d') }
-                { key: 'highConfidence', icon: '🔥', timeframe: '30d' as const, type: 'highest_confidence' as const, title: t('hero.rankings.highConfidence') }
-                { key: 'monthlyPredictions', icon: '📈', timeframe: '30d' as const, type: 'best_predictions' as const, title: t('hero.rankings.bestPredictions30d') }
+                { key: 'bestPredictions', icon: '🎯', timeframe: '7d' as const, type: 'best_predictions' as const, title: t('hero.rankings.bestPredictions7d') },
+                { key: 'highConfidence', icon: '🔥', timeframe: '30d' as const, type: 'highest_confidence' as const, title: t('hero.rankings.highConfidence') },
+                { key: 'monthlyPredictions', icon: '📈', timeframe: '30d' as const, type: 'best_predictions' as const, title: t('hero.rankings.bestPredictions30d') },
                 { key: 'quarterlyPredictions', icon: '⭐', timeframe: '90d' as const, type: 'best_predictions' as const, title: t('hero.rankings.bestPredictions90d') }
               ].map((ranking) => (
                 <RankingCard
@@ -304,4 +297,5 @@ export default function Home() {
       <Footer />
       <SystemStatus />
     </div>
+  );
 }

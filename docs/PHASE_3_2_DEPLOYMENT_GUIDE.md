@@ -96,7 +96,7 @@ psql --version     # 12.0+
 CREATE DATABASE miraikakaku_multitenant;
 
 -- 管理者ユーザー作成
-CREATE USER miraikakaku_admin WITH PASSWORD 'secure_password_2024!';
+CREATE USER miraikakaku_admin WITH PASSWORD '[ADMIN_PASSWORD_REDACTED]';
 GRANT ALL PRIVILEGES ON DATABASE miraikakaku_multitenant TO miraikakaku_admin;
 
 -- テナント用スキーマ作成権限
@@ -107,10 +107,10 @@ GRANT CREATE ON DATABASE miraikakaku_multitenant TO miraikakaku_admin;
 
 ```bash
 # miraikakakuapi/.env
-DATABASE_URL=postgresql://miraikakaku_admin:secure_password_2024!@localhost:5432/miraikakaku_multitenant
+DATABASE_URL=postgresql://miraikakaku_admin:[ADMIN_PASSWORD_REDACTED]@localhost:5432/miraikakaku_multitenant
 
 # JWT設定
-JWT_SECRET=your-super-secret-jwt-key-256-bits-long
+JWT_SECRET=[JWT_SECRET_REDACTED]
 JWT_ALGORITHM=HS256
 JWT_ACCESS_TOKEN_EXPIRE=3600
 JWT_REFRESH_TOKEN_EXPIRE=2592000
@@ -169,7 +169,7 @@ python3 -c "
 from services.multi_tenant_manager import MultiTenantManager
 import os
 
-db_url = os.getenv('DATABASE_URL', 'postgresql://miraikakaku_admin:secure_password_2024!@localhost:5432/miraikakaku_multitenant')
+db_url = os.getenv('DATABASE_URL', 'postgresql://miraikakaku_admin:[ADMIN_PASSWORD_REDACTED]@localhost:5432/miraikakaku_multitenant')
 manager = MultiTenantManager(db_url)
 print('✅ Multi-tenant database initialized')
 "
@@ -507,7 +507,7 @@ wait
 sudo systemctl status postgresql
 
 # 接続テスト
-psql -h localhost -U miraikakaku_admin -d miraikakaku_multitenant -c "SELECT 1;"
+PGPASSWORD="${ADMIN_PASSWORD}" psql -h localhost -U miraikakaku_admin -d miraikakaku_multitenant -c "SELECT 1;"
 
 # 環境変数確認
 echo $DATABASE_URL

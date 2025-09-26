@@ -10,42 +10,42 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess }) => {
-  const [isLogin, setIsLogin] = useState(true
-  const [showPassword, setShowPassword] = useState(false
-  const [loading, setLoading] = useState(false
-  const [error, setError] = useState(''
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    email: ''
-    password: ''
-    username: ''
-    fullName: ''
+    email: '',
+    password: '',
+    username: '',
+    fullName: '',
     confirmPassword: ''
-  }
+  });
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
-      ...formData
+      ...formData,
       [e.target.name]: e.target.value
-    }
-    if (error) setError(''
+    });
+    if (error) setError('');
   };
 
   const validateForm = () => {
     if (!formData.email || !formData.password) {
-      setError('メールアドレスとパスワードは必須です'
+      setError('メールアドレスとパスワードは必須です');
       return false;
     }
 
     if (!isLogin) {
       if (!formData.username) {
-        setError('ユーザー名は必須です'
+        setError('ユーザー名は必須です');
         return false;
       }
       if (formData.password !== formData.confirmPassword) {
-        setError('パスワードが一致しません'
+        setError('パスワードが一致しません');
         return false;
       }
       if (formData.password.length < 6) {
-        setError('パスワードは6文字以上である必要があります'
+        setError('パスワードは6文字以上である必要があります');
         return false;
       }
     }
@@ -54,64 +54,64 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(
+    e.preventDefault();
     if (!validateForm()) return;
 
-    setLoading(true
-    setError(''
+    setLoading(true);
+    setError('');
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
       const payload = isLogin
         ? { email: formData.email, password: formData.password }
         : {
-            email: formData.email
-            password: formData.password
-            username: formData.username
+            email: formData.email,
+            password: formData.password,
+            username: formData.username,
             full_name: formData.fullName
           };
 
       const response = await fetch(`http://localhost:8080${endpoint}`, {
-        method: 'POST'
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
         body: JSON.stringify(payload)
-      }
-      const data = await response.json(
+      });
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.detail || 'Authentication failed'
+        throw new Error(data.detail || 'Authentication failed');
       }
 
       // Store token in localStorage
       if (data.access_token) {
-        localStorage.setItem('auth_token', data.access_token
-        localStorage.setItem('user_data', JSON.stringify(data.user)
+        localStorage.setItem('auth_token', data.access_token);
+        localStorage.setItem('user_data', JSON.stringify(data.user));
       }
 
-      onAuthSuccess(data.user
-      onClose(
-      resetForm(
+      onAuthSuccess(data.user);
+      onClose();
+      resetForm();
     } catch (err: any) {
-      setError(err.message || 'Authentication failed'
+      setError(err.message || 'Authentication failed');
     } finally {
-      setLoading(false
+      setLoading(false);
     }
   };
 
   const resetForm = () => {
     setFormData({
-      email: ''
-      password: ''
-      username: ''
-      fullName: ''
+      email: '',
+      password: '',
+      username: '',
+      fullName: '',
       confirmPassword: ''
-    }
-    setError(''
+    });
+    setError('');
   };
 
   const switchMode = () => {
-    setIsLogin(!isLogin
-    resetForm(
+    setIsLogin(!isLogin);
+    resetForm();
   };
 
   if (!isOpen) return null;
@@ -266,4 +266,5 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
         </form>
       </div>
     </div>
+  );
 };

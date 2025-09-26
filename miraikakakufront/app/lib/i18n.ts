@@ -8,7 +8,7 @@ import commonEN from '../../public/locales/en/common.json';
 const resources = {
   ja: {
     common: commonJA
-  }
+  },
   en: {
     common: commonEN
   }
@@ -17,16 +17,16 @@ const resources = {
 i18n
   .use(initReactI18next)
   .init({
-    resources
+    resources,
     lng: 'ja', // default language
-    fallbackLng: 'ja'
+    fallbackLng: 'ja',
     ns: ['common'], // Explicitly set namespaces
-    defaultNS: 'common'
+    defaultNS: 'common',
     interpolation: {
       escapeValue: false
-    }
-    debug: process.env.NODE_ENV === 'development'
+    },
+    debug: process.env.NODE_ENV === 'development',
     // Force synchronous loading
     initImmediate: false
-  }
+  });
 export default i18n;

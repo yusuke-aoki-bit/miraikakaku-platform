@@ -27,9 +27,9 @@ MiraiKakaku AI株価予測システムの包括的な監査を実施した結果
 
 **具体的な脆弱性:**
 ```bash
-DATABASE_URL=postgresql://postgres:Miraikakaku2024!@34.173.9.214:5432/miraikakaku
-JWT_SECRET_KEY=JNdSzCJzulRCGNgSS3KgiSioA1UoWL8mcP9TzMZy90f3MdbM-5RWpXE5ijB_JErYBdiSO-s3Hjpoh1kQYPK3SQ
-POSTGRES_PASSWORD=Miraikakaku2024!
+DATABASE_URL=postgresql://postgres:[REDACTED]@[DB_HOST_REDACTED]:5432/miraikakaku
+JWT_SECRET_KEY=[REDACTED - 認証情報削除済み]
+POSTGRES_PASSWORD=[REDACTED]
 ```
 
 **影響範囲:**

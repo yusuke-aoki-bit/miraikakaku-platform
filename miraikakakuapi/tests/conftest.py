@@ -38,6 +38,13 @@ def db_session(test_db):
         session.close()
 
 @pytest.fixture
+def client():
+    """Create a test client"""
+    from fastapi.testclient import TestClient
+    from functions.main import app
+    return TestClient(app)
+
+@pytest.fixture
 def mock_yfinance():
     """Mock yfinance for tests"""
     mock = MagicMock()

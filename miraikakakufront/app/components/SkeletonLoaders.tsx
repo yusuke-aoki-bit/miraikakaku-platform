@@ -5,7 +5,7 @@ const skeletonClass = "skeleton-animate rounded shimmer-effect";
 
 export const StockHeaderSkeleton: React.FC = () => (
   <div className="rounded-lg shadow-md p-6 mb-8" style={{
-    backgroundColor: 'var(--yt-music-surface)'
+    backgroundColor: 'var(--yt-music-surface)',
     border: '1px solid var(--yt-music-border)'
   }}>
     <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -21,9 +21,10 @@ export const StockHeaderSkeleton: React.FC = () => (
       </div>
     </div>
   </div>
+);
 export const StockChartSkeleton: React.FC = () => (
   <div className="rounded-lg shadow-md p-6 mb-8" style={{
-    backgroundColor: 'var(--yt-music-surface)'
+    backgroundColor: 'var(--yt-music-surface)',
     border: '1px solid var(--yt-music-border)'
   }}>
     {/* Chart title skeleton */}
@@ -39,9 +40,10 @@ export const StockChartSkeleton: React.FC = () => (
       ))}
     </div>
   </div>
+);
 export const AnalysisCardSkeleton: React.FC<{ title?: string }> = ({ title }) => (
   <div className="rounded-lg shadow-md p-6 mb-6" style={{
-    backgroundColor: 'var(--yt-music-surface)'
+    backgroundColor: 'var(--yt-music-surface)',
     border: '1px solid var(--yt-music-border)'
   }}>
     {/* Title */}
@@ -61,9 +63,10 @@ export const AnalysisCardSkeleton: React.FC<{ title?: string }> = ({ title }) =>
       <div className={`${skeletonClass} h-4 w-3/4`}></div>
     </div>
   </div>
+);
 export const PredictionTableSkeleton: React.FC = () => (
   <div className="rounded-lg shadow-md p-6 mb-8" style={{
-    backgroundColor: 'var(--yt-music-surface)'
+    backgroundColor: 'var(--yt-music-surface)',
     border: '1px solid var(--yt-music-border)'
   }}>
     {/* Table title */}
@@ -86,11 +89,12 @@ export const PredictionTableSkeleton: React.FC = () => (
       </div>
     ))}
   </div>
+);
 export const TechnicalAnalysisSkeleton: React.FC = () => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     {/* Technical indicators */}
     <div className="rounded-lg shadow-md p-6" style={{
-      backgroundColor: 'var(--yt-music-surface)'
+      backgroundColor: 'var(--yt-music-surface)',
       border: '1px solid var(--yt-music-border)'
     }}>
       <div className={`${skeletonClass} h-6 w-32 mb-4`}></div>
@@ -106,7 +110,7 @@ export const TechnicalAnalysisSkeleton: React.FC = () => (
 
     {/* Risk analysis */}
     <div className="rounded-lg shadow-md p-6" style={{
-      backgroundColor: 'var(--yt-music-surface)'
+      backgroundColor: 'var(--yt-music-surface)',
       border: '1px solid var(--yt-music-border)'
     }}>
       <div className={`${skeletonClass} h-6 w-24 mb-4`}></div>
@@ -120,9 +124,10 @@ export const TechnicalAnalysisSkeleton: React.FC = () => (
       </div>
     </div>
   </div>
+);
 export const SidebarStatsSkeleton: React.FC = () => (
   <div className="rounded-lg shadow-md p-6" style={{
-    backgroundColor: 'var(--yt-music-surface)'
+    backgroundColor: 'var(--yt-music-surface)',
     border: '1px solid var(--yt-music-border)'
   }}>
     {/* Title */}
@@ -138,9 +143,10 @@ export const SidebarStatsSkeleton: React.FC = () => (
       ))}
     </div>
   </div>
+);
 export const PriceAlertsSkeleton: React.FC = () => (
   <div className="rounded-lg shadow-md p-6" style={{
-    backgroundColor: 'var(--yt-music-surface)'
+    backgroundColor: 'var(--yt-music-surface)',
     border: '1px solid var(--yt-music-border)'
   }}>
     {/* Title */}
@@ -152,14 +158,15 @@ export const PriceAlertsSkeleton: React.FC = () => (
       <div className={`${skeletonClass} h-8 w-20`}></div>
     </div>
   </div>
+);
 // Compound loading component for different stages
 export const ProgressiveDetailSkeleton: React.FC<{
   showHeader?: boolean;
   showChart?: boolean;
   showAnalysis?: boolean;
 }> = ({
-  showHeader = true
-  showChart = false
+  showHeader = true,
+  showChart = false,
   showAnalysis = false
 }) => (
   <div className="max-w-7xl mx-auto p-4 md:p-8">

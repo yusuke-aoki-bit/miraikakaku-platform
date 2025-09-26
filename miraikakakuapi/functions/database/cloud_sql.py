@@ -43,11 +43,15 @@ class CloudSQLManager:
                 self.engine = create_engine(
                     database_url,
                     poolclass=QueuePool,
-                    pool_size=20,  # 最適化: pool_sizeを10から20に増加
-                    max_overflow=40,  # 最適化: max_overflowを20から40に増加
-                    pool_timeout=30,
-                    pool_recycle=3600,
+                    pool_size=10,  # 最適化: プール使用率向上のため調整
+                    max_overflow=20,  # 最適化: オーバーフロー制限
+                    pool_timeout=15,  # 最適化: タイムアウト短縮
+                    pool_recycle=1800,  # 最適化: 接続リサイクル間隔短縮
                     pool_pre_ping=True,
+                    connect_args={
+                        "options": "-c timezone=UTC",
+                        "connect_timeout": 10
+                    },
                     echo=False,
                 )
             else:
@@ -58,11 +62,15 @@ class CloudSQLManager:
                     self.engine = create_engine(
                         secure_db_url,
                         poolclass=QueuePool,
-                        pool_size=20,
-                        max_overflow=40,
-                        pool_timeout=30,
-                        pool_recycle=3600,
+                        pool_size=10,  # 最適化: プール使用率向上のため調整
+                        max_overflow=20,  # 最適化: オーバーフロー制限
+                        pool_timeout=15,  # 最適化: タイムアウト短縮
+                        pool_recycle=1800,  # 最適化: 接続リサイクル間隔短縮
                         pool_pre_ping=True,
+                        connect_args={
+                            "options": "-c timezone=UTC",
+                            "connect_timeout": 10
+                        },
                         echo=False,
                     )
                 except Exception as secure_error:
@@ -164,35 +172,34 @@ class StockDataRepository:
         try:
             records_inserted = 0
 
+            # バッチ挿入でパフォーマンス向上
+            batch_data = []
             for index, row in price_data.iterrows():
-                # PostgreSQL用のON CONFLICT構文
+                batch_data.append({
+                    "symbol": symbol,
+                    "date": index.strftime("%Y-%m-%d"),
+                    "open_price": float(row.get("Open", 0)),
+                    "high_price": float(row.get("High", 0)),
+                    "low_price": float(row.get("Low", 0)),
+                    "close_price": float(row.get("Close", 0)),
+                    "volume": int(row.get("Volume", 0)),
+                    "adjusted_close": float(row.get("Adj Close", row.get("Close", 0))),
+                })
+
+            if batch_data:
+                # バッチ挿入実行
                 insert_query = text(
                     """
                     INSERT INTO stock_prices
                     (symbol, date, open_price, high_price, low_price, close_price, volume, adjusted_close)
                     VALUES (:symbol, :date, :open_price, :high_price, :low_price, :close_price, :volume, :adjusted_close)
                     ON CONFLICT (symbol, date) DO NOTHING
-                """
+                    """
                 )
 
-                result = self.db.execute(
-                    insert_query,
-                    {
-                        "symbol": symbol,
-                        "date": index.strftime("%Y-%m-%d"),
-                        "open_price": float(row.get("Open", 0)),
-                        "high_price": float(row.get("High", 0)),
-                        "low_price": float(row.get("Low", 0)),
-                        "close_price": float(row.get("Close", 0)),
-                        "volume": int(row.get("Volume", 0)),
-                        "adjusted_close": float(
-                            row.get("Adj Close", row.get("Close", 0))
-                        ),
-                    },
-                )
-
-                if result.rowcount > 0:
-                    records_inserted += 1
+                # executemanyでバッチ処理
+                result = self.db.execute(insert_query, batch_data)
+                records_inserted = result.rowcount or len(batch_data)
 
             self.db.commit()
             logger.info(
@@ -209,6 +216,7 @@ class StockDataRepository:
     ) -> pd.DataFrame:
         """株価データを取得"""
         try:
+            # インデックス使用で高速化
             query = """
                 SELECT date, open_price, high_price, low_price, close_price, volume, adjusted_close
                 FROM stock_prices
@@ -224,9 +232,11 @@ class StockDataRepository:
                 query += " AND date <= :end_date"
                 params["end_date"] = end_date
 
-            query += " ORDER BY date ASC"
+            query += " ORDER BY date ASC LIMIT 10000"  # パフォーマンス向上：結果セット制限
 
-            df = pd.read_sql(query, self.db.bind, params=params)
+            # チャンク読み取りでメモリ効率向上
+            df = pd.read_sql(query, self.db.bind, params=params,
+                           chunksize=None)  # 一括読み取りだがLIMITで制限済み
 
             if not df.empty:
                 df["date"] = pd.to_datetime(df["date"])

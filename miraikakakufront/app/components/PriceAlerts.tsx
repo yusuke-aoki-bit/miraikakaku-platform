@@ -19,34 +19,35 @@ interface PriceAlertsProps {
 }
 
 export default function PriceAlerts({ symbol, currentPrice }: PriceAlertsProps) {
-  const [alerts, setAlerts] = useState<PriceAlert[]>([]
-  const [showAddForm, setShowAddForm] = useState(false
+  const [alerts, setAlerts] = useState<PriceAlert[]>([]);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [newAlert, setNewAlert] = useState({
-    targetPrice: ''
+    targetPrice: '',
     type: 'above' as 'above' | 'below'
-  }
+  });
   // Load alerts from localStorage on component mount
   React.useEffect(() => {
-    const savedAlerts = localStorage.getItem(`alerts_${symbol}`
+    const savedAlerts = localStorage.getItem(`alerts_${symbol}`);
     if (savedAlerts) {
       try {
-        const parsed = JSON.parse(savedAlerts
+        const parsed = JSON.parse(savedAlerts);
         setAlerts(parsed.map((alert: any) => ({
-          ...alert
+          ...alert,
           createdAt: new Date(alert.createdAt)
-        }))
+        })));
       } catch (error) {
-        }
+        console.error('Failed to load alerts:', error);
+      }
     }
-  }, [symbol]
+  }, [symbol]);
   // Save alerts to localStorage whenever alerts change
   React.useEffect(() => {
-    localStorage.setItem(`alerts_${symbol}`, JSON.stringify(alerts)
-  }, [alerts, symbol]
+    localStorage.setItem(`alerts_${symbol}`, JSON.stringify(alerts));
+  }, [alerts, symbol]);
   const addAlert = () => {
-    const targetPrice = parseFloat(newAlert.targetPrice
+    const targetPrice = parseFloat(newAlert.targetPrice);
     if (isNaN(targetPrice) || targetPrice <= 0) {
-      window.alert('有効な価格を入力してください'
+      window.alert('有効な価格を入力してください');
       return;
     }
 
@@ -63,28 +64,28 @@ export default function PriceAlerts({ symbol, currentPrice }: PriceAlertsProps) 
     }
 
     const newPriceAlert: PriceAlert = {
-      id: Date.now().toString()
-      symbol
-      targetPrice
-      type: newAlert.type
-      currentPrice
-      isActive: true
+      id: Date.now().toString(),
+      symbol,
+      targetPrice,
+      type: newAlert.type,
+      currentPrice,
+      isActive: true,
       createdAt: new Date()
     };
 
-    setAlerts(prev => [...prev, newPriceAlert]
-    setNewAlert({ targetPrice: '', type: 'above' }
-    setShowAddForm(false
+    setAlerts(prev => [...prev, newPriceAlert]);
+    setNewAlert({ targetPrice: '', type: 'above' });
+    setShowAddForm(false);
   };
 
   const removeAlert = (id: string) => {
-    setAlerts(prev => prev.filter(alert => alert.id !== id)
+    setAlerts(prev => prev.filter(alert => alert.id !== id));
   };
 
   const toggleAlert = (id: string) => {
     setAlerts(prev => prev.map(alert =>
       alert.id === id ? { ...alert, isActive: !alert.isActive } : alert
-    )
+    ));
   };
 
   const getAlertStatus = (alert: PriceAlert) => {
@@ -118,15 +119,15 @@ export default function PriceAlerts({ symbol, currentPrice }: PriceAlertsProps) 
   };
 
   const calculateDistance = (alert: PriceAlert) => {
-    const distance = ((alert.targetPrice - currentPrice) / currentPrice * 100
-    const absDistance = Math.abs(distance
+    const distance = ((alert.targetPrice - currentPrice) / currentPrice * 100);
+    const absDistance = Math.abs(distance);
     const direction = distance > 0 ? '上' : '下';
     return `${direction}${absDistance.toFixed(1)}%`;
   };
 
   return (
     <div className="rounded-lg shadow-md p-6" style={{
-      backgroundColor: 'var(--yt-music-surface)'
+      backgroundColor: 'var(--yt-music-surface)',
       border: '1px solid var(--yt-music-border)'
     }}>
       <div className="flex items-center justify-between mb-4">
@@ -217,7 +218,7 @@ export default function PriceAlerts({ symbol, currentPrice }: PriceAlertsProps) 
       {alerts.length > 0 ? (
         <div className="space-y-3">
           {alerts.map((alert) => {
-            const status = getAlertStatus(alert
+            const status = getAlertStatus(alert);
             return (
               <div key={alert.id} className="border border-gray-200 rounded-lg p-3" style={{
                 backgroundColor: 'var(--yt-music-bg)'
@@ -267,6 +268,7 @@ export default function PriceAlerts({ symbol, currentPrice }: PriceAlertsProps) 
                   </div>
                 )}
               </div>
+            );
           })}
         </div>
       ) : (
@@ -287,10 +289,10 @@ export default function PriceAlerts({ symbol, currentPrice }: PriceAlertsProps) 
             <button
               onClick={() => {
                 setNewAlert({
-                  targetPrice: (currentPrice * 1.05).toFixed(2)
+                  targetPrice: (currentPrice * 1.05).toFixed(2),
                   type: 'above'
-                }
-                setShowAddForm(true
+                });
+                setShowAddForm(true);
               }}
               className="flex-1 text-xs p-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100"
             >
@@ -299,10 +301,10 @@ export default function PriceAlerts({ symbol, currentPrice }: PriceAlertsProps) 
             <button
               onClick={() => {
                 setNewAlert({
-                  targetPrice: (currentPrice * 1.1).toFixed(2)
+                  targetPrice: (currentPrice * 1.1).toFixed(2),
                   type: 'above'
-                }
-                setShowAddForm(true
+                });
+                setShowAddForm(true);
               }}
               className="flex-1 text-xs p-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100"
             >
@@ -311,10 +313,10 @@ export default function PriceAlerts({ symbol, currentPrice }: PriceAlertsProps) 
             <button
               onClick={() => {
                 setNewAlert({
-                  targetPrice: (currentPrice * 0.95).toFixed(2)
+                  targetPrice: (currentPrice * 0.95).toFixed(2),
                   type: 'below'
-                }
-                setShowAddForm(true
+                });
+                setShowAddForm(true);
               }}
               className="flex-1 text-xs p-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100"
             >
@@ -323,10 +325,10 @@ export default function PriceAlerts({ symbol, currentPrice }: PriceAlertsProps) 
             <button
               onClick={() => {
                 setNewAlert({
-                  targetPrice: (currentPrice * 0.9).toFixed(2)
+                  targetPrice: (currentPrice * 0.9).toFixed(2),
                   type: 'below'
-                }
-                setShowAddForm(true
+                });
+                setShowAddForm(true);
               }}
               className="flex-1 text-xs p-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100"
             >
@@ -336,4 +338,5 @@ export default function PriceAlerts({ symbol, currentPrice }: PriceAlertsProps) 
         </div>
       )}
     </div>
+  );
 }

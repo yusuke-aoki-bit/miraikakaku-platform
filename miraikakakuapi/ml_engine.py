@@ -17,6 +17,9 @@ import pickle
 import os
 from pathlib import Path
 
+# Initialize logger early
+logger = logging.getLogger(__name__)
+
 # ML/AI Libraries
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression
@@ -371,7 +374,7 @@ class MiraikakakuMLEngine:
         self.db_config = {
             'host': '34.173.9.214',
             'user': 'postgres',
-            'password': 'os.getenv('DB_PASSWORD', '')',
+            'password': os.getenv('DB_PASSWORD', ''),
             'database': 'miraikakaku'
         }
 

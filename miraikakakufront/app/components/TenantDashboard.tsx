@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Building2, Users, BarChart3, Settings, Shield,
+  Building2, Users, BarChart3, Settings,
   CreditCard, Activity, AlertCircle, CheckCircle,
-  TrendingUp, Clock, Database, Zap, Crown,
-  Plus, Edit, Trash2, Eye, EyeOff
+  TrendingUp, Clock, Database,
+  Plus, Edit, Eye, EyeOff
 } from 'lucide-react';
 
 interface Organization {
@@ -287,7 +287,9 @@ export default function TenantDashboard() {
 
   const handleEditUser = useCallback((user: User) => {
     // Implementation for editing user
-    console.log('Edit user:', user);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Edit user:', user);
+    }
   }, []);
 
   const handleToggleUserStatus = useCallback((user: User) => {

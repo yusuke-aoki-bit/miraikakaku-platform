@@ -2,61 +2,61 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, TrendingUp, TrendingDown, Calendar, DollarSign, Activity } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Calendar, Activity } from 'lucide-react';
 import AdjustableStockChart from '../../components/AdjustableStockChart';
 import { StockDetailsResponse, StockPrice, StockPrediction, HistoricalPrediction } from '../../types';
 
 export default function DetailsPage({ params }: { params: { symbol: string[] } }) {
-  const router = useRouter(
-  const [data, setData] = useState<StockDetailsResponse | null>(null
-  const [historicalPredictions, setHistoricalPredictions] = useState<HistoricalPrediction[]>([]
-  const [loading, setLoading] = useState(true
-  const [error, setError] = useState<string | null>(null
-  const symbol = params.symbol.join('.'
+  const router = useRouter();
+  const [data, setData] = useState<StockDetailsResponse | null>(null);
+  const [historicalPredictions, setHistoricalPredictions] = useState<HistoricalPrediction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const symbol = params.symbol.join('.');
   useEffect(() => {
     const fetchStockDetails = async () => {
       try {
-        setLoading(true
+        setLoading(true);
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
         // Fetch stock details and historical predictions in parallel
         const [stockResponse, historicalResponse] = await Promise.all([
-          fetch(`${apiUrl}/api/finance/stocks/${symbol}/details`)
+          fetch(`${apiUrl}/api/finance/stocks/${symbol}/details`),
           fetch(`${apiUrl}/api/finance/stocks/${symbol}/predictions/history?days=90`)
-        ]
+        ]);
         if (!stockResponse.ok) {
-          throw new Error(`HTTP error! status: ${stockResponse.status}`
+          throw new Error(`HTTP error! status: ${stockResponse.status}`);
         }
 
-        const stockResult = await stockResponse.json(
-        setData(stockResult
+        const stockResult = await stockResponse.json();
+        setData(stockResult);
         // Handle historical predictions (non-blocking)
         if (historicalResponse.ok) {
-          const historicalResult = await historicalResponse.json(
+          const historicalResult = await historicalResponse.json();
           if (historicalResult.success && historicalResult.historical_predictions) {
             const formattedHistoricalPredictions: HistoricalPrediction[] = historicalResult.historical_predictions.map((item: any) => ({
-              symbol: symbol
-              prediction_date: item.prediction_date
-              target_date: item.target_date
-              predicted_price: item.predicted_price
-              actual_price: item.actual_price
-              accuracy_percentage: item.accuracy_percentage
-              confidence_score: item.confidence_score
-              model_name: item.model_type
+              symbol: symbol,
+              prediction_date: item.prediction_date,
+              target_date: item.target_date,
+              predicted_price: item.predicted_price,
+              actual_price: item.actual_price,
+              accuracy_percentage: item.accuracy_percentage,
+              confidence_score: item.confidence_score,
+              model_name: item.model_type,
               created_at: item.created_at
-            })
-            setHistoricalPredictions(formattedHistoricalPredictions
+            }));
+            setHistoricalPredictions(formattedHistoricalPredictions);
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'データの取得に失敗しました'
+        setError(err instanceof Error ? err.message : 'データの取得に失敗しました');
       } finally {
-        setLoading(false
+        setLoading(false);
       }
     };
 
-    fetchStockDetails(
-  }, [symbol]
+    fetchStockDetails();
+  }, [symbol]);
   if (loading) {
     return (
       <div className="theme-page">
@@ -67,45 +67,46 @@ export default function DetailsPage({ params }: { params: { symbol: string[] } }
           </div>
         </div>
       </div>
+    );
   }
 
   if (error || !data || !data.success) {
     // E2Eテスト環境では、モックデータを使用
     const isTesting = typeof window !== 'undefined' &&
-      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
     if (isTesting) {
       // モックデータを生成
       const mockData = {
-        success: true
+        success: true,
         stock_info: {
-          symbol: symbol
-          company_name
-          latest_price: 150.25
-          price_change: 2.45
-          price_change_percent: 1.66
-          high_52w: 180.0
+          symbol: symbol,
+          company_name: `${symbol} Company`,
+          latest_price: 150.25,
+          price_change: 2.45,
+          price_change_percent: 1.66,
+          high_52w: 180.0,
           low_52w: 120.0
-        }
+        },
         price_history: [
-          { date: '2024-01-01', open: 145, high: 152, low: 144, close: 150, volume: 1000000 }
+          { date: '2024-01-01', open: 145, high: 152, low: 144, close: 150, volume: 1000000 },
           { date: '2024-01-02', open: 150, high: 155, low: 149, close: 153, volume: 1200000 }
-        ]
+        ],
         predictions: [
           {
-            prediction_date: '2024-02-01'
-            predicted_price: 155.50
-            confidence_score: 0.85
-            prediction_days: 30
-            current_price: 150.25
-            model_type: 'LSTM'
+            prediction_date: '2024-02-01',
+            predicted_price: 155.50,
+            confidence_score: 0.85,
+            prediction_days: 30,
+            current_price: 150.25,
+            model_type: 'LSTM',
             created_at: '2024-01-01T00:00:00Z'
           }
-        ]
+        ],
         timestamp: new Date().toISOString()
       };
-      setData(mockData
-      setLoading(false
-      setError(null
+      setData(mockData);
+      setLoading(false);
+      setError(null);
       return null; // Re-render with mock data
     }
 
@@ -135,28 +136,29 @@ export default function DetailsPage({ params }: { params: { symbol: string[] } }
           </div>
         </div>
       </div>
+    );
   }
 
   const { stock_info, price_history, predictions } = data;
 
   // Convert API data to component format
   const chartPriceHistory: StockPrice[] = price_history.map(item => ({
-    symbol: stock_info.symbol
-    date: item.date
-    open_price: item.open
-    high_price: item.high
-    low_price: item.low
-    close_price: item.close
+    symbol: stock_info.symbol,
+    date: item.date,
+    open_price: item.open,
+    high_price: item.high,
+    low_price: item.low,
+    close_price: item.close,
     volume: item.volume
-  })
+  }));
   const chartPredictions: StockPrediction[] = predictions.map(item => ({
-    symbol: stock_info.symbol
-    prediction_date: item.prediction_date
-    predicted_price: item.predicted_price
-    confidence_score: item.confidence_score
-    model_name: item.model_type
+    symbol: stock_info.symbol,
+    prediction_date: item.prediction_date,
+    predicted_price: item.predicted_price,
+    confidence_score: item.confidence_score,
+    model_name: item.model_type,
     created_at: item.created_at
-  })
+  }));
   const formatPrice = (price: number) => `$${price.toFixed(2)}`;
   const formatPercent = (percent: number) => `${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`;
 
@@ -192,8 +194,8 @@ export default function DetailsPage({ params }: { params: { symbol: string[] } }
                 stock_info.price_change >= 0 ? 'text-green-500' : 'text-red-500'
               }`}>
                 {stock_info.price_change >= 0
-                  <TrendingUp className="w-5 h-5 mr-1" />
-                  <TrendingDown className="w-5 h-5 mr-1" />
+                  ? <TrendingUp className="w-5 h-5 mr-1" />
+                  : <TrendingDown className="w-5 h-5 mr-1" />
                 }
                 <span>
                   {formatPrice(Math.abs(stock_info.price_change))} ({formatPercent(stock_info.price_change_percent)})
@@ -312,7 +314,7 @@ export default function DetailsPage({ params }: { params: { symbol: string[] } }
                   <tr
                     key={index}
                     style={{
-                      backgroundColor: index % 2 === 0 ? 'rgb(var(--theme-bg-secondary))' : 'rgb(var(--theme-bg))'
+                      backgroundColor: index % 2 === 0 ? 'rgb(var(--theme-bg-secondary))' : 'rgb(var(--theme-bg))',
                       borderBottom: '1px solid rgb(var(--theme-border))'
                     }}
                   >
@@ -330,4 +332,5 @@ export default function DetailsPage({ params }: { params: { symbol: string[] } }
         </div>
       </div>
     </div>
+  );
 }

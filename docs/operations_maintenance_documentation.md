@@ -21,7 +21,7 @@
    - 場所: `/mnt/c/Users/yuuku/cursor/miraikakaku/miraikakakubatch`
 
 4. **データベース** (PostgreSQL on Cloud SQL)
-   - ホスト: 34.173.9.214
+   - ホスト: ${DATABASE_HOST} (設定は環境変数で管理)
    - データベース: miraikakaku
 
 ## 自動監視システム
@@ -87,7 +87,7 @@
 
 2. **データベース統計更新**
    ```bash
-   PGPASSWORD="Miraikakaku2024!" psql -h 34.173.9.214 -U postgres -d miraikakaku -c "ANALYZE;"
+   PGPASSWORD="${POSTGRES_PASSWORD}" psql -h ${DATABASE_HOST} -U postgres -d miraikakaku -c "ANALYZE;"
    ```
 
 3. **キャッシュクリア**
@@ -121,10 +121,10 @@
 **解決方法**:
 ```bash
 # データベース接続確認
-PGPASSWORD="Miraikakaku2024!" psql -h 34.173.9.214 -U postgres -d miraikakaku -c "SELECT 1;"
+PGPASSWORD="${POSTGRES_PASSWORD}" psql -h ${DATABASE_HOST} -U postgres -d miraikakaku -c "SELECT 1;"
 
 # 遅いクエリ確認
-PGPASSWORD="Miraikakaku2024!" psql -h 34.173.9.214 -U postgres -d miraikakaku -c "
+PGPASSWORD="${POSTGRES_PASSWORD}" psql -h ${DATABASE_HOST} -U postgres -d miraikakaku -c "
 SELECT query, mean_time, calls
 FROM pg_stat_statements
 ORDER BY mean_time DESC
@@ -152,7 +152,7 @@ pm2 restart all
 gcloud sql instances describe miraikakaku-db
 
 # 接続テスト
-nc -zv 34.173.9.214 5432
+nc -zv ${DATABASE_HOST} 5432
 ```
 
 #### 4. フロントエンド表示エラー
@@ -279,7 +279,34 @@ pm2 restart frontend
 - セキュリティポリシー見直し
 - 運用コスト分析
 
+## セキュリティノート
+
+### 環境変数設定
+
+本ドキュメントの例で使用している環境変数は以下のように設定してください：
+
+```bash
+# データベース接続情報
+export DATABASE_HOST="<実際のデータベースホスト>"
+export POSTGRES_PASSWORD="<実際のPostgreSQLパスワード>"
+```
+
+**重要**: 実際の認証情報は以下の方法で安全に管理してください：
+- Google Secret Manager を使用
+- 環境変数ファイル（.env）を使用（GitリポジトリにはCommitしない）
+- Kubernetes Secrets を使用（Kubernetes環境の場合）
+
+### Secret Manager を使用した認証情報取得例
+
+```bash
+# Secret Manager からパスワードを取得
+export POSTGRES_PASSWORD=$(gcloud secrets versions access latest --secret="miraikakaku-db-password")
+
+# Secret Manager からデータベースホストを取得
+export DATABASE_HOST=$(gcloud secrets versions access latest --secret="miraikakaku-db-host")
+```
+
 ---
 
-*最終更新: 2025年9月24日*
+*最終更新: 2025年9月26日*
 *担当者: システム運用チーム*

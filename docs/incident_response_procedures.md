@@ -86,7 +86,7 @@
    python3 automated_performance_optimizer.py
 
    # データベース状態確認
-   PGPASSWORD="Miraikakaku2024!" psql -h 34.173.9.214 -U postgres -d miraikakaku -c "
+   PGPASSWORD="${POSTGRES_PASSWORD}" psql -h ${DATABASE_HOST} -U postgres -d miraikakaku -c "
    SELECT
        datname,
        numbackends,
@@ -122,7 +122,7 @@
 1. **データベース復旧**
    ```bash
    # 接続テスト
-   PGPASSWORD="Miraikakaku2024!" psql -h 34.173.9.214 -U postgres -d miraikakaku -c "SELECT 1;"
+   PGPASSWORD="${POSTGRES_PASSWORD}" psql -h ${DATABASE_HOST} -U postgres -d miraikakaku -c "SELECT 1;"
 
    # 必要に応じて再起動
    gcloud sql instances restart miraikakaku-db
@@ -195,7 +195,7 @@
    gcloud sql instances describe miraikakaku-db
 
    # 接続テスト
-   nc -zv 34.173.9.214 5432
+   nc -zv ${DATABASE_HOST} 5432
    ```
 
 2. **復旧作業**
@@ -333,7 +333,7 @@ pm2 restart all
 pm2 stop all
 
 # データベース確認
-PGPASSWORD="Miraikakaku2024!" psql -h 34.173.9.214 -U postgres -d miraikakaku
+PGPASSWORD="${POSTGRES_PASSWORD}" psql -h ${DATABASE_HOST} -U postgres -d miraikakaku
 
 # GCP操作
 gcloud sql instances list
@@ -345,8 +345,35 @@ gcloud sql instances describe miraikakaku-db
 - **アプリケーションメトリクス**: API応答時間、エラー率
 - **ビジネスメトリクス**: ユーザー数、予測精度
 
+## セキュリティノート
+
+### 環境変数設定
+
+本ドキュメントの例で使用している環境変数は以下のように設定してください：
+
+```bash
+# データベース接続情報
+export DATABASE_HOST="<実際のデータベースホスト>"
+export POSTGRES_PASSWORD="<実際のPostgreSQLパスワード>"
+```
+
+**重要**: 実際の認証情報は以下の方法で安全に管理してください：
+- Google Secret Manager を使用（推奨）
+- 環境変数ファイル（.env）を使用（GitリポジトリにはCommitしない）
+- インシデント対応時は事前に設定された認証情報を使用
+
+### 緊急時の認証情報アクセス
+
+インシデント対応時に認証情報が必要な場合：
+
+```bash
+# Secret Manager から認証情報を取得
+export POSTGRES_PASSWORD=$(gcloud secrets versions access latest --secret="miraikakaku-db-password")
+export DATABASE_HOST=$(gcloud secrets versions access latest --secret="miraikakaku-db-host")
+```
+
 ---
 
-*最終更新: 2025年9月24日*
-*版数: 1.0*
+*最終更新: 2025年9月26日*
+*版数: 1.1*
 *承認者: システム運用責任者*

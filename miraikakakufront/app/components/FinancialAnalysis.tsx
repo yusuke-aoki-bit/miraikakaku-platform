@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { DollarSign, PieChart, Shield, AlertCircle } from 'lucide-react';
+import { DollarSign, Shield, AlertCircle } from 'lucide-react';
 import { StockDetails } from '../types';
 
 interface FinancialAnalysisProps {
@@ -56,12 +56,12 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
         }
 
         metrics.push({
-          name: 'P/E Ratio'
-          value: pe.toFixed(1)
-          benchmark
-          status
+          name: 'P/E Ratio',
+          value: pe.toFixed(1),
+          benchmark,
+          status,
           description: 'Price-to-Earnings Ratio - 株価収益率。低いほど割安とされる'
-        }
+        });
       }
 
       // Market Cap from new API
@@ -85,12 +85,12 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
         }
 
         metrics.push({
-          name: '時価総額'
-          value
-          benchmark
-          status
+          name: '時価総額',
+          value: `${marketCapB.toFixed(1)}B`,
+          benchmark,
+          status,
           description: '企業の市場価値。大きいほど安定性が高い傾向'
-        }
+        });
       }
 
       // Beta from new API
@@ -114,12 +114,12 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
         }
 
         metrics.push({
-          name: 'ベータ値'
-          value: beta.toFixed(2)
-          benchmark
-          status
+          name: 'ベータ値',
+          value: beta.toFixed(2),
+          benchmark,
+          status,
           description: '市場との連動性。1.0が市場平均、高いほど変動が大きい'
-        }
+        });
       }
 
       // Dividend Yield from new API
@@ -143,12 +143,12 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
         }
 
         metrics.push({
-          name: '配当利回り'
-          value
-          benchmark
-          status
+          name: '配当利回り',
+          value: `${divYield.toFixed(1)}%`,
+          benchmark,
+          status,
           description: '年間配当金の株価に対する割合。インカムゲインの指標'
-        }
+        })
       }
 
       return metrics;
@@ -178,12 +178,12 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
       }
 
       metrics.push({
-        name: 'P/E Ratio'
-        value: pe.toFixed(1)
-        benchmark
-        status
+        name: 'P/E Ratio',
+        value: pe.toFixed(1),
+        benchmark,
+        status,
         description: 'Price-to-Earnings Ratio - 株価収益率。低いほど割安とされる'
-      }
+      });
     }
 
     // Market Cap analysis
@@ -207,12 +207,12 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
       }
 
       metrics.push({
-        name: '時価総額'
-        value
-        benchmark
-        status
+        name: '時価総額',
+        value: `${marketCapB.toFixed(1)}B`,
+        benchmark,
+        status,
         description: '企業の市場価値。大きいほど安定性が高い傾向'
-      }
+      });
     }
 
     // Beta analysis
@@ -236,12 +236,12 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
       }
 
       metrics.push({
-        name: 'ベータ値'
-        value: beta.toFixed(2)
-        benchmark
-        status
+        name: 'ベータ値',
+        value: beta.toFixed(2),
+        benchmark,
+        status,
         description: '市場との連動性。1.0が市場平均、高いほど変動が大きい'
-      }
+      });
     }
 
     // Dividend Yield
@@ -265,12 +265,12 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
       }
 
       metrics.push({
-        name: '配当利回り'
-        value
-        benchmark
-        status
+        name: '配当利回り',
+        value: `${divYield.toFixed(1)}%`,
+        benchmark,
+        status,
         description: '年間配当金の株価に対する割合。インカムゲインの指標'
-      }
+      });
     }
 
     return metrics;
@@ -283,11 +283,11 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
     // Use new API data if available
     if (riskAnalysis?.factors) {
       return riskAnalysis.factors.map((factor: any) => ({
-        name: factor.name
-        value: typeof factor.value === 'number' ? factor.value.toFixed(1) : factor.value.toString()
-        level: factor.level === '高' ? 'high' : factor.level === '中' ? 'medium' : 'low'
+        name: factor.name,
+        value: typeof factor.value === 'number' ? factor.value.toFixed(1) : factor.value.toString(),
+        level: factor.level === '高' ? 'high' : factor.level === '中' ? 'medium' : 'low',
         description: factor.description
-      })
+      }));
     }
 
     // Fallback to old structure if new API data not available
@@ -311,11 +311,11 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
       }
 
       risks.push({
-        name: 'ボラティリティリスク'
-        value
-        level
+        name: 'ボラティリティリスク',
+        value: beta.toFixed(2),
+        level,
         description
-      }
+      });
     }
 
     // Market cap risk
@@ -336,11 +336,11 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
       }
 
       risks.push({
-        name: '流動性リスク'
-        value
-        level
+        name: '流動性リスク',
+        value: `${marketCapB.toFixed(1)}B`,
+        level,
         description
-      }
+      });
     }
 
     // Valuation risk
@@ -361,18 +361,18 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
       }
 
       risks.push({
-        name: 'バリュエーションリスク'
-        value
-        level
+        name: 'バリュエーションリスク',
+        value: pe.toFixed(1),
+        level,
         description
-      }
+      });
     }
 
     return risks;
   };
 
-  const financialMetrics = calculateFinancialMetrics(
-  const riskMetrics = calculateRiskMetrics(
+  const financialMetrics = calculateFinancialMetrics();
+  const riskMetrics = calculateRiskMetrics();
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'excellent': return 'text-green-600 bg-green-50 border-green-200';
@@ -396,7 +396,7 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
     <div className="space-y-6">
       {/* Financial Metrics */}
       <div className="rounded-lg shadow-md p-6" style={{
-        backgroundColor: 'var(--yt-music-surface)'
+        backgroundColor: 'var(--yt-music-surface)',
         border: '1px solid var(--yt-music-border)'
       }}>
         <h2 className="text-2xl font-semibold mb-4 flex items-center" style={{ color: 'var(--yt-music-text-primary)' }}>
@@ -434,7 +434,7 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
 
       {/* Risk Analysis */}
       <div className="rounded-lg shadow-md p-6" style={{
-        backgroundColor: 'var(--yt-music-surface)'
+        backgroundColor: 'var(--yt-music-surface)',
         border: '1px solid var(--yt-music-border)'
       }}>
         <h2 className="text-2xl font-semibold mb-4 flex items-center" style={{ color: 'var(--yt-music-text-primary)' }}>
@@ -481,4 +481,5 @@ export default function FinancialAnalysis({ details, financialAnalysis, riskAnal
         </div>
       </div>
     </div>
+  );
 }

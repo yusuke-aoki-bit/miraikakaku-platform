@@ -15,7 +15,6 @@ import {
   Filter,
   RefreshCw,
   TrendingUp,
-  TrendingDown,
   BarChart3,
   Eye,
   AlertCircle

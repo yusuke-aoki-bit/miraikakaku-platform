@@ -17,9 +17,10 @@ export default function MonitoringPage() {
         <MonitoringDashboard />
       </div>
     </div>
+  );
 }
 
 export const metadata = {
-  title: 'システム監視 - Miraikakaku'
+  title: 'システム監視 - Miraikakaku',
   description: 'Miraikakaku システムの監視ダッシュボード'
 };

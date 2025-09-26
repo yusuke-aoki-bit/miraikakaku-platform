@@ -7,7 +7,6 @@ import {
   Activity,
   Zap,
   AlertCircle,
-  CheckCircle,
   Clock,
   Wifi,
   WifiOff,
@@ -22,7 +21,7 @@ interface PredictionDisplayProps {
   marketData?: MarketData;
 }
 
-const PredictionDisplay: React.FC<PredictionDisplayProps> = ({ prediction, marketData }) => {
+const PredictionDisplay: React.FC<PredictionDisplayProps> = ({ prediction }) => {
   const isPositive = prediction.prediction > 0;
   const confidenceColor = prediction.confidence > 0.8 ? 'text-green-600' :
                           prediction.confidence > 0.6 ? 'text-yellow-600' : 'text-red-600';
@@ -92,7 +91,7 @@ const PredictionDisplay: React.FC<PredictionDisplayProps> = ({ prediction, marke
       <div className="flex justify-between items-center text-sm text-gray-500 border-t pt-3">
         <div className="flex items-center">
           <Zap className="w-4 h-4 mr-1" />
-          レスポンス: {prediction.latency_ms}ms
+          タイムスタンプ: {prediction.timestamp}
         </div>
         <div>
           Model: {prediction.model_version}
@@ -286,7 +285,7 @@ export default function RealtimePredictionDashboard() {
         </div>
 
         {/* System Status */}
-        <SystemStatus health={systemHealth} connected={connected} />
+        <SystemStatus {...(systemHealth && { health: systemHealth })} connected={connected} />
 
         {/* Symbol Management */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
@@ -365,7 +364,7 @@ export default function RealtimePredictionDashboard() {
               <PredictionDisplay
                 key={symbol}
                 prediction={prediction}
-                marketData={market}
+                {...(market && { marketData: market })}
               />
             );
           })}
@@ -379,7 +378,7 @@ export default function RealtimePredictionDashboard() {
               アラート履歴
             </h3>
             <div className="space-y-3">
-              {alerts.slice(0, 5).map((alert, index) => (
+              {alerts.slice(0, 5).map((alert) => (
                 <div
                   key={alert.id}
                   className={`p-3 rounded-lg border-l-4 ${

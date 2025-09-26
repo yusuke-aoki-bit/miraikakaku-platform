@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     log_format: str = "json"
 
     # Security
-    jwt_secret: str = "your-secret-key-change-in-production"
+    jwt_secret: str = Field(..., env="JWT_SECRET_KEY")  # Required from environment
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 

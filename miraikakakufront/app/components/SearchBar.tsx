@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, X, Filter, TrendingUp, ChevronDown } from 'lucide-react';
 import { stockAPI } from '../lib/api';
 import { SearchResult } from '../types';
-import LoadingSpinner from './LoadingSpinner';
 import { InlineLoading } from './Loading';
 
 interface SearchBarProps {
@@ -26,37 +25,37 @@ interface SortOption {
 }
 
 export default function SearchBar({
-  onSelectStock
-  placeholder
+  onSelectStock,
+  placeholder,
   className = ""
 }: SearchBarProps) {
-  const [query, setQuery] = useState(''
-  const [results, setResults] = useState<SearchResult[]>([]
-  const [suggestions, setSuggestions] = useState<{symbol: string, display: string, type: string}[]>([]
-  const [popularStocks, setPopularStocks] = useState<SearchResult[]>([]
-  const [isLoading, setIsLoading] = useState(false
-  const [showResults, setShowResults] = useState(false
-  const [showFilters, setShowFilters] = useState(false
-  const [selectedIndex, setSelectedIndex] = useState(-1
-  const [selectedMarket, setSelectedMarket] = useState('all'
-  const [selectedSort, setSelectedSort] = useState('relevance'
-  const inputRef = useRef<HTMLInputElement>(null
-  const resultsRef = useRef<HTMLDivElement>(null
-  const filtersRef = useRef<HTMLDivElement>(null
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [suggestions, setSuggestions] = useState<{symbol: string, display: string, type: string}[]>([]);
+  const [popularStocks, setPopularStocks] = useState<SearchResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [selectedMarket, setSelectedMarket] = useState('all');
+  const [selectedSort, setSelectedSort] = useState('relevance');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const filtersRef = useRef<HTMLDivElement>(null);
   // Market filter options
   const marketFilters: MarketFilter[] = [
-    { value: 'all', label: '全市場', emoji: '🌍' }
-    { value: 'us', label: '米国株', emoji: '🇺🇸' }
-    { value: 'jp', label: '日本株', emoji: '🇯🇵' }
-    { value: 'hk', label: '香港株', emoji: '🇭🇰' }
+    { value: 'all', label: '全市場', emoji: '🌍' },
+    { value: 'us', label: '米国株', emoji: '🇺🇸' },
+    { value: 'jp', label: '日本株', emoji: '🇯🇵' },
+    { value: 'hk', label: '香港株', emoji: '🇭🇰' },
     { value: 'crypto', label: '仮想通貨', emoji: '🪙' }
   ];
 
   // Sort options
   const sortOptions: SortOption[] = [
-    { value: 'relevance', label: '関連性', icon: '🎯' }
-    { value: 'price', label: '価格', icon: '💰' }
-    { value: 'volume', label: '出来高', icon: '📊' }
+    { value: 'relevance', label: '関連性', icon: '🎯' },
+    { value: 'price', label: '価格', icon: '💰' },
+    { value: 'volume', label: '出来高', icon: '📊' },
     { value: 'symbol', label: 'シンボル', icon: '🔤' }
   ];
   
@@ -66,86 +65,87 @@ export default function SearchBar({
   useEffect(() => {
     const loadPopularStocks = async () => {
       try {
-        const popular = await stockAPI.getPopularStocks(
+        const popular = await stockAPI.getPopularStocks();
         setPopularStocks(popular.slice(0, 5)); // Top 5 popular stocks
       } catch (error) {
-        }
+        console.error('Failed to load popular stocks:', error);
+      }
     };
-    loadPopularStocks(
-  }, []
+    loadPopularStocks();
+  }, []);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (resultsRef.current && !resultsRef.current.contains(event.target as Node) &&
           inputRef.current && !inputRef.current.contains(event.target as Node) &&
           filtersRef.current && !filtersRef.current.contains(event.target as Node)) {
-        setShowResults(false
-        setShowFilters(false
+        setShowResults(false);
+        setShowFilters(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside
-    return () => document.removeEventListener('mousedown', handleClickOutside
-  }, []
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const searchStocks = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
-      setResults([]
-      setSuggestions([]
-      setShowResults(false
+      setResults([]);
+      setSuggestions([]);
+      setShowResults(false);
       return;
     }
 
-    setIsLoading(true
+    setIsLoading(true);
     try {
       // Load both search results and suggestions in parallel
       const [searchResults, searchSuggestions] = await Promise.all([
-        stockAPI.search(searchQuery, 8, selectedMarket, selectedSort)
+        stockAPI.search(searchQuery, 8, selectedMarket, selectedSort),
         stockAPI.searchSuggestions(searchQuery)
-      ]
-      setResults(searchResults
+      ]);
+      setResults(searchResults);
       setSuggestions(searchSuggestions.slice(0, 5)); // Top 5 suggestions
-      setShowResults(true
-      setSelectedIndex(-1
+      setShowResults(true);
+      setSelectedIndex(-1);
     } catch (error) {
       // Provide mock search results for testing
       const mockResults: SearchResult[] = [
         {
-          symbol: searchQuery.toUpperCase().includes('AAPL') || searchQuery.includes('アップル') ? 'AAPL' : searchQuery.toUpperCase()
-          name: searchQuery.includes('アップル') ? 'Apple Inc.'
+          symbol: searchQuery.toUpperCase().includes('AAPL') || searchQuery.includes('アップル') ? 'AAPL' : searchQuery.toUpperCase(),
+          name: searchQuery.includes('アップル') ? 'Apple Inc.' : searchQuery,
           type: 'stock'
         }
       ];
-      setResults(mockResults
-      setSuggestions([]
-      setShowResults(true
+      setResults(mockResults);
+      setSuggestions([]);
+      setShowResults(true);
     } finally {
-      setIsLoading(false
+      setIsLoading(false);
     }
-  }, [selectedMarket, selectedSort]
+  }, [selectedMarket, selectedSort]);
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (query) {
-        searchStocks(query
+        searchStocks(query);
       }
-    }, 300
-    return () => clearTimeout(timeoutId
-  }, [query, selectedMarket, selectedSort, searchStocks]
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [query, selectedMarket, selectedSort, searchStocks]);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value
+    setQuery(e.target.value);
   };
 
   const handleSelectStock = (symbol: string) => {
-    setQuery(symbol
-    setShowResults(false
-    onSelectStock(symbol
+    setQuery(symbol);
+    setShowResults(false);
+    onSelectStock(symbol);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(
+    e.preventDefault();
     if (query.trim()) {
       if (selectedIndex >= 0 && results[selectedIndex]) {
-        handleSelectStock(results[selectedIndex].symbol
+        handleSelectStock(results[selectedIndex].symbol);
       } else {
-        handleSelectStock(query.trim().toUpperCase()
+        handleSelectStock(query.trim().toUpperCase());
       }
     }
   };
@@ -154,56 +154,57 @@ export default function SearchBar({
     if (!showResults || results.length === 0) return;
 
     switch (e.key) {
-      case 'ArrowDown'
-        e.preventDefault(
-        setSelectedIndex(prev => 
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev =>
           prev < results.length - 1 ? prev + 1 : prev
+        );
         break;
-      case 'ArrowUp'
-        e.preventDefault(
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
         break;
-      case 'Enter'
-        e.preventDefault(
+      case 'Enter':
+        e.preventDefault();
         if (selectedIndex >= 0) {
-          handleSelectStock(results[selectedIndex].symbol
+          handleSelectStock(results[selectedIndex]!.symbol);
         } else {
-          handleSubmit(e
+          handleSubmit(e);
         }
         break;
-      case 'Escape'
-        setShowResults(false
-        setSelectedIndex(-1
-        inputRef.current?.blur(
+      case 'Escape':
+        setShowResults(false);
+        setSelectedIndex(-1);
+        inputRef.current?.blur();
         break;
     }
   };
 
   const clearSearch = () => {
-    setQuery(''
-    setResults([]
-    setSuggestions([]
-    setShowResults(false
-    inputRef.current?.focus(
+    setQuery('');
+    setResults([]);
+    setSuggestions([]);
+    setShowResults(false);
+    inputRef.current?.focus();
   };
 
   const toggleFilters = () => {
-    setShowFilters(!showFilters
+    setShowFilters(!showFilters);
   };
 
   const handleMarketChange = (market: string) => {
-    setSelectedMarket(market
-    setShowFilters(false
+    setSelectedMarket(market);
+    setShowFilters(false);
     if (query) {
-      searchStocks(query
+      searchStocks(query);
     }
   };
 
   const handleSortChange = (sort: string) => {
-    setSelectedSort(sort
-    setShowFilters(false
+    setSelectedSort(sort);
+    setShowFilters(false);
     if (query) {
-      searchStocks(query
+      searchStocks(query);
     }
   };
 
@@ -220,7 +221,7 @@ export default function SearchBar({
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onFocus={() => {
-                (query || popularStocks.length > 0) && setShowResults(true
+                (query || popularStocks.length > 0) && setShowResults(true);
               }}
               placeholder={searchPlaceholder}
               className="theme-input w-full pl-10 pr-20 py-4 rounded-l-full border-r-0 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
@@ -403,7 +404,7 @@ export default function SearchBar({
                       </span>
                     </div>
                   </div>
-                  {suggestions.map((suggestion, index) => (
+                  {suggestions.map((suggestion) => (
                     <button
                       key={`suggestion-${suggestion.symbol}`}
                       onClick={() => handleSelectStock(suggestion.symbol)}
@@ -428,7 +429,7 @@ export default function SearchBar({
                       </span>
                     </div>
                   </div>
-                  {popularStocks.map((stock, index) => (
+                  {popularStocks.map((stock) => (
                     <button
                       key={`popular-${stock.symbol}`}
                       onClick={() => handleSelectStock(stock.symbol)}
@@ -465,4 +466,5 @@ export default function SearchBar({
         </div>
       )}
     </div>
+  );
 }

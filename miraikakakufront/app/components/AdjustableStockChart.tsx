@@ -2,37 +2,35 @@
 
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import {
-  LineChart
-  Line
-  AreaChart
-  Area
-  BarChart
-  Bar
-  XAxis
-  YAxis
-  CartesianGrid
-  Tooltip
-  Legend
-  ResponsiveContainer
-  ReferenceLine
-  ComposedChart
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  ReferenceLine,
+  ComposedChart,
   Brush
 } from 'recharts';
 import { format, parseISO, subDays, isAfter } from 'date-fns';
 import {
-  Settings
-  TrendingUp
-  Calendar
-  BarChart3
-  LineChart as LineChartIcon
-  Activity
-  Eye
-  EyeOff
-  Maximize2
-  Minimize2
-  Download
-  ZoomIn
-  ZoomOut
+  Settings,
+  TrendingUp,
+  Calendar,
+  BarChart3,
+  LineChart as LineChartIcon,
+  Activity,
+  Maximize2,
+  Minimize2,
+  Download,
+  ZoomIn,
+  ZoomOut,
   RotateCcw
 } from 'lucide-react';
 import { StockPrice, StockPrediction, HistoricalPrediction } from '../types';
@@ -49,25 +47,25 @@ type ChartType = 'line' | 'area' | 'bar' | 'candlestick' | 'mixed';
 type Period = '1W' | '1M' | '3M' | '6M' | '1Y' | '2Y' | 'ALL';
 
 export default function AdjustableStockChart({
-  priceHistory
-  predictions
+  priceHistory,
+  predictions,
   historicalPredictions
 }: StockChartProps) {
-  const { t } = useTranslation('common'
+  const { t } = useTranslation('common');
   // Chart control states
-  const [chartType, setChartType] = useState<ChartType>('line'
-  const [selectedPeriod, setSelectedPeriod] = useState<Period>('1M'
-  const [showVolume, setShowVolume] = useState(false
-  const [showPredictions, setShowPredictions] = useState(true
-  const [showHistoricalPredictions, setShowHistoricalPredictions] = useState(true
-  const [showMovingAverage, setShowMovingAverage] = useState(false
-  const [isFullscreen, setIsFullscreen] = useState(false
-  const [showSettings, setShowSettings] = useState(false
-  const [zoomLevel, setZoomLevel] = useState(1
-  const [zoomDomain, setZoomDomain] = useState<[number, number] | null>(null
-  const [brushStartIndex, setBrushStartIndex] = useState<number | null>(null
-  const [brushEndIndex, setBrushEndIndex] = useState<number | null>(null
-  const chartRef = useRef<any>(null
+  const [chartType, setChartType] = useState<ChartType>('line');
+  const [selectedPeriod, setSelectedPeriod] = useState<Period>('1M');
+  const [showVolume, setShowVolume] = useState(false);
+  const [showPredictions, setShowPredictions] = useState(true);
+  const [showHistoricalPredictions, setShowHistoricalPredictions] = useState(true);
+  const [showMovingAverage, setShowMovingAverage] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomDomain, setZoomDomain] = useState<[number, number] | null>(null);
+  const [brushStartIndex, setBrushStartIndex] = useState<number | null>(null);
+  const [brushEndIndex, setBrushEndIndex] = useState<number | null>(null);
+  const chartRef = useRef<any>(null);
   // Calculate moving average
   const calculateMovingAverage = (data: any[], period: number = 20) => {
     return data.map((item, index) => {
@@ -75,73 +73,73 @@ export default function AdjustableStockChart({
 
       const sum = data
         .slice(index - period + 1, index + 1)
-        .reduce((acc, curr) => acc + (curr.actual || 0), 0
+        .reduce((acc, curr) => acc + (curr.actual || 0), 0);
       return { ...item, ma20: sum / period };
-    }
+    });
   };
 
   // Filter data based on selected period
   const filterDataByPeriod = useCallback((data: any[]) => {
-    const now = new Date(
+    const now = new Date();
     let startDate: Date;
 
     switch (selectedPeriod) {
-      case '1W'
-        startDate = subDays(now, 7
+      case '1W':
+        startDate = subDays(now, 7);
         break;
-      case '1M'
-        startDate = subDays(now, 30
+      case '1M':
+        startDate = subDays(now, 30);
         break;
-      case '3M'
-        startDate = subDays(now, 90
+      case '3M':
+        startDate = subDays(now, 90);
         break;
-      case '6M'
-        startDate = subDays(now, 180
+      case '6M':
+        startDate = subDays(now, 180);
         break;
-      case '1Y'
-        startDate = subDays(now, 365
+      case '1Y':
+        startDate = subDays(now, 365);
         break;
-      case '2Y'
-        startDate = subDays(now, 730
+      case '2Y':
+        startDate = subDays(now, 730);
         break;
-      case 'ALL'
-      default
+      case 'ALL':
+      default:
         return data;
     }
 
     return data.filter(item => {
-      const itemDate = parseISO(item.date
-      return isAfter(itemDate, startDate
-    }
-  }, [selectedPeriod]
+      const itemDate = parseISO(item.date);
+      return isAfter(itemDate, startDate);
+    });
+  }, [selectedPeriod]);
   // Zoom and pan handlers
   const handleZoomIn = useCallback(() => {
-    setZoomLevel(prev => Math.min(prev * 1.5, 10)
-  }, []
+    setZoomLevel(prev => Math.min(prev * 1.5, 10));
+  }, []);
   const handleZoomOut = useCallback(() => {
-    setZoomLevel(prev => Math.max(prev / 1.5, 1)
-  }, []
+    setZoomLevel(prev => Math.max(prev / 1.5, 1));
+  }, []);
   const handleResetZoom = useCallback(() => {
-    setZoomLevel(1
-    setZoomDomain(null
-    setBrushStartIndex(null
-    setBrushEndIndex(null
-  }, []
+    setZoomLevel(1);
+    setZoomDomain(null);
+    setBrushStartIndex(null);
+    setBrushEndIndex(null);
+  }, []);
   const handleBrushChange = useCallback((brushData: any) => {
     if (brushData) {
-      setBrushStartIndex(brushData.startIndex
-      setBrushEndIndex(brushData.endIndex
+      setBrushStartIndex(brushData.startIndex);
+      setBrushEndIndex(brushData.endIndex);
     }
-  }, []
+  }, []);
   const chartData = useMemo(() => {
     if (!priceHistory || priceHistory.length === 0) {
       return [];
     }
-    const dataMap = new Map(
+    const dataMap = new Map();
     // Add price history
     if (Array.isArray(priceHistory)) {
       priceHistory.forEach(price => {
-        if (price && price.date) {
+        if (price && price.date && price.close_price !== null) {
           // For candlestick charts, ensure we have OHLC data
           // If not available, simulate them from close price
           const closePrice = price.close_price;
@@ -150,16 +148,16 @@ export default function AdjustableStockChart({
           const low = price.low_price || closePrice * 0.98;
 
           dataMap.set(price.date, {
-            date: price.date
-            actual: closePrice
-            close: closePrice
-            open: open
-            high: Math.max(high, open, closePrice)
-            low: Math.min(low, open, closePrice)
+            date: price.date,
+            actual: closePrice,
+            close: closePrice,
+            open: open,
+            high: Math.max(high, open, closePrice),
+            low: Math.min(low, open, closePrice),
             volume: price.volume || 0
-          }
+          });
         }
-      }
+      });
     }
 
     // Add predictions
@@ -168,12 +166,12 @@ export default function AdjustableStockChart({
         if (pred && pred.prediction_date) {
           const existing = dataMap.get(pred.prediction_date) || {};
           dataMap.set(pred.prediction_date, {
-            ...existing
-            date: pred.prediction_date
+            ...existing,
+            date: pred.prediction_date,
             predicted: pred.predicted_price
-          }
+          });
         }
-      }
+      });
     }
 
     // Add historical predictions
@@ -184,74 +182,80 @@ export default function AdjustableStockChart({
         if (pred && dateKey) {
           const existing = dataMap.get(dateKey) || {};
           dataMap.set(dateKey, {
-            ...existing
-            date: dateKey
+            ...existing,
+            date: dateKey,
             pastPredicted: pred.predicted_price
-          }
+          });
         }
-      }
+      });
     }
 
     // Convert to array and sort
     let data = Array.from(dataMap.values()).sort((a, b) =>
       new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
     // Add moving average if enabled
     if (showMovingAverage) {
-      data = calculateMovingAverage(data
+      data = calculateMovingAverage(data);
     }
 
     // Filter by period
-    const filteredData = filterDataByPeriod(data
+    const filteredData = filterDataByPeriod(data);
     return filteredData;
-  }, [priceHistory, predictions, historicalPredictions, showPredictions, showHistoricalPredictions, showMovingAverage, selectedPeriod, filterDataByPeriod]
+  }, [priceHistory, predictions, historicalPredictions, showPredictions, showHistoricalPredictions, showMovingAverage, selectedPeriod, filterDataByPeriod]);
   // Export data functionality
   const exportToCSV = useCallback(() => {
     const csvData = chartData.map(item => ({
-      Date: item.date
-      'Actual Price': item.actual || ''
-      'Predicted Price': item.predicted || ''
-      'Past Predicted': item.pastPredicted || ''
-      'Moving Average': item.ma20 || ''
-      Volume: item.volume || ''
-      Open: item.open || ''
-      High: item.high || ''
+      Date: item.date,
+      'Actual Price': item.actual || '',
+      'Predicted Price': item.predicted || '',
+      'Past Predicted': item.pastPredicted || '',
+      'Moving Average': item.ma20 || '',
+      Volume: item.volume || '',
+      Open: item.open || '',
+      High: item.high || '',
       Low: item.low || ''
-    })
+    }));
+    if (csvData.length === 0) return;
+
+    const firstRow = csvData[0];
+    if (!firstRow) return;
+
     const csvContent = [
-      Object.keys(csvData[0]).join(',')
+      Object.keys(firstRow).join(','),
       ...csvData.map(row => Object.values(row).join(','))
-    ].join('\n'
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }
-    const link = document.createElement('a'
-    const url = URL.createObjectURL(blob
-    link.setAttribute('href', url
-    link.setAttribute('download', `stock-data-${new Date().toISOString().split('T')[0]}.csv`
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `stock-data-${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
-    document.body.appendChild(link
-    link.click(
-    document.body.removeChild(link
-  }, [chartData]
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [chartData]);
   const exportToJSON = useCallback(() => {
     const jsonData = {
       metadata: {
-        exportDate: new Date().toISOString()
-        period: selectedPeriod
-        chartType: chartType
+        exportDate: new Date().toISOString(),
+        period: selectedPeriod,
+        chartType: chartType,
         dataPoints: chartData.length
-      }
+      },
       data: chartData
     };
 
-    const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' }
-    const link = document.createElement('a'
-    const url = URL.createObjectURL(blob
-    link.setAttribute('href', url
-    link.setAttribute('download', `stock-data-${new Date().toISOString().split('T')[0]}.json`
+    const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `stock-data-${new Date().toISOString().split('T')[0]}.json`);
     link.style.visibility = 'hidden';
-    document.body.appendChild(link
-    link.click(
-    document.body.removeChild(link
-  }, [chartData, selectedPeriod, chartType]
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [chartData, selectedPeriod, chartType]);
   // Show loading if no price history data
   if (!priceHistory || priceHistory.length === 0) {
     return (
@@ -261,10 +265,11 @@ export default function AdjustableStockChart({
           <p className="mt-4 text-gray-600">{t('loading.chart')}</p>
         </div>
       </div>
+    );
   }
 
   const formatTooltipValue = (value: number, name: string) => {
-    if (name === 'volume') return value.toLocaleString(
+    if (name === 'volume') return value.toLocaleString();
     return `¥${value.toFixed(2)}`;
   };
 
@@ -272,8 +277,8 @@ export default function AdjustableStockChart({
     if (active && payload && payload.length) {
       return (
         <div className="p-3 border rounded shadow-lg" style={{
-          backgroundColor: '#0f0f0f'
-          borderColor: '#333333'
+          backgroundColor: '#0f0f0f',
+          borderColor: '#333333',
           color: '#f1f1f1'
         }}>
           <p className="font-semibold" style={{ color: '#f1f1f1' }}>
@@ -285,6 +290,7 @@ export default function AdjustableStockChart({
             </p>
           ))}
         </div>
+      );
     }
     return null;
   };
@@ -294,20 +300,20 @@ export default function AdjustableStockChart({
 
   // Chart type buttons
   const chartTypes: { type: ChartType; icon: React.ReactNode; label: string }[] = [
-    { type: 'line', icon: <LineChartIcon className="w-4 h-4" />, label: 'ライン' }
-    { type: 'area', icon: <BarChart3 className="w-4 h-4" />, label: 'エリア' }
-    { type: 'bar', icon: <Activity className="w-4 h-4" />, label: 'バー' }
+    { type: 'line', icon: <LineChartIcon className="w-4 h-4" />, label: 'ライン' },
+    { type: 'area', icon: <BarChart3 className="w-4 h-4" />, label: 'エリア' },
+    { type: 'bar', icon: <Activity className="w-4 h-4" />, label: 'バー' },
     { type: 'candlestick', icon: <TrendingUp className="w-4 h-4" />, label: 'ローソク足' }
   ];
 
   const renderChart = () => {
     const priceChartProps = {
-      data: chartData
+      data: chartData,
       margin: { top: 10, right: 40, left: 60, bottom: 10 }
     };
 
     const volumeChartProps = {
-      data: chartData
+      data: chartData,
       margin: { top: 5, right: 40, left: 60, bottom: 30 }
     };
 
@@ -324,17 +330,19 @@ export default function AdjustableStockChart({
             {renderVolumeChart(volumeChartProps)}
           </div>
         </div>
+      );
     }
 
     return (
       <div style={{ height: '500px', width: '100%' }} className="overflow-hidden">
         {renderPriceChart(priceChartProps)}
       </div>
+    );
   };
 
   const renderPriceChart = (commonProps: any) => {
     switch (chartType) {
-      case 'area'
+      case 'area':
         return (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart {...commonProps}>
@@ -355,7 +363,7 @@ export default function AdjustableStockChart({
             <Tooltip content={<CustomTooltip />} />
             <Legend
               wrapperStyle={{
-                color: '#f1f1f1'
+                color: '#f1f1f1',
                 paddingTop: '20px'
               }}
             />
@@ -365,7 +373,8 @@ export default function AdjustableStockChart({
             {showHistoricalPredictions && <Area type="monotone" dataKey="pastPredicted" stroke="#ff7c7c" fill="#ff7c7c" fillOpacity={0.6} name="過去の予測" />}
             </AreaChart>
           </ResponsiveContainer>
-      case 'bar'
+        );
+      case 'bar':
         return (
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart {...commonProps}>
@@ -386,7 +395,7 @@ export default function AdjustableStockChart({
             <Tooltip content={<CustomTooltip />} />
             <Legend
               wrapperStyle={{
-                color: '#f1f1f1'
+                color: '#f1f1f1',
                 paddingTop: '20px'
               }}
             />
@@ -396,13 +405,14 @@ export default function AdjustableStockChart({
             {showHistoricalPredictions && <Line type="monotone" dataKey="pastPredicted" stroke="#ff7c7c" strokeWidth={1} strokeDasharray="3 3" dot={false} name="過去の予測" />}
             </ComposedChart>
           </ResponsiveContainer>
-      case 'candlestick'
+        );
+      case 'candlestick':
         // Custom candlestick shape component
         const Candlestick = (props: any) => {
           const { payload, x, y, width } = props;
           if (!payload || typeof payload.open !== 'number' || typeof payload.close !== 'number' ||
               typeof payload.high !== 'number' || typeof payload.low !== 'number') {
-            return null;
+            return <g />;
           }
 
           const { open, close, high, low } = payload;
@@ -410,15 +420,15 @@ export default function AdjustableStockChart({
           const color = isRising ? '#10b981' : '#ef4444'; // Green for rising, red for falling
 
           // Find the scale from the chart
-          const yScale = props.yScale || ((val: number) => y + (1 - (val - low) / (high - low)) * 100
+          const yScale = props.yScale || ((val: number) => y + (1 - (val - low) / (high - low)) * 100);
           // Calculate positions
           const centerX = x + width / 2;
-          const openY = yScale(open
-          const closeY = yScale(close
-          const highY = yScale(high
-          const lowY = yScale(low
-          const bodyTop = Math.min(openY, closeY
-          const bodyBottom = Math.max(openY, closeY
+          const openY = yScale(open);
+          const closeY = yScale(close);
+          const highY = yScale(high);
+          const lowY = yScale(low);
+          const bodyTop = Math.min(openY, closeY);
+          const bodyBottom = Math.max(openY, closeY);
           const bodyHeight = Math.abs(bodyBottom - bodyTop) || 2; // Minimum height of 2px
 
           return (
@@ -443,6 +453,7 @@ export default function AdjustableStockChart({
                 strokeWidth={1.5}
               />
             </g>
+          );
         };
 
         return (
@@ -466,7 +477,7 @@ export default function AdjustableStockChart({
             <Tooltip content={<CustomTooltip />} />
             <Legend
               wrapperStyle={{
-                color: '#f1f1f1'
+                color: '#f1f1f1',
                 paddingTop: '20px'
               }}
             />
@@ -481,8 +492,9 @@ export default function AdjustableStockChart({
             {showPredictions && <Line type="monotone" dataKey="predicted" stroke="#82ca9d" strokeWidth={2} strokeDasharray="5 5" dot={false} name="AI予測" />}
             </ComposedChart>
           </ResponsiveContainer>
-      case 'line'
-      default
+        );
+      case 'line':
+      default:
         return (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart {...commonProps} ref={chartRef}>
@@ -505,7 +517,7 @@ export default function AdjustableStockChart({
             <Tooltip content={<CustomTooltip />} />
             <Legend
               wrapperStyle={{
-                color: '#f1f1f1'
+                color: '#f1f1f1',
                 paddingTop: '20px'
               }}
             />
@@ -519,11 +531,12 @@ export default function AdjustableStockChart({
               height={30}
               stroke="#8884d8"
               onChange={handleBrushChange}
-              startIndex={brushStartIndex}
-              endIndex={brushEndIndex}
+              startIndex={brushStartIndex ?? 0}
+              endIndex={brushEndIndex ?? chartData.length - 1}
             />
             </LineChart>
           </ResponsiveContainer>
+        );
     }
   };
 
@@ -548,19 +561,19 @@ export default function AdjustableStockChart({
           tickFormatter={(value) => {
             if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
             if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
-            return value.toString(
+            return value.toString();
           }}
         />
         <Tooltip
           formatter={(value: any) => [
-            typeof value === 'number' ? value.toLocaleString() : value
+            typeof value === 'number' ? value.toLocaleString() : value,
             '出来高'
           ]}
           labelFormatter={(label) => `日付: ${format(parseISO(label), 'yyyy/MM/dd')}`}
           contentStyle={{
-            backgroundColor: '#0f0f0f'
-            border: '1px solid #333333'
-            borderRadius: '8px'
+            backgroundColor: '#0f0f0f',
+            border: '1px solid #333333',
+            borderRadius: '8px',
             color: '#f1f1f1'
           }}
         />
@@ -572,6 +585,7 @@ export default function AdjustableStockChart({
         />
         </BarChart>
       </ResponsiveContainer>
+    );
   };
 
   return (
@@ -592,8 +606,8 @@ export default function AdjustableStockChart({
                   onClick={() => setSelectedPeriod(period)}
                   className="px-3 py-1 text-sm rounded-lg transition-colors"
                   style={{
-                    backgroundColor: selectedPeriod === period ? '#3b82f6' : '#333333'
-                    color: selectedPeriod === period ? '#ffffff' : '#f1f1f1'
+                    backgroundColor: selectedPeriod === period ? '#3b82f6' : '#333333',
+                    color: selectedPeriod === period ? '#ffffff' : '#f1f1f1',
                     border: '1px solid #555555'
                   }}
                 >
@@ -680,8 +694,8 @@ export default function AdjustableStockChart({
                     onClick={() => setChartType(type)}
                     className="flex items-center space-x-1 px-3 py-1 text-sm rounded-lg transition-colors"
                     style={{
-                      backgroundColor: chartType === type ? '#3b82f6' : '#333333'
-                      color: chartType === type ? '#ffffff' : '#f1f1f1'
+                      backgroundColor: chartType === type ? '#3b82f6' : '#333333',
+                      color: chartType === type ? '#ffffff' : '#f1f1f1',
                       border: '1px solid #555555'
                     }}
                     title={label}
@@ -848,4 +862,5 @@ export default function AdjustableStockChart({
         )}
       </div>
     </div>
+  );
 }

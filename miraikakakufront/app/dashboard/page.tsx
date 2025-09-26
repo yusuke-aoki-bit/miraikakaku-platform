@@ -18,17 +18,17 @@ interface UserData {
 }
 
 export default function DashboardPage() {
-  const router = useRouter(
-  const [user, setUser] = useState<UserData | null>(null
-  const [loading, setLoading] = useState(true
+  const router = useRouter();
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    checkAuthentication(
-  }, []
+    checkAuthentication();
+  }, []);
   const checkAuthentication = async () => {
-    const token = localStorage.getItem('auth_token'
-    const userData = localStorage.getItem('user_data'
+    const token = localStorage.getItem('auth_token');
+    const userData = localStorage.getItem('user_data');
     if (!token || !userData) {
-      router.push('/'
+      router.push('/');
       return;
     }
 
@@ -36,38 +36,38 @@ export default function DashboardPage() {
       // Verify token is still valid by fetching user profile
       const response = await fetch('http://localhost:8080/api/auth/me', {
         headers: {
-          'Authorization'
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
-      }
+      });
       if (response.ok) {
-        const userProfile = await response.json(
-        setUser(userProfile
+        const userProfile = await response.json();
+        setUser(userProfile);
       } else {
         // Token is invalid, redirect to login
-        localStorage.removeItem('auth_token'
-        localStorage.removeItem('user_data'
-        router.push('/'
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
+        router.push('/');
       }
     } catch (error) {
       // Fallback to stored user data if server is unreachable
       try {
-        const parsedUser = JSON.parse(userData
-        setUser(parsedUser
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
       } catch (parseError) {
-        localStorage.removeItem('auth_token'
-        localStorage.removeItem('user_data'
-        router.push('/'
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
+        router.push('/');
       }
     } finally {
-      setLoading(false
+      setLoading(false);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('auth_token'
-    localStorage.removeItem('user_data'
-    router.push('/'
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_data');
+    router.push('/');
   };
 
   if (loading) {
@@ -75,6 +75,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <LoadingSpinner />
       </div>
+    );
   }
 
   if (!user) {
@@ -91,6 +92,7 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
+    );
   }
 
   return <UserDashboard user={user} onLogout={handleLogout} />;

@@ -3,26 +3,26 @@
 import { useEffect, useState } from 'react';
 
 export default function TestPage() {
-  const [apiStatus, setApiStatus] = useState('testing...'
-  const [popularStocks, setPopularStocks] = useState([]
+  const [apiStatus, setApiStatus] = useState('testing...');
+  const [popularStocks, setPopularStocks] = useState<Array<{symbol: string, display: string}>>([]);
   useEffect(() => {
     const testApi = async () => {
       try {
         // Test health endpoint
-        const healthResponse = await fetch('/api/health'
-        const healthData = await healthResponse.json(
+        const healthResponse = await fetch('/api/health');
+        const healthData = await healthResponse.json();
         // Test popular stocks endpoint
-        const stocksResponse = await fetch('/api/finance/stocks/search/popular'
-        const stocksData = await stocksResponse.json(
-        setApiStatus(`Health: ${healthData.status}, Stocks: ${stocksData.count} items`
-        setPopularStocks(stocksData.popular_stocks || []
+        const stocksResponse = await fetch('/api/finance/stocks/search/popular');
+        const stocksData = await stocksResponse.json();
+        setApiStatus(`Health: ${healthData.status}, Stocks: ${stocksData.count} items`);
+        setPopularStocks(stocksData.popular_stocks || []);
       } catch (error) {
-        setApiStatus(`Error: ${error.message}`
+        setApiStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     };
 
-    testApi(
-  }, []
+    testApi();
+  }, []);
   return (
     <div style={{ padding: '20px', backgroundColor: '#0f0f0f', color: '#f1f1f1', minHeight: '100vh' }}>
       <h1>API Connection Test</h1>
@@ -41,4 +41,5 @@ export default function TestPage() {
         <a href="/" style={{ color: '#3ea6ff' }}>← Back to Home</a>
       </div>
     </div>
+  );
 }

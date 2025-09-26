@@ -1,5 +1,5 @@
 
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import ClientLayout from "./components/ClientLayout";
 import "./globals.css";
@@ -13,22 +13,22 @@ export const metadata: Metadata = {
   description: "最先端の機械学習による株価予測と金融分析プラットフォーム",
   metadataBase: new URL('https://www.miraikakaku.com'),
   openGraph: {
-    title: 'Miraikakaku - 次世代AI株価予測プラットフォーム'
-    description: '最先端の機械学習による株価予測と金融分析'
-    url: 'https://www.miraikakaku.com'
-    siteName: 'Miraikakaku'
-    locale: 'ja_JP'
+    title: 'Miraikakaku - 次世代AI株価予測プラットフォーム',
+    description: '最先端の機械学習による株価予測と金融分析',
+    url: 'https://www.miraikakaku.com',
+    siteName: 'Miraikakaku',
+    locale: 'ja_JP',
     type: 'website'
-  }
+  },
   twitter: {
-    card: 'summary_large_image'
-    title: 'Miraikakaku - 次世代AI株価予測プラットフォーム'
+    card: 'summary_large_image',
+    title: 'Miraikakaku - 次世代AI株価予測プラットフォーム',
     description: '最先端の機械学習による株価予測と金融分析'
-  }
+  },
   robots: {
-    index: true
+    index: true,
     follow: true
-  }
+  },
   icons: {
     icon: '/favicon.ico'
   }
@@ -47,4 +47,5 @@ export default function RootLayout({
         </ClientLayout>
       </body>
     </html>
+  );
 }

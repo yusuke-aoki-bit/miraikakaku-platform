@@ -1,37 +1,37 @@
 'use client';
 
 import { useState } from 'react';
-import { TrendingUp, TrendingDown, Target, Calendar, DollarSign, Activity, Search } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Calendar, Activity, Search } from 'lucide-react';
 
 // Theme Framework Implementation Example
 
 export default function ThemeFrameworkExample() {
-  const [selectedStock, setSelectedStock] = useState('AAPL'
-  const [searchQuery, setSearchQuery] = useState(''
+  const [selectedStock, setSelectedStock] = useState('AAPL');
+  const [searchQuery, setSearchQuery] = useState('');
   // Sample data
   const stockData = {
-    symbol: 'AAPL'
-    company: 'Apple Inc.'
-    currentPrice: 175.43
-    change: 2.35
-    changePercent: 1.36
-    high52w: 198.23
-    low52w: 124.17
+    symbol: 'AAPL',
+    company: 'Apple Inc.',
+    currentPrice: 175.43,
+    change: 2.35,
+    changePercent: 1.36,
+    high52w: 198.23,
+    low52w: 124.17,
     predictions: [
-      { date: '2024-01-20', price: 178.50, confidence: 0.85, type: 'LSTM' }
-      { date: '2024-01-21', price: 181.20, confidence: 0.82, type: 'GRU' }
+      { date: '2024-01-20', price: 178.50, confidence: 0.85, type: 'LSTM' },
+      { date: '2024-01-21', price: 181.20, confidence: 0.82, type: 'GRU' },
       { date: '2024-01-22', price: 176.80, confidence: 0.79, type: 'Transformer' }
-    ]
+    ],
     priceHistory: [
-      { date: '2024-01-15', open: 172.50, high: 174.20, low: 171.80, close: 173.90, volume: 58234567 }
-      { date: '2024-01-16', open: 174.10, high: 176.30, low: 173.50, close: 175.43, volume: 62145890 }
+      { date: '2024-01-15', open: 172.50, high: 174.20, low: 171.80, close: 173.90, volume: 58234567 },
+      { date: '2024-01-16', open: 174.10, high: 176.30, low: 173.50, close: 175.43, volume: 62145890 },
       { date: '2024-01-17', open: 175.60, high: 177.80, low: 174.90, close: 176.25, volume: 55987432 }
     ]
   };
 
   const rankings = [
-    { rank: 1, symbol: 'VET-USD', company: 'VeChain USD', currentPrice: 0.0229, predictedPrice: 0.0236, change: 3.06, confidence: 74.76 }
-    { rank: 2, symbol: 'TRX-USD', company: 'TRON USD', currentPrice: 0.3353, predictedPrice: 0.3431, change: 2.33, confidence: 74.12 }
+    { rank: 1, symbol: 'VET-USD', company: 'VeChain USD', currentPrice: 0.0229, predictedPrice: 0.0236, change: 3.06, confidence: 74.76 },
+    { rank: 2, symbol: 'TRX-USD', company: 'TRON USD', currentPrice: 0.3353, predictedPrice: 0.3431, change: 2.33, confidence: 74.12 },
     { rank: 3, symbol: 'AAPL', company: 'Apple Inc.', currentPrice: 175.43, predictedPrice: 178.50, change: 1.75, confidence: 85.20 }
   ];
 
@@ -44,6 +44,9 @@ export default function ThemeFrameworkExample() {
           <h1 className="theme-heading-xl mb-4">株価予測システム</h1>
           <p className="theme-caption">
             最新のAI技術を活用した株価予測とリアルタイム分析
+          </p>
+          <p className="theme-text-secondary mt-2">
+            選択中の銘柄: {selectedStock}
           </p>
         </div>
 
@@ -323,4 +326,5 @@ export default function ThemeFrameworkExample() {
 
       </div>
     </div>
+  );
 }

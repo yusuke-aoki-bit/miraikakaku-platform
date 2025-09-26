@@ -2,18 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  TrendingUp
-  TrendingDown
-  BarChart3
-  PieChart
-  Target
-  AlertTriangle
-  CheckCircle
-  XCircle
-  Activity
-  Zap
-  DollarSign
-  Calendar
+  TrendingUp,
+  TrendingDown,
+  BarChart3,
+  PieChart,
+  Target,
+  AlertTriangle,
+  CheckCircle,
+  Activity,
+  Zap,
+  DollarSign,
   Percent
 } from 'lucide-react';
 
@@ -60,23 +58,23 @@ interface AdvancedAnalysisProps {
 }
 
 export const AdvancedAnalysis: React.FC<AdvancedAnalysisProps> = ({
-  symbol
-  currentPrice
+  symbol,
+  currentPrice,
   className = ''
 }) => {
-  const [activeTab, setActiveTab] = useState<'technical' | 'fundamental' | 'risk' | 'sentiment'>('technical'
-  const [loading, setLoading] = useState(false
-  const [technicalIndicators, setTechnicalIndicators] = useState<TechnicalIndicator[]>([]
-  const [riskMetrics, setRiskMetrics] = useState<RiskMetrics | null>(null
-  const [fundamentalData, setFundamentalData] = useState<FundamentalAnalysis | null>(null
-  const [marketSentiment, setMarketSentiment] = useState<MarketSentiment | null>(null
+  const [activeTab, setActiveTab] = useState<'technical' | 'fundamental' | 'risk' | 'sentiment'>('technical');
+  const [loading, setLoading] = useState(false);
+  const [technicalIndicators, setTechnicalIndicators] = useState<TechnicalIndicator[]>([]);
+  const [riskMetrics, setRiskMetrics] = useState<RiskMetrics | null>(null);
+  const [fundamentalData, setFundamentalData] = useState<FundamentalAnalysis | null>(null);
+  const [marketSentiment, setMarketSentiment] = useState<MarketSentiment | null>(null);
   useEffect(() => {
     if (symbol) {
-      fetchAdvancedAnalysis(
+      fetchAdvancedAnalysis();
     }
-  }, [symbol]
+  }, [symbol]);
   const fetchAdvancedAnalysis = async () => {
-    setLoading(true
+    setLoading(true);
     try {
       // This would normally fetch from your backend API
       // For now, we'll simulate realistic data
@@ -84,101 +82,102 @@ export const AdvancedAnalysis: React.FC<AdvancedAnalysisProps> = ({
       // Simulate technical indicators
       const mockTechnical: TechnicalIndicator[] = [
         {
-          name: 'RSI (14)'
-          value: 65.8
-          signal: 'buy'
-          strength: 75
+          name: 'RSI (14)',
+          value: 65.8,
+          signal: 'buy',
+          strength: 75,
           description: 'Relative Strength Index showing moderate overbought conditions'
-        }
+        },
         {
-          name: 'MACD'
-          value: 2.34
-          signal: 'buy'
-          strength: 85
+          name: 'MACD',
+          value: 2.34,
+          signal: 'buy',
+          strength: 85,
           description: 'MACD line above signal line indicating bullish momentum'
-        }
+        },
         {
-          name: 'Moving Average (50)'
-          value: currentPrice * 0.98
-          signal: 'buy'
-          strength: 70
+          name: 'Moving Average (50)',
+          value: currentPrice * 0.98,
+          signal: 'buy',
+          strength: 70,
           description: 'Price trading above 50-day moving average'
-        }
+        },
         {
-          name: 'Bollinger Bands'
-          value: 0.78
-          signal: 'hold'
-          strength: 60
+          name: 'Bollinger Bands',
+          value: 0.78,
+          signal: 'hold',
+          strength: 60,
           description: 'Price in middle of Bollinger Bands, neutral signal'
-        }
+        },
         {
-          name: 'Volume Trend'
-          value: 1.25
-          signal: 'buy'
-          strength: 80
+          name: 'Volume Trend',
+          value: 1.25,
+          signal: 'buy',
+          strength: 80,
           description: 'Above average volume supporting price movement'
         }
       ];
 
       // Simulate risk metrics
       const mockRisk: RiskMetrics = {
-        volatility: 24.5
-        beta: 1.15
-        sharpeRatio: 1.8
-        maxDrawdown: -18.2
+        volatility: 24.5,
+        beta: 1.15,
+        sharpeRatio: 1.8,
+        maxDrawdown: -18.2,
         var95: -12.8
       };
 
       // Simulate fundamental data
       const mockFundamental: FundamentalAnalysis = {
-        peRatio: 22.5
-        pegRatio: 1.8
-        priceToBook: 3.2
-        debtToEquity: 0.45
-        roe: 18.5
-        roa: 12.3
-        profitMargin: 15.2
+        peRatio: 22.5,
+        pegRatio: 1.8,
+        priceToBook: 3.2,
+        debtToEquity: 0.45,
+        roe: 18.5,
+        roa: 12.3,
+        profitMargin: 15.2,
         revenueGrowth: 12.8
       };
 
       // Simulate market sentiment
       const mockSentiment: MarketSentiment = {
-        analystRating: 'buy'
-        priceTarget: currentPrice * 1.15
-        upside: 15.0
-        newsScore: 0.3
-        socialScore: 0.2
+        analystRating: 'buy',
+        priceTarget: currentPrice * 1.15,
+        upside: 15.0,
+        newsScore: 0.3,
+        socialScore: 0.2,
         optionsFlow: 'bullish'
       };
 
-      setTechnicalIndicators(mockTechnical
-      setRiskMetrics(mockRisk
-      setFundamentalData(mockFundamental
-      setMarketSentiment(mockSentiment
+      setTechnicalIndicators(mockTechnical);
+      setRiskMetrics(mockRisk);
+      setFundamentalData(mockFundamental);
+      setMarketSentiment(mockSentiment);
     } catch (error) {
-      } finally {
-      setLoading(false
+      console.error('Error fetching advanced analysis:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const getSignalIcon = (signal: string) => {
     switch (signal) {
-      case 'buy'
+      case 'buy':
         return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'sell'
+      case 'sell':
         return <TrendingDown className="w-4 h-4 text-red-500" />;
-      default
+      default:
         return <Activity className="w-4 h-4 text-yellow-500" />;
     }
   };
 
   const getSignalColor = (signal: string) => {
     switch (signal) {
-      case 'buy'
+      case 'buy':
         return 'text-green-600 bg-green-50 border-green-200';
-      case 'sell'
+      case 'sell':
         return 'text-red-600 bg-red-50 border-red-200';
-      default
+      default:
         return 'text-yellow-600 bg-yellow-50 border-yellow-200';
     }
   };
@@ -187,12 +186,13 @@ export const AdvancedAnalysis: React.FC<AdvancedAnalysisProps> = ({
     <div className="w-full bg-gray-200 rounded-full h-2">
       <div
         className={`h-2 rounded-full ${
-          strength >= 70 ? 'bg-green-500'
+          strength >= 70 ? 'bg-green-500' :
           strength >= 40 ? 'bg-yellow-500' : 'bg-red-500'
         }`}
         style={{ width: `${strength}%` }}
       />
     </div>
+  );
   const renderTechnicalAnalysis = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -287,6 +287,8 @@ export const AdvancedAnalysis: React.FC<AdvancedAnalysisProps> = ({
         </div>
       </div>
     </div>
+  );
+
   const renderFundamentalAnalysis = () => (
     <div className="space-y-6">
       {fundamentalData && (
@@ -329,6 +331,8 @@ export const AdvancedAnalysis: React.FC<AdvancedAnalysisProps> = ({
         </div>
       )}
     </div>
+  );
+
   const renderRiskAnalysis = () => (
     <div className="space-y-6">
       {riskMetrics && (
@@ -387,6 +391,8 @@ export const AdvancedAnalysis: React.FC<AdvancedAnalysisProps> = ({
         </div>
       )}
     </div>
+  );
+
   const renderMarketSentiment = () => (
     <div className="space-y-6">
       {marketSentiment && (
@@ -441,8 +447,8 @@ export const AdvancedAnalysis: React.FC<AdvancedAnalysisProps> = ({
               <div className="flex items-center justify-between pt-2">
                 <span className="text-sm text-gray-600">オプションフロー</span>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  marketSentiment.optionsFlow === 'bullish' ? 'bg-green-100 text-green-800'
-                  marketSentiment.optionsFlow === 'bearish' ? 'bg-red-100 text-red-800'
+                  marketSentiment.optionsFlow === 'bullish' ? 'bg-green-100 text-green-800' :
+                  marketSentiment.optionsFlow === 'bearish' ? 'bg-red-100 text-red-800' :
                   'bg-gray-100 text-gray-800'
                 }`}>
                   {marketSentiment.optionsFlow.toUpperCase()}
@@ -453,6 +459,8 @@ export const AdvancedAnalysis: React.FC<AdvancedAnalysisProps> = ({
         </div>
       )}
     </div>
+  );
+
   return (
     <div className={`bg-gray-50 rounded-lg p-6 ${className}`}>
       <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
@@ -463,9 +471,9 @@ export const AdvancedAnalysis: React.FC<AdvancedAnalysisProps> = ({
       {/* Tab Navigation */}
       <div className="flex space-x-1 mb-6 bg-gray-100 rounded-lg p-1">
         {[
-          { key: 'technical', label: 'テクニカル', icon: BarChart3 }
-          { key: 'fundamental', label: 'ファンダメンタル', icon: DollarSign }
-          { key: 'risk', label: 'リスク', icon: AlertTriangle }
+          { key: 'technical', label: 'テクニカル', icon: BarChart3 },
+          { key: 'fundamental', label: 'ファンダメンタル', icon: DollarSign },
+          { key: 'risk', label: 'リスク', icon: AlertTriangle },
           { key: 'sentiment', label: 'センチメント', icon: PieChart }
         ].map(({ key, label, icon: Icon }) => (
           <button
@@ -497,4 +505,5 @@ export const AdvancedAnalysis: React.FC<AdvancedAnalysisProps> = ({
         </>
       )}
     </div>
+  );
 };

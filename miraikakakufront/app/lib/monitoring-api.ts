@@ -79,11 +79,11 @@ class MonitoringAPI {
 
   private async fetchAPI<T>(endpoint: string): Promise<T> {
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`
+      const response = await fetch(`${this.baseUrl}${endpoint}`);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return await response.json(
+      return await response.json();
     } catch (error) {
       throw error;
     }
@@ -93,56 +93,56 @@ class MonitoringAPI {
    * データベース健全性を取得
    */
   async getDatabaseHealth(): Promise<SystemHealth> {
-    return this.fetchAPI<SystemHealth>('/api/database/health'
+    return this.fetchAPI<SystemHealth>('/api/database/health');
   }
 
   /**
    * データベース監視サマリーを取得
    */
   async getDatabaseMonitoringSummary(hours: number = 24): Promise<any> {
-    return this.fetchAPI(`/api/database/monitoring/summary?hours=${hours}`
+    return this.fetchAPI(`/api/database/monitoring/summary?hours=${hours}`);
   }
 
   /**
    * 現在のパフォーマンス状況を取得
    */
   async getCurrentPerformance(): Promise<PerformanceMetrics | { status: string; message: string }> {
-    return this.fetchAPI<PerformanceMetrics | { status: string; message: string }>('/api/performance/current'
+    return this.fetchAPI<PerformanceMetrics | { status: string; message: string }>('/api/performance/current');
   }
 
   /**
    * パフォーマンス分析を取得
    */
   async getPerformanceAnalytics(hours: number = 24): Promise<PerformanceAnalytics> {
-    return this.fetchAPI<PerformanceAnalytics>(`/api/performance/analytics?hours=${hours}`
+    return this.fetchAPI<PerformanceAnalytics>(`/api/performance/analytics?hours=${hours}`);
   }
 
   /**
    * エンドポイント別パフォーマンス分析を取得
    */
   async getEndpointAnalytics(hours: number = 24): Promise<EndpointAnalytics> {
-    return this.fetchAPI<EndpointAnalytics>(`/api/performance/endpoints?hours=${hours}`
+    return this.fetchAPI<EndpointAnalytics>(`/api/performance/endpoints?hours=${hours}`);
   }
 
   /**
    * システム状態を取得
    */
   async getSystemStatus(): Promise<any> {
-    return this.fetchAPI('/api/system/status'
+    return this.fetchAPI('/api/system/status');
   }
 
   /**
    * ヘルスチェックを実行
    */
   async getHealthCheck(): Promise<any> {
-    return this.fetchAPI('/api/health'
+    return this.fetchAPI('/api/health');
   }
 
   /**
    * パフォーマンスデータをエクスポート
    */
   async exportPerformanceData(): Promise<{ status: string; filename?: string; message: string }> {
-    return this.fetchAPI('/api/performance/export'
+    return this.fetchAPI('/api/performance/export');
   }
 }
 

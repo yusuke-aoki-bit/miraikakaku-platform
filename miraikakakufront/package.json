@@ -20,8 +20,11 @@
     "test:e2e:enhanced": "playwright test tests/e2e/enhanced-automated-suite.spec.ts"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
     "autoprefixer": "^10.4.21",
     "axios": "^1.11.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "i18next": "^25.4.2",
     "lucide-react": "^0.542.0",
@@ -30,7 +33,9 @@
     "react": "^18",
     "react-dom": "^18",
     "react-i18next": "^15.7.3",
-    "recharts": "^3.1.2"
+    "react-is": "^19.1.1",
+    "recharts": "^3.1.2",
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.1",

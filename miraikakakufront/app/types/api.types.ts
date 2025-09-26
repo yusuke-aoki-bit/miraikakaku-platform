@@ -130,6 +130,7 @@ export function isApiError(error: unknown): error is ApiError {
     'error' in error &&
     'error_code' in error &&
     'category' in error
+  );
 }
 
 export function isStockPriceResponse(data: unknown): data is StockPriceResponse {
@@ -139,25 +140,26 @@ export function isStockPriceResponse(data: unknown): data is StockPriceResponse 
     'symbol' in data &&
     'data' in data &&
     Array.isArray((data as any).data)
+  );
 }
 
 // APIエンドポイント定数
 export const API_ENDPOINTS = {
   // 株式関連
-  STOCK_PRICE: (symbol: string) => `/api/finance/stocks/${symbol}/price` as const
-  STOCK_SEARCH: '/api/finance/stocks/search' as const
-  STOCK_PREDICTIONS: (symbol: string) => `/api/finance/stocks/${symbol}/predictions` as const
-  STOCK_DETAILS: (symbol: string) => `/api/finance/stocks/${symbol}` as const
+  STOCK_PRICE: (symbol: string) => `/api/finance/stocks/${symbol}/price` as const,
+  STOCK_SEARCH: '/api/finance/stocks/search' as const,
+  STOCK_PREDICTIONS: (symbol: string) => `/api/finance/stocks/${symbol}/predictions` as const,
+  STOCK_DETAILS: (symbol: string) => `/api/finance/stocks/${symbol}` as const,
   // AI関連
-  AI_FACTORS: (symbol: string) => `/api/ai/factors/${symbol}` as const
-  AI_ANALYSIS: (symbol: string) => `/api/ai/analysis/${symbol}` as const
+  AI_FACTORS: (symbol: string) => `/api/ai/factors/${symbol}` as const,
+  AI_ANALYSIS: (symbol: string) => `/api/ai/analysis/${symbol}` as const,
   // システム関連
-  HEALTH: '/health' as const
-  SYSTEM_STATUS: '/api/system/status' as const
-  SYSTEM_METRICS: '/api/system/metrics' as const
+  HEALTH: '/health' as const,
+  SYSTEM_STATUS: '/api/system/status' as const,
+  SYSTEM_METRICS: '/api/system/metrics' as const,
   // 認証関連
-  AUTH_LOGIN: '/api/auth/login' as const
-  AUTH_LOGOUT: '/api/auth/logout' as const
+  AUTH_LOGIN: '/api/auth/login' as const,
+  AUTH_LOGOUT: '/api/auth/logout' as const,
   AUTH_REFRESH: '/api/auth/refresh' as const
 } as const;
 
@@ -182,10 +184,10 @@ export type ErrorInterceptor = (error: unknown) => unknown | Promise<unknown>;
 
 // Re-export existing types for backward compatibility
 export type {
-  StockPrice
-  StockPrediction
-  HistoricalPrediction
-  StockDetails
-  AIDecisionFactor
+  StockPrice,
+  StockPrediction,
+  HistoricalPrediction,
+  StockDetails,
+  AIDecisionFactor,
   SearchResult
 } from '../types';

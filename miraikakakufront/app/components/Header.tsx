@@ -12,7 +12,7 @@ const translations = {
   'hero.title': '未来価格'
 };
 
-const t = (key: string) => translations[key] || key;
+const t = (key: string) => (translations as Record<string, string>)[key] || key;
 
 interface UserData {
   id: number;
@@ -28,44 +28,39 @@ interface HeaderProps {
 }
 
 export default function Header({ onUserAuthenticated, currentUser }: HeaderProps) {
-  const router = useRouter(
-  const [showAuthModal, setShowAuthModal] = useState(false
-  const [user, setUser] = useState<UserData | null>(currentUser || null
+  const router = useRouter();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [user, setUser] = useState<UserData | null>(currentUser || null);
   useEffect(() => {
     // Check for existing user session
-    const token = localStorage.getItem('auth_token'
-    const userData = localStorage.getItem('user_data'
+    const token = localStorage.getItem('auth_token');
+    const userData = localStorage.getItem('user_data');
     if (token && userData && !user) {
       try {
-        const parsedUser = JSON.parse(userData
-        setUser(parsedUser
-        onUserAuthenticated?.(parsedUser
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        onUserAuthenticated?.(parsedUser);
       } catch (error) {
-        localStorage.removeItem('auth_token'
-        localStorage.removeItem('user_data'
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
       }
     }
-  }, [user, onUserAuthenticated]
+  }, [user, onUserAuthenticated]);
+
   const handleAuthSuccess = (userData: UserData) => {
-    setUser(userData
-    onUserAuthenticated?.(userData
+    setUser(userData);
+    onUserAuthenticated?.(userData);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token'
-    localStorage.removeItem('user_data'
-    setUser(null
-    router.push('/'
-  };
 
   const openDashboard = () => {
-    router.push('/dashboard'
+    router.push('/dashboard');
   };
 
   return (
     <>
       <header className="sticky top-0 z-50 shadow-sm" style={{
-        backgroundColor: 'rgb(var(--theme-bg-secondary))'
+        backgroundColor: 'rgb(var(--theme-bg-secondary))',
         borderBottom: '1px solid rgb(var(--theme-border))'
       }}>
         <div className="max-w-6xl mx-auto px-4 py-3">
@@ -136,4 +131,5 @@ export default function Header({ onUserAuthenticated, currentUser }: HeaderProps
         onAuthSuccess={handleAuthSuccess}
       />
     </>
+  );
 }

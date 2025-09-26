@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { TrendingUp, TrendingDown, Activity, AlertTriangle } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { StockPrice } from '../types';
 
 interface TechnicalAnalysisProps {
@@ -17,19 +17,18 @@ interface TechnicalIndicator {
 }
 
 export default function TechnicalAnalysis({ priceHistory }: TechnicalAnalysisProps) {
-  const { t } = useTranslation('common'
+  const { t } = useTranslation('common');
   // Calculate technical indicators
   const calculateTechnicalIndicators = (): TechnicalIndicator[] => {
     if (!priceHistory || priceHistory.length < 20) {
       return [];
     }
 
-    const prices = priceHistory.map(p => p.close_price).filter(p => p > 0
-    const volumes = priceHistory.map(p => p.volume).filter(v => v > 0
+    const prices = priceHistory.map(p => p.close_price).filter((p): p is number => p != null && p > 0);
+    const volumes = priceHistory.map(p => p.volume).filter((v): v is number => v != null && v > 0);
     if (prices.length < 20) return [];
 
     const currentPrice = prices[prices.length - 1];
-    const previousPrice = prices[prices.length - 2];
 
     // Simple Moving Average (20-day)
     const sma20 = prices.slice(-20).reduce((sum, price) => sum + price, 0) / 20;
@@ -47,9 +46,13 @@ export default function TechnicalAnalysis({ priceHistory }: TechnicalAnalysisPro
       let losses = 0;
 
       for (let i = prices.length - 14; i < prices.length - 1; i++) {
-        const change = prices[i + 1] - prices[i];
-        if (change > 0) gains += change;
-        else losses += Math.abs(change
+        const currentPrice = prices[i];
+        const nextPrice = prices[i + 1];
+        if (currentPrice !== undefined && nextPrice !== undefined) {
+          const change = nextPrice - currentPrice;
+          if (change > 0) gains += change;
+          else losses += Math.abs(change);
+        }
       }
 
       const avgGain = gains / 14;
@@ -57,23 +60,23 @@ export default function TechnicalAnalysis({ priceHistory }: TechnicalAnalysisPro
 
       if (avgLoss === 0) return 100;
       const rs = avgGain / avgLoss;
-      return 100 - (100 / (1 + rs)
+      return 100 - (100 / (1 + rs));
     };
 
     // Volatility calculation
     const calculateVolatility = () => {
       if (prices.length < 20) return 0;
-      const recent = prices.slice(-20
+      const recent = prices.slice(-20);
       const avg = recent.reduce((sum, price) => sum + price, 0) / recent.length;
       const variance = recent.reduce((sum, price) => sum + Math.pow(price - avg, 2), 0) / recent.length;
-      return Math.sqrt(variance
+      return Math.sqrt(variance);
     };
 
     // Volume analysis
     const calculateVolumeSignal = () => {
       if (volumes.length < 20) return 'HOLD';
-      const recentVolumes = volumes.slice(-10
-      const olderVolumes = volumes.slice(-20, -10
+      const recentVolumes = volumes.slice(-10);
+      const olderVolumes = volumes.slice(-20, -10);
       const recentAvg = recentVolumes.reduce((sum, vol) => sum + vol, 0) / recentVolumes.length;
       const olderAvg = olderVolumes.reduce((sum, vol) => sum + vol, 0) / olderVolumes.length;
 
@@ -87,57 +90,57 @@ export default function TechnicalAnalysis({ priceHistory }: TechnicalAnalysisPro
     const indicators: TechnicalIndicator[] = [];
 
     // Add RSI indicator
-    const rsiValue = calculateRSI(
+    const rsiValue = calculateRSI();
     let rsiSignal: 'BUY' | 'SELL' | 'HOLD' = 'HOLD';
     if (rsiValue < 30) rsiSignal = 'BUY';
     else if (rsiValue > 70) rsiSignal = 'SELL';
 
     indicators.push({
-      name: t('stockDetails.technicalAnalysis.rsi')
-      value
-      signal: rsiSignal
+      name: t('stockDetails.technicalAnalysis.rsi'),
+      value: rsiValue.toFixed(2),
+      signal: rsiSignal,
       description: t('stockDetails.technicalAnalysis.rsiDescription')
-    }
+    });
     // Add Moving Average indicator
     let smaSignal: 'BUY' | 'SELL' | 'HOLD' = 'HOLD';
-    if (currentPrice > sma20 && sma20 > sma50) smaSignal = 'BUY';
-    else if (currentPrice < sma20 && sma20 < sma50) smaSignal = 'SELL';
+    if (currentPrice !== undefined && currentPrice > sma20 && sma20 > sma50) smaSignal = 'BUY';
+    else if (currentPrice !== undefined && currentPrice < sma20 && sma20 < sma50) smaSignal = 'SELL';
 
     indicators.push({
-      name: t('stockDetails.technicalAnalysis.movingAverage')
-      value: smaSignal
-      signal: smaSignal
+      name: t('stockDetails.technicalAnalysis.movingAverage'),
+      value: smaSignal,
+      signal: smaSignal,
       description: t('stockDetails.technicalAnalysis.movingAverageDescription')
-    }
+    });
     // Add Volatility indicator
-    const volatility = calculateVolatility(
-    const volatilityPercentage = (volatility / currentPrice) * 100;
+    const volatility = calculateVolatility();
+    const volatilityPercentage = currentPrice !== undefined ? (volatility / currentPrice) * 100 : 0;
     let volatilitySignal: 'BUY' | 'SELL' | 'HOLD' = 'HOLD';
     if (volatilityPercentage < 1) volatilitySignal = 'BUY';
     else if (volatilityPercentage > 3) volatilitySignal = 'SELL';
 
     indicators.push({
-      name: t('stockDetails.technicalAnalysis.volatility')
-      value
-      signal: volatilitySignal
+      name: t('stockDetails.technicalAnalysis.volatility'),
+      value: `${volatilityPercentage.toFixed(2)}%`,
+      signal: volatilitySignal,
       description: t('stockDetails.technicalAnalysis.volatilityDescription')
-    }
+    });
     // Add Volume indicator
-    const volumeSignal = calculateVolumeSignal(
+    const volumeSignal = calculateVolumeSignal();
     indicators.push({
-      name: t('stockDetails.technicalAnalysis.volume')
-      value: volumeSignal
-      signal: volumeSignal
+      name: t('stockDetails.technicalAnalysis.volume'),
+      value: volumeSignal,
+      signal: volumeSignal,
       description: t('stockDetails.technicalAnalysis.volumeDescription')
-    }
+    });
     return indicators;
   };
 
-  const indicators = calculateTechnicalIndicators(
+  const indicators = calculateTechnicalIndicators();
   if (!priceHistory || priceHistory.length === 0) {
     return (
       <div className="rounded-lg shadow-md p-6" style={{
-        backgroundColor: 'var(--yt-music-surface)'
+        backgroundColor: 'var(--yt-music-surface)',
         border: '1px solid var(--yt-music-border)'
       }}>
         <h2 className="text-2xl font-semibold mb-4 flex items-center" style={{ color: 'var(--yt-music-text-primary)' }}>
@@ -146,13 +149,14 @@ export default function TechnicalAnalysis({ priceHistory }: TechnicalAnalysisPro
         </h2>
         <p className="text-gray-500 italic">{t('stockDetails.technicalAnalysis.insufficientData')}</p>
       </div>
+    );
   }
 
   // Calculate overall signal
   const calculateOverallSignal = () => {
     if (indicators.length === 0) return 'HOLD';
 
-    const signals = indicators.map(i => i.signal
+    const signals = indicators.map(i => i.signal);
     const buyCount = signals.filter(s => s === 'BUY').length;
     const sellCount = signals.filter(s => s === 'SELL').length;
 
@@ -161,7 +165,7 @@ export default function TechnicalAnalysis({ priceHistory }: TechnicalAnalysisPro
     return 'HOLD';
   };
 
-  const overallSignal = calculateOverallSignal(
+  const overallSignal = calculateOverallSignal();
   const getSignalColor = (signal: string) => {
     switch (signal) {
       case 'BUY': return 'text-green-600 bg-green-50 border-green-200';
@@ -173,7 +177,7 @@ export default function TechnicalAnalysis({ priceHistory }: TechnicalAnalysisPro
 
   return (
     <div className="rounded-lg shadow-md p-6" style={{
-      backgroundColor: 'var(--yt-music-surface)'
+      backgroundColor: 'var(--yt-music-surface)',
       border: '1px solid var(--yt-music-border)'
     }}>
       <h2 className="text-2xl font-semibold mb-4 flex items-center" style={{ color: 'var(--yt-music-text-primary)' }}>
@@ -193,8 +197,8 @@ export default function TechnicalAnalysis({ priceHistory }: TechnicalAnalysisPro
                 {overallSignal}
               </div>
               <span style={{ color: 'var(--yt-music-text-secondary)' }}>
-                {overallSignal === 'BUY' ? t('stockDetails.technicalAnalysis.buySignal')
-                 overallSignal === 'SELL' ? t('stockDetails.technicalAnalysis.sellSignal')
+                {overallSignal === 'BUY' ? t('stockDetails.technicalAnalysis.buySignal') :
+                 overallSignal === 'SELL' ? t('stockDetails.technicalAnalysis.sellSignal') :
                  t('stockDetails.technicalAnalysis.holdSignal')}
               </span>
             </div>
@@ -204,7 +208,7 @@ export default function TechnicalAnalysis({ priceHistory }: TechnicalAnalysisPro
           <div className="grid md:grid-cols-2 gap-4">
             {indicators.map((indicator, index) => (
               <div key={index} className="border rounded-lg p-4" style={{
-                backgroundColor: 'var(--yt-music-bg)'
+                backgroundColor: 'var(--yt-music-bg)',
                 borderColor: 'var(--yt-music-border)'
               }}>
                 <div className="flex items-center justify-between mb-2">
@@ -229,4 +233,5 @@ export default function TechnicalAnalysis({ priceHistory }: TechnicalAnalysisPro
         <p className="text-gray-500 italic">{t('stockDetails.technicalAnalysis.insufficientData')}</p>
       )}
     </div>
+  );
 }

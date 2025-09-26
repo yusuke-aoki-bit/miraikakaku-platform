@@ -223,7 +223,7 @@ curl -w "@curl-format.txt" -s -o /dev/null http://localhost:8080/api/health
 python3 -c "
 import psycopg2
 try:
-    conn = psycopg2.connect('postgresql://user:pass@localhost/miraikakaku')
+    conn = psycopg2.connect('postgresql://[DB_USER]:[DB_PASSWORD_REDACTED]@[DB_HOST]/miraikakaku')
     print('Database connection: OK')
 except Exception as e:
     print('Database connection: ERROR -', e)

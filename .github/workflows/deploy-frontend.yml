@@ -1,0 +1,75 @@
+name: Deploy Frontend to Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'miraikakakufront/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: miraikakakufront/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./miraikakakufront
+      run: |
+        npm ci
+        npm install react-is
+
+    - name: Build application
+      working-directory: ./miraikakakufront
+      run: npm run build
+      env:
+        NEXT_PUBLIC_API_URL: https://api.miraikakaku.com
+        NODE_ENV: production
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Configure Docker for GCR
+      run: gcloud auth configure-docker
+
+    - name: Deploy to Cloud Run
+      working-directory: ./miraikakakufront
+      run: |
+        gcloud run deploy miraikakaku-front \
+          --source . \
+          --region us-central1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 3000 \
+          --memory 2Gi \
+          --cpu 2 \
+          --timeout 900 \
+          --concurrency 80 \
+          --min-instances 0 \
+          --max-instances 10 \
+          --set-env-vars="NEXT_PUBLIC_API_URL=https://api.miraikakaku.com,NODE_ENV=production" \
+          --set-build-env-vars="NEXT_PUBLIC_API_URL=https://api.miraikakaku.com" \
+          --project pricewise-huqkr \
+          --quiet
+
+    - name: Verify deployment
+      run: |
+        echo "🎉 Deployment completed!"
+        echo "Frontend URL: https://miraikakaku.com"
+        echo "API URL: https://api.miraikakaku.com"
+        curl -s -o /dev/null -w "Frontend Status: %{http_code}\n" https://miraikakaku.com

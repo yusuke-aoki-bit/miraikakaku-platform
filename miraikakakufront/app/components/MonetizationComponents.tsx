@@ -12,7 +12,7 @@ export function AmazonAssociatesWidget() {
           Investment Resources
         </h3>
       </div>
-      
+
       <div className="space-y-4">
         <div className="bg-white rounded-md p-4 border border-orange-100">
           <h4 className="font-medium text-gray-900 mb-2">
@@ -25,24 +25,25 @@ export function AmazonAssociatesWidget() {
             View Book Recommendations
           </button>
         </div>
-        
+
         <div className="bg-white rounded-md p-4 border border-orange-100">
           <h4 className="font-medium text-gray-900 mb-2">
-            💼 Investment Tools & Software
+            🛠️ Trading Tools & Software
           </h4>
           <p className="text-gray-700 text-sm mb-3">
-            Professional-grade tools for portfolio management and market analysis.
+            Professional-grade tools for technical analysis, portfolio management, and market research.
           </p>
           <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-md transition-colors text-sm font-medium">
             Shop Investment Tools
           </button>
         </div>
       </div>
-      
+
       <p className="text-xs text-gray-500 mt-4">
         * As an Amazon Associate, we earn from qualifying purchases.
       </p>
     </div>
+  );
 }
 
 export function GoogleAdSenseWidget() {
@@ -51,61 +52,59 @@ export function GoogleAdSenseWidget() {
       <div className="flex items-center mb-4">
         <DollarSign className="w-6 h-6 text-blue-600 mr-2" />
         <h3 className="text-xl font-semibold text-gray-900">
-          Financial Services
+          Advertisement
         </h3>
       </div>
-      
-      <div className="space-y-4">
-        <div className="bg-white rounded-md p-4 border border-blue-100">
-          <h4 className="font-medium text-gray-900 mb-2">
-            🏦 Open a Trading Account
-          </h4>
-          <p className="text-gray-700 text-sm mb-3">
-            Start your investment journey with commission-free stock trading platforms.
+
+      <div className="bg-white border border-gray-200 rounded-lg p-4 min-h-[250px] flex items-center justify-center">
+        <div className="text-center text-gray-500">
+          <div className="text-4xl mb-2">📊</div>
+          <p className="text-sm">
+            Advertisement Space
           </p>
-          <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors text-sm font-medium">
-            Compare Brokers
-          </button>
-        </div>
-        
-        <div className="bg-white rounded-md p-4 border border-blue-100">
-          <h4 className="font-medium text-gray-900 mb-2">
-            📊 Premium Market Data
-          </h4>
-          <p className="text-gray-700 text-sm mb-3">
-            Access real-time market data and advanced analytics for better investment decisions.
+          <p className="text-xs mt-1">
+            Google AdSense placement
           </p>
-          <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors text-sm font-medium">
-            Get Premium Access
-          </button>
         </div>
       </div>
+
+      <p className="text-xs text-gray-500 mt-4">
+        Advertisement
+      </p>
     </div>
+  );
 }
 
-export function NewsletterSignup() {
+export function PremiumMembershipWidget() {
   return (
-    <div className="bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-lg p-6">
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">
-        📈 Stay Updated
-      </h3>
-      <p className="text-gray-700 mb-4">
-        Get weekly AI-powered market insights and stock predictions delivered to your inbox.
-      </p>
-      
-      <div className="flex gap-3">
-        <input
-          type="email"
-          placeholder="Enter your email"
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-        />
-        <button className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-md transition-colors font-medium">
-          Subscribe
-        </button>
+    <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
+      <div className="flex items-center mb-4">
+        <div className="w-6 h-6 mr-2">⭐</div>
+        <h3 className="text-xl font-semibold text-gray-900">
+          Premium Membership
+        </h3>
       </div>
-      
-      <p className="text-xs text-gray-500 mt-2">
-        No spam. Unsubscribe at any time.
+
+      <div className="space-y-4">
+        <div className="bg-white rounded-md p-4 border border-purple-100">
+          <h4 className="font-medium text-gray-900 mb-2">
+            🚀 Unlock Advanced Features
+          </h4>
+          <ul className="text-sm text-gray-700 space-y-2 mb-4">
+            <li>• Real-time advanced predictions</li>
+            <li>• Portfolio analysis tools</li>
+            <li>• Priority customer support</li>
+            <li>• Ad-free experience</li>
+          </ul>
+          <button className="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-md transition-colors text-sm font-medium">
+            Upgrade to Premium
+          </button>
+        </div>
+      </div>
+
+      <p className="text-xs text-gray-500 mt-4">
+        Support the development of our AI prediction platform
       </p>
     </div>
+  );
 }

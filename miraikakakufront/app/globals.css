@@ -1,162 +1,82 @@
+/* Basic CSS for MiraiKakaku */
 
-/* Import Theme Framework */
-@import './styles/theme-framework.css';
-
-/* Dark theme styles */
 body {
-  font-family: 'Roboto', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  background-color: rgb(3 3 3);
-  color: rgb(241 241 241);
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: #030303;
+  color: #f1f1f1;
+  margin: 0;
+  padding: 0;
 }
 
-/* Custom scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(var(--theme-bg-secondary));
+  background: #0f0f0f;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(var(--theme-border));
+  background: #212121;
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--theme-text-disabled));
+/* Basic animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Glass morphism effect */
-.glass-effect {
-  background: rgb(var(--theme-bg-secondary) / 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgb(var(--theme-border) / 0.3);
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
 }
 
-/* Skeleton loading animations */
-@keyframes skeleton-wave {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+/* Basic card styles */
+.card {
+  background: #0f0f0f;
+  border: 1px solid #212121;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 8px 0;
 }
 
-.skeleton-animate {
-  animation: skeleton-wave 1.5s ease-in-out infinite;
-  background: linear-gradient(
-    90deg,
-    rgb(var(--theme-bg-tertiary)) 25%,
-    rgb(var(--theme-bg-hover)) 50%,
-    rgb(var(--theme-bg-tertiary)) 75%
-  );
-  background-size: 200% 100%;
+.card:hover {
+  background: #1a1a1a;
+  border-color: #3ea6ff;
 }
 
-/* Fade-in animation for progressive content */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Basic button styles */
+.btn-primary {
+  background: #3ea6ff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
+.btn-primary:hover {
+  background: #66b8ff;
 }
 
-/* Enhanced UI animations */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
-  }
+/* Basic text styles */
+.text-primary { color: #f1f1f1; }
+.text-secondary { color: #aaaaaa; }
+.text-success { color: #4caf50; }
+.text-error { color: #f44336; }
+
+/* Loading spinner */
+.spinner {
+  border: 2px solid #212121;
+  border-top: 2px solid #3ea6ff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
 }
 
-.pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Floating animation */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Enhanced card hover effects */
-.enhanced-card {
-  background: linear-gradient(135deg, rgb(var(--theme-bg-secondary)) 0%, rgb(var(--theme-bg-tertiary)) 100%);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgb(var(--theme-border) / 0.5);
-}
-
-.enhanced-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgb(0 0 0 / 0.15);
-}
-
-/* Modern gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
-  background-size: 200% 200%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradient-flow 3s ease infinite;
-}
-
-@keyframes gradient-flow {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-/* Skeleton loading shimmer effect (alternative) */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.shimmer-effect {
-  position: relative;
-  overflow: hidden;
-}
-
-.shimmer-effect::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  animation: shimmer 1.5s ease-in-out infinite;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

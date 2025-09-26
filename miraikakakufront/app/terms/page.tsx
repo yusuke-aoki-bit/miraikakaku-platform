@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
 export default function TermsOfServicePage() {
-  const router = useRouter(
-  const { t } = useTranslation('common'
+  const router = useRouter();
+  const { t } = useTranslation('common');
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--yt-music-bg)' }}>
       <div className="max-w-4xl mx-auto p-4 md:p-8">
@@ -28,7 +28,7 @@ export default function TermsOfServicePage() {
 
         {/* Header */}
         <div className="rounded-lg shadow-md p-8 mb-8" style={{
-          backgroundColor: 'var(--yt-music-surface)'
+          backgroundColor: 'var(--yt-music-surface)',
           border: '1px solid var(--yt-music-border)'
         }}>
           <h1 className="text-3xl font-bold mb-4" style={{ color: 'var(--yt-music-text-primary)' }}>{t('terms.title', '利用規約')}</h1>
@@ -39,7 +39,7 @@ export default function TermsOfServicePage() {
 
         {/* Content */}
         <div className="rounded-lg shadow-md p-8 space-y-8" style={{
-          backgroundColor: 'var(--yt-music-surface)'
+          backgroundColor: 'var(--yt-music-surface)',
           border: '1px solid var(--yt-music-border)'
         }}>
           <section>
@@ -222,4 +222,5 @@ export default function TermsOfServicePage() {
         </div>
       </div>
     </div>
+  );
 }

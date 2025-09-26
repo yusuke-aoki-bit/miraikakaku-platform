@@ -399,9 +399,9 @@ NEXT_PUBLIC_API_URL=http://localhost:8080
 NEXT_PUBLIC_WS_URL=ws://localhost:8080
 
 # バックエンド (.env)
-DATABASE_URL=postgresql://user:pass@localhost:5432/miraikakaku
+DATABASE_URL=postgresql://[DB_USER]:[DB_PASSWORD_REDACTED]@[DB_HOST]:5432/miraikakaku
 REDIS_URL=redis://localhost:6379
-JWT_SECRET=your-secret-key
+JWT_SECRET=[JWT_SECRET_REDACTED]
 API_RATE_LIMIT=1000
 ```
 

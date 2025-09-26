@@ -25,7 +25,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Security configurations
-JWT_SECRET = "your-super-secret-jwt-key"  # Should be from environment
+import os
+JWT_SECRET = os.environ.get("JWT_SECRET_KEY")
+if not JWT_SECRET:
+    raise ValueError("JWT_SECRET_KEY environment variable must be set for secure operation")
 JWT_ALGORITHM = "HS256"
 API_KEY_PREFIX = "mk_"
 

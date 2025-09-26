@@ -16,33 +16,33 @@ interface StockDataState {
 
 export function useStockData(symbol: string) {
   const [state, setState] = useState<StockDataState>({
-    priceHistory: []
-    predictions: []
-    historicalPredictions: []
-    details: null
-    aiFactors: []
-    financialAnalysis: null
-    riskAnalysis: null
-    loading: true
+    priceHistory: [],
+    predictions: [],
+    historicalPredictions: [],
+    details: null,
+    aiFactors: [],
+    financialAnalysis: null,
+    riskAnalysis: null,
+    loading: true,
     error: null
-  }
+  });
   const fetchStockData = useCallback(async (stockSymbol: string) => {
     if (!stockSymbol) return;
 
-    setState(prev => ({ ...prev, loading: true, error: null })
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
-      const data = await stockAPI.getAllStockData(stockSymbol
+      const data = await stockAPI.getAllStockData(stockSymbol);
       setState({
-        priceHistory: data.priceHistory || []
-        predictions: data.predictions || []
-        historicalPredictions: data.historicalPredictions || []
-        details: data.details
-        aiFactors: data.aiFactors || []
-        financialAnalysis: data.financialAnalysis || null
-        riskAnalysis: data.riskAnalysis || null
-        loading: false
+        priceHistory: data.priceHistory || [],
+        predictions: data.predictions || [],
+        historicalPredictions: data.historicalPredictions || [],
+        details: data.details,
+        aiFactors: data.aiFactors || [],
+        financialAnalysis: data.financialAnalysis || null,
+        riskAnalysis: data.riskAnalysis || null,
+        loading: false,
         error: null
-      }
+      });
     } catch (err: any) {
       // Enhanced error handling based on error type and status
       let errorMessage = 'Failed to load stock data. Please try again later.';
@@ -65,20 +65,20 @@ export function useStockData(symbol: string) {
       }
 
       setState(prev => ({
-        ...prev
-        loading: false
+        ...prev,
+        loading: false,
         error: errorMessage
-      })
+      }));
     }
-  }, []
+  }, []);
   const refetch = useCallback(() => {
-    fetchStockData(symbol
-  }, [symbol, fetchStockData]
+    fetchStockData(symbol);
+  }, [symbol, fetchStockData]);
   useEffect(() => {
-    fetchStockData(symbol
-  }, [symbol, fetchStockData]
+    fetchStockData(symbol);
+  }, [symbol, fetchStockData]);
   return {
-    ...state
+    ...state,
     refetch
   };
 }

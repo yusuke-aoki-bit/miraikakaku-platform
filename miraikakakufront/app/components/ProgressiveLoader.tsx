@@ -20,59 +20,59 @@ interface ProgressiveLoaderProps {
 }
 
 export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
-  onComplete
-  onStageUpdate
+  onComplete,
+  onStageUpdate,
   enablePerformanceMode = true
 }) => {
-  const [currentStageIndex, setCurrentStageIndex] = useState(0
-  const [overallProgress, setOverallProgress] = useState(0
-  const [stages, setStages] = useState<LoadingStage[]>([]
-  const [startTime, setStartTime] = useState<number>(0
-  const [performanceMetrics, setPerformanceMetrics] = useState<any>({}
-  const [isOptimizing, setIsOptimizing] = useState(false
-  const [currentColorTheme, setCurrentColorTheme] = useState(0
-  const workerRef = useRef<Worker | null>(null
-  const cacheRef = useRef<Map<string, any>>(new Map()
+  const [currentStageIndex, setCurrentStageIndex] = useState(0);
+  const [overallProgress, setOverallProgress] = useState(0);
+  const [stages, setStages] = useState<LoadingStage[]>([]);
+  const [startTime, setStartTime] = useState<number>(0);
+  const [performanceMetrics, setPerformanceMetrics] = useState<any>({});
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [currentColorTheme, setCurrentColorTheme] = useState(0);
+  const workerRef = useRef<Worker | null>(null);
+  const cacheRef = useRef<Map<string, any>>(new Map());
   // カラーテーマパターン定義
   const colorThemes = [
     {
-      name: 'Ocean Gradient'
-      primary: 'from-blue-600 via-cyan-500 to-teal-400'
-      secondary: 'from-blue-500/20 via-cyan-400/20 to-teal-300/20'
-      accent: 'text-cyan-500'
-      background: 'bg-gradient-to-br from-blue-50 via-cyan-50 to-white'
+      name: 'Ocean Gradient',
+      primary: 'from-blue-600 via-cyan-500 to-teal-400',
+      secondary: 'from-blue-500/20 via-cyan-400/20 to-teal-300/20',
+      accent: 'text-cyan-500',
+      background: 'bg-gradient-to-br from-blue-50 via-cyan-50 to-white',
       glow: 'shadow-cyan-500/50'
-    }
+    },
     {
-      name: 'Sunset Burst'
-      primary: 'from-purple-600 via-pink-500 to-red-400'
-      secondary: 'from-purple-500/20 via-pink-400/20 to-red-300/20'
-      accent: 'text-pink-500'
-      background: 'bg-gradient-to-br from-purple-50 via-pink-50 to-white'
+      name: 'Sunset Burst',
+      primary: 'from-purple-600 via-pink-500 to-red-400',
+      secondary: 'from-purple-500/20 via-pink-400/20 to-red-300/20',
+      accent: 'text-pink-500',
+      background: 'bg-gradient-to-br from-purple-50 via-pink-50 to-white',
       glow: 'shadow-pink-500/50'
-    }
+    },
     {
-      name: 'Aurora Borealis'
-      primary: 'from-green-600 via-emerald-500 to-cyan-400'
-      secondary: 'from-green-500/20 via-emerald-400/20 to-cyan-300/20'
-      accent: 'text-emerald-500'
-      background: 'bg-gradient-to-br from-green-50 via-emerald-50 to-white'
+      name: 'Aurora Borealis',
+      primary: 'from-green-600 via-emerald-500 to-cyan-400',
+      secondary: 'from-green-500/20 via-emerald-400/20 to-cyan-300/20',
+      accent: 'text-emerald-500',
+      background: 'bg-gradient-to-br from-green-50 via-emerald-50 to-white',
       glow: 'shadow-emerald-500/50'
-    }
+    },
     {
-      name: 'Golden Hour'
-      primary: 'from-amber-600 via-orange-500 to-yellow-400'
-      secondary: 'from-amber-500/20 via-orange-400/20 to-yellow-300/20'
-      accent: 'text-orange-500'
-      background: 'bg-gradient-to-br from-amber-50 via-orange-50 to-white'
+      name: 'Golden Hour',
+      primary: 'from-amber-600 via-orange-500 to-yellow-400',
+      secondary: 'from-amber-500/20 via-orange-400/20 to-yellow-300/20',
+      accent: 'text-orange-500',
+      background: 'bg-gradient-to-br from-amber-50 via-orange-50 to-white',
       glow: 'shadow-orange-500/50'
-    }
+    },
     {
-      name: 'Deep Space'
-      primary: 'from-indigo-600 via-purple-500 to-blue-400'
-      secondary: 'from-indigo-500/20 via-purple-400/20 to-blue-300/20'
-      accent: 'text-indigo-500'
-      background: 'bg-gradient-to-br from-indigo-50 via-purple-50 to-white'
+      name: 'Deep Space',
+      primary: 'from-indigo-600 via-purple-500 to-blue-400',
+      secondary: 'from-indigo-500/20 via-purple-400/20 to-blue-300/20',
+      accent: 'text-indigo-500',
+      background: 'bg-gradient-to-br from-indigo-50 via-purple-50 to-white',
       glow: 'shadow-indigo-500/50'
     }
   ];
@@ -80,65 +80,66 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
   // カラーテーマを動的に切り替え
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentColorTheme(prev => (prev + 1) % colorThemes.length
+      setCurrentColorTheme(prev => (prev + 1) % colorThemes.length);
     }, 3000); // 3秒ごとにテーマ切り替え
 
-    return () => clearInterval(interval
-  }, []
+    return () => clearInterval(interval);
+  }, []);
+
   const initialStages: LoadingStage[] = [
     {
-      id: 'cache'
-      name: 'キャッシュ最適化'
-      description: 'ローカルキャッシュとメモリ最適化'
-      weight: 10
-      status: 'pending'
+      id: 'cache',
+      name: 'キャッシュ最適化',
+      description: 'ローカルキャッシュとメモリ最適化',
+      weight: 10,
+      status: 'pending',
       icon: Database
-    }
+    },
     {
-      id: 'preload'
-      name: 'リソースプリロード'
-      description: '重要なリソースを事前読み込み'
-      weight: 15
-      status: 'pending'
+      id: 'preload',
+      name: 'リソースプリロード',
+      description: '重要なリソースを事前読み込み',
+      weight: 15,
+      status: 'pending',
       icon: Zap
-    }
+    },
     {
-      id: 'api-warmup'
-      name: 'API ウォームアップ'
-      description: 'APIエンドポイントの事前準備'
-      weight: 20
-      status: 'pending'
+      id: 'api-warmup',
+      name: 'API ウォームアップ',
+      description: 'APIエンドポイントの事前準備',
+      weight: 20,
+      status: 'pending',
       icon: Activity
-    }
+    },
     {
-      id: 'data-prefetch'
-      name: 'データプリフェッチ'
-      description: 'ユーザーデータと設定の取得'
-      weight: 25
-      status: 'pending'
+      id: 'data-prefetch',
+      name: 'データプリフェッチ',
+      description: 'ユーザーデータと設定の取得',
+      weight: 25,
+      status: 'pending',
       icon: TrendingUp
-    }
+    },
     {
-      id: 'optimization'
-      name: '動的最適化'
-      description: 'パフォーマンス自動最適化'
-      weight: 15
-      status: 'pending'
+      id: 'optimization',
+      name: '動的最適化',
+      description: 'パフォーマンス自動最適化',
+      weight: 15,
+      status: 'pending',
       icon: Zap
-    }
+    },
     {
-      id: 'finalization'
-      name: '最終処理'
-      description: 'UI コンポーネントの準備完了'
-      weight: 15
-      status: 'pending'
+      id: 'finalization',
+      name: '最終処理',
+      description: 'UI コンポーネントの準備完了',
+      weight: 15,
+      status: 'pending',
       icon: CheckCircle
     }
   ];
 
   useEffect(() => {
-    setStages(initialStages
-    setStartTime(Date.now()
+    setStages(initialStages);
+    setStartTime(Date.now());
     // Initialize Web Worker for background processing
     if (enablePerformanceMode && typeof Worker !== 'undefined') {
       try {
@@ -147,15 +148,15 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
             const { type, data } = e.data;
 
             switch (type) {
-              case 'optimize'
+              case 'optimize':
                 // Simulate optimization calculations
-                const result = performOptimization(data
-                self.postMessage({ type: 'optimization-complete', result }
+                const result = performOptimization(data);
+                self.postMessage({ type: 'optimization-complete', result });
                 break;
-              case 'preprocess'
+              case 'preprocess':
                 // Background data preprocessing
-                const processed = preprocessData(data
-                self.postMessage({ type: 'preprocessing-complete', processed }
+                const processed = preprocessData(data);
+                self.postMessage({ type: 'preprocessing-complete', processed });
                 break;
             }
           };
@@ -171,57 +172,58 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
 
           function preprocessData(data) {
             return data.map(item => ({
-              ...item
-              optimized: true
+              ...item,
+              optimized: true,
               timestamp: Date.now()
-            })
+            }));
           }
         `;
 
-        const blob = new Blob([workerCode], { type: 'application/javascript' }
-        workerRef.current = new Worker(URL.createObjectURL(blob)
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        workerRef.current = new Worker(URL.createObjectURL(blob));
         workerRef.current.onmessage = (e) => {
           const { type, result } = e.data;
           if (type === 'optimization-complete') {
-            setPerformanceMetrics(result
+            setPerformanceMetrics(result);
           }
         };
       } catch (error) {
-        }
+        console.error('Worker initialization failed:', error);
+      }
     }
 
-    startProgressiveLoading(
+    startProgressiveLoading();
     return () => {
       if (workerRef.current) {
-        workerRef.current.terminate(
+        workerRef.current.terminate();
       }
     };
-  }, []
+  }, []);
   const updateStageStatus = useCallback((stageId: string, status: LoadingStage['status'], duration?: number) => {
     setStages(prev => prev.map(stage =>
       stage.id === stageId
-        ? { ...stage, status, duration }
+        ? { ...stage, status, ...(duration !== undefined && { duration }) }
         : stage
-    )
-  }, []
+    ));
+  }, []);
   const calculateProgress = useCallback((stages: LoadingStage[]) => {
-    const totalWeight = stages.reduce((sum, stage) => sum + stage.weight, 0
+    const totalWeight = stages.reduce((sum, stage) => sum + stage.weight, 0);
     const completedWeight = stages
       .filter(stage => stage.status === 'completed')
-      .reduce((sum, stage) => sum + stage.weight, 0
-    return Math.round((completedWeight / totalWeight) * 100
-  }, []
+      .reduce((sum, stage) => sum + stage.weight, 0);
+    return Math.round((completedWeight / totalWeight) * 100);
+  }, []);
   const optimizeCache = useCallback(async (): Promise<void> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         // Clear old cache entries
         if (typeof window !== 'undefined') {
-          const keys = Object.keys(localStorage
+          const keys = Object.keys(localStorage);
           const oldKeys = keys.filter(key => {
-            const item = localStorage.getItem(key
+            const item = localStorage.getItem(key);
             if (item) {
               try {
-                const parsed = JSON.parse(item
+                const parsed = JSON.parse(item);
                 const isOld = parsed.timestamp && (Date.now() - parsed.timestamp) > 24 * 60 * 60 * 1000;
                 return isOld;
               } catch {
@@ -229,23 +231,23 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
               }
             }
             return false;
-          }
-          oldKeys.forEach(key => localStorage.removeItem(key)
+          });
+          oldKeys.forEach(key => localStorage.removeItem(key));
           // Set optimized cache flag
           localStorage.setItem('cache-optimized', JSON.stringify({
-            timestamp: Date.now()
+            timestamp: Date.now(),
             version: '2.0'
-          })
+          }));
         }
-        resolve(
-      }, 200
-    }
-  }, []
+        resolve();
+      }, 200);
+    });
+  }, []);
   const preloadResources = useCallback(async (): Promise<void> => {
     return new Promise((resolve) => {
       const criticalResources = [
-        '/api/health'
-        '/api/finance/stocks/AAPL/price'
+        '/api/health',
+        '/api/finance/stocks/AAPL/price',
         '/api/system/status'
       ];
 
@@ -254,65 +256,66 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
           const response = await fetch(`http://localhost:8080${url}`, {
             method: 'HEAD', // HEAD request for faster response
             cache: 'force-cache'
-          }
+          });
           return { url, success: response.ok };
         } catch (error) {
           return { url, success: false, error };
         }
-      }
+      });
       Promise.allSettled(promises).then(() => {
-        setTimeout(resolve, 300
-      }
-    }
-  }, []
+        setTimeout(resolve, 300);
+      });
+    });
+  }, []);
   const warmupAPI = useCallback(async (): Promise<void> => {
     return new Promise((resolve) => {
       const warmupEndpoints = [
-        '/api/health'
+        '/api/health',
         '/api/system/status'
       ];
 
       const promises = warmupEndpoints.map(endpoint =>
         fetch(`http://localhost:8080${endpoint}`, {
-          method: 'GET'
+          method: 'GET',
           cache: 'no-cache'
         }).catch(() => null)
+      );
       Promise.allSettled(promises).then(() => {
-        setTimeout(resolve, 400
-      }
-    }
-  }, []
+        setTimeout(resolve, 400);
+      });
+    });
+  }, []);
   const prefetchData = useCallback(async (): Promise<void> => {
     return new Promise((resolve) => {
       // Simulate data prefetching
       const mockData = Array.from({ length: 100 }, (_, i) => ({
-        id: i
-        symbol
-        price: Math.random() * 1000
+        id: i,
+        symbol: `STOCK${i}`,
+        price: Math.random() * 1000,
         timestamp: Date.now()
-      })
+      }));
       // Store in cache
-      cacheRef.current.set('prefetched-data', mockData
+      cacheRef.current.set('prefetched-data', mockData);
       // Background processing with worker if available
       if (workerRef.current) {
         workerRef.current.postMessage({
-          type: 'preprocess'
+          type: 'preprocess',
           data: mockData
-        }
+        });
       }
 
-      setTimeout(resolve, 500
-    }
-  }, []
+      setTimeout(resolve, 500);
+    });
+  }, []);
   const performDynamicOptimization = useCallback(async (): Promise<void> => {
     return new Promise((resolve) => {
-      setIsOptimizing(true
+      setIsOptimizing(true);
       // Trigger background optimization
       if (workerRef.current) {
         workerRef.current.postMessage({
-          type: 'optimize'
+          type: 'optimize',
           data: { enableAdvanced: true }
-        }
+        });
       }
 
       // Optimize rendering performance
@@ -321,99 +324,100 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
         if ('requestIdleCallback' in window) {
           (window as any).requestIdleCallback(() => {
             // Perform background optimizations
-            setIsOptimizing(false
-            resolve(
-          }
+            setIsOptimizing(false);
+            resolve();
+          });
         } else {
           setTimeout(() => {
-            setIsOptimizing(false
-            resolve(
-          }, 300
+            setIsOptimizing(false);
+            resolve();
+          }, 300);
         }
       } else {
-        setTimeout(resolve, 300
+        setTimeout(resolve, 300);
       }
-    }
-  }, []
+    });
+  }, []);
   const finalizeLoading = useCallback(async (): Promise<void> => {
     return new Promise((resolve) => {
       // Final performance measurements
       const totalTime = Date.now() - startTime;
       const finalMetrics = {
-        totalLoadTime: totalTime
-        cacheHitRate: 95
-        performanceScore: 100
+        totalLoadTime: totalTime,
+        cacheHitRate: 95,
+        performanceScore: 100,
         optimizationLevel: 'Maximum'
       };
 
-      setPerformanceMetrics(prev => ({ ...prev, ...finalMetrics })
-      setTimeout(resolve, 200
-    }
-  }, [startTime]
+      setPerformanceMetrics((prev: any) => ({ ...prev, ...finalMetrics }));
+      setTimeout(resolve, 200);
+    });
+  }, [startTime]);
   const startProgressiveLoading = useCallback(async () => {
     const stageHandlers = [
-      { id: 'cache', handler: optimizeCache }
-      { id: 'preload', handler: preloadResources }
-      { id: 'api-warmup', handler: warmupAPI }
-      { id: 'data-prefetch', handler: prefetchData }
-      { id: 'optimization', handler: performDynamicOptimization }
+      { id: 'cache', handler: optimizeCache },
+      { id: 'preload', handler: preloadResources },
+      { id: 'api-warmup', handler: warmupAPI },
+      { id: 'data-prefetch', handler: prefetchData },
+      { id: 'optimization', handler: performDynamicOptimization },
       { id: 'finalization', handler: finalizeLoading }
     ];
 
     for (let i = 0; i < stageHandlers.length; i++) {
-      const { id, handler } = stageHandlers[i];
-      const stageStartTime = Date.now(
-      setCurrentStageIndex(i
-      updateStageStatus(id, 'loading'
+      const { id, handler } = stageHandlers[i]!;
+      const stageStartTime = Date.now();
+      setCurrentStageIndex(i);
+      updateStageStatus(id, 'loading');
       try {
-        await handler(
+        await handler();
         const duration = Date.now() - stageStartTime;
-        updateStageStatus(id, 'completed', duration
+        updateStageStatus(id, 'completed', duration);
         // Update progress after each stage
         setStages(currentStages => {
           const updatedStages = currentStages.map(stage =>
             stage.id === id ? { ...stage, status: 'completed' as const, duration } : stage
-          const progress = calculateProgress(updatedStages
-          setOverallProgress(progress
+          );
+          const progress = calculateProgress(updatedStages);
+          setOverallProgress(progress);
           if (onStageUpdate) {
-            const currentStage = updatedStages.find(s => s.id === id
+            const currentStage = updatedStages.find(s => s.id === id);
             if (currentStage) {
-              onStageUpdate(currentStage, progress
+              onStageUpdate(currentStage, progress);
             }
           }
 
           return updatedStages;
-        }
+        });
       } catch (error) {
-        updateStageStatus(id, 'error'
+        updateStageStatus(id, 'error');
       }
     }
 
     // Complete loading
     setTimeout(() => {
-      setOverallProgress(100
-      onComplete(
-    }, 200
+      setOverallProgress(100);
+      onComplete();
+    }, 200);
   }, [
-    optimizeCache
-    preloadResources
-    warmupAPI
-    prefetchData
-    performDynamicOptimization
-    finalizeLoading
-    calculateProgress
-    updateStageStatus
-    onComplete
+    optimizeCache,
+    preloadResources,
+    warmupAPI,
+    prefetchData,
+    performDynamicOptimization,
+    finalizeLoading,
+    calculateProgress,
+    updateStageStatus,
+    onComplete,
     onStageUpdate
-  ]
+  ]);
   const getStageIcon = (stage: LoadingStage) => {
     const IconComponent = stage.icon;
     const theme = colorThemes[currentColorTheme];
     const color =
       stage.status === 'completed' ? 'text-green-500'
-      stage.status === 'loading' ? theme.accent
-      stage.status === 'error' ? 'text-red-500'
-      'text-gray-400';
+      : stage.status === 'loading' ? (theme?.accent || 'text-blue-500')
+      : stage.status === 'error' ? 'text-red-500'
+      : 'text-gray-400';
 
     return <IconComponent className={`w-5 h-5 ${color} transition-colors duration-500`} />;
   };
@@ -424,7 +428,7 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
     <div className="fixed inset-0 flex items-center justify-center z-50 overflow-hidden">
       {/* 動的グラデーション背景 */}
       <div className="absolute inset-0 transition-all duration-1000 ease-in-out">
-        <div className={`absolute inset-0 bg-gradient-to-br ${theme.primary} opacity-90`} />
+        <div className={`absolute inset-0 bg-gradient-to-br ${theme?.primary || 'from-blue-600 to-purple-600'} opacity-90`} />
         <div className="absolute inset-0 bg-black/20" />
 
         {/* アニメーション背景パターン */}
@@ -432,14 +436,14 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className={`absolute rounded-full bg-gradient-to-r ${theme.secondary} animate-pulse`}
+              className={`absolute rounded-full bg-gradient-to-r ${theme?.secondary || 'from-purple-400 to-pink-400'} animate-pulse`}
               style={{
-                width
-                height
-                top
-                left
-                animationDelay
-                animationDuration
+                width: `${Math.random() * 200 + 50}px`,
+                height: `${Math.random() * 200 + 50}px`,
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${i * 0.5}s`,
+                animationDuration: `${2 + Math.random() * 2}s`
               }}
             />
           ))}
@@ -447,17 +451,17 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
       </div>
 
       {/* メインコンテンツ */}
-      <div className={`relative ${theme.background} rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 backdrop-blur-lg bg-opacity-95 transition-all duration-500`}>
+      <div className={`relative ${theme?.background || 'bg-white'} rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 backdrop-blur-lg bg-opacity-95 transition-all duration-500`}>
         {/* ヘッダー */}
         <div className="text-center mb-6">
-          <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-r ${theme.primary} rounded-full flex items-center justify-center shadow-lg ${theme.glow} animate-pulse`}>
+          <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-r ${theme?.primary || 'from-blue-600 to-purple-600'} rounded-full flex items-center justify-center shadow-lg ${theme?.glow || 'drop-shadow-lg'} animate-pulse`}>
             <Zap className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             🚀 100% 最適化ローディング
           </h2>
           <p className="text-gray-600">
-            {theme.name} モード起動中
+            {theme?.name || 'デフォルト'} モード起動中
           </p>
         </div>
 
@@ -465,11 +469,11 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-700">総合進捗</span>
-            <span className={`text-sm font-bold ${theme.accent}`}>{overallProgress}%</span>
+            <span className={`text-sm font-bold ${theme?.accent || 'text-blue-600'}`}>{overallProgress}%</span>
           </div>
           <div className="w-full bg-gray-200/50 rounded-full h-4 overflow-hidden backdrop-blur-sm">
             <div
-              className={`bg-gradient-to-r ${theme.primary} h-4 rounded-full transition-all duration-300 ease-out relative shadow-lg`}
+              className={`bg-gradient-to-r ${theme?.primary || 'from-blue-600 to-purple-600'} h-4 rounded-full transition-all duration-300 ease-out relative shadow-lg`}
               style={{ width: `${overallProgress}%` }}
             >
               {/* アニメーション効果 */}
@@ -482,19 +486,19 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
         {/* 現在のステージ */}
         <div className="mb-6">
           {stages.length > 0 && currentStageIndex < stages.length && (
-            <div className={`bg-gradient-to-r ${theme.secondary} border border-gray-200/30 rounded-lg p-4 backdrop-blur-sm transition-all duration-500`}>
+            <div className={`bg-gradient-to-r ${theme?.secondary || 'from-purple-400 to-pink-400'} border border-gray-200/30 rounded-lg p-4 backdrop-blur-sm transition-all duration-500`}>
               <div className="flex items-center space-x-3">
-                {getStageIcon(stages[currentStageIndex])}
+                {getStageIcon(stages[currentStageIndex]!)}
                 <div className="flex-1">
                   <h4 className="font-semibold text-gray-900">
-                    {stages[currentStageIndex].name}
+                    {stages[currentStageIndex]!.name}
                   </h4>
                   <p className="text-sm text-gray-600">
-                    {stages[currentStageIndex].description}
+                    {stages[currentStageIndex]!.description}
                   </p>
                 </div>
-                {stages[currentStageIndex].status === 'loading' && (
-                  <div className={`animate-spin rounded-full h-6 w-6 border-b-2 ${theme.accent.replace('text-', 'border-')}`} />
+                {stages[currentStageIndex]!.status === 'loading' && (
+                  <div className={`animate-spin rounded-full h-6 w-6 border-b-2 ${(theme?.accent || 'text-blue-600').replace('text-', 'border-')}`} />
                 )}
               </div>
             </div>
@@ -508,7 +512,7 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
               key={stage.id}
               className={`flex items-center space-x-3 p-2 rounded-lg transition-all duration-300 ${
                 index <= currentStageIndex
-                  ? `bg-gradient-to-r ${theme.secondary} backdrop-blur-sm`
+                  ? `bg-gradient-to-r ${theme?.secondary || 'from-purple-400 to-pink-400'} backdrop-blur-sm`
                   : 'opacity-50'
               }`}
             >
@@ -516,9 +520,9 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
               <div className="flex-1">
                 <span className={`text-sm ${
                   stage.status === 'completed' ? 'text-green-700 font-medium'
-                  stage.status === 'loading' ? `${theme.accent.replace('text-', 'text-')} font-medium`
-                  stage.status === 'error' ? 'text-red-700 font-medium'
-                  'text-gray-600'
+                  : stage.status === 'loading' ? `${(theme?.accent || 'text-blue-600').replace('text-', 'text-')} font-medium`
+                  : stage.status === 'error' ? 'text-red-700 font-medium'
+                  : 'text-gray-600'
                 }`}>
                   {stage.name}
                 </span>
@@ -540,44 +544,44 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
 
         {/* パフォーマンスメトリクス */}
         {Object.keys(performanceMetrics).length > 0 && (
-          <div className={`bg-gradient-to-r ${theme.secondary} border border-gray-200/30 rounded-lg p-4 backdrop-blur-sm transition-all duration-500`}>
+          <div className={`bg-gradient-to-r ${theme?.secondary || 'from-purple-400 to-pink-400'} border border-gray-200/30 rounded-lg p-4 backdrop-blur-sm transition-all duration-500`}>
             <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-              <Activity className={`w-4 h-4 mr-2 ${theme.accent}`} />
+              <Activity className={`w-4 h-4 mr-2 ${theme?.accent || 'text-blue-600'}`} />
               パフォーマンス指標
             </h4>
             <div className="grid grid-cols-2 gap-2 text-xs">
               {performanceMetrics.performanceScore && (
                 <div className="flex items-center space-x-1">
-                  <div className={`w-2 h-2 rounded-full ${theme.accent.replace('text-', 'bg-')} animate-pulse`} />
+                  <div className={`w-2 h-2 rounded-full ${(theme?.accent || 'text-blue-600').replace('text-', 'bg-')} animate-pulse`} />
                   <span className="text-gray-600">スコア: </span>
-                  <span className={`font-bold ${theme.accent}`}>
+                  <span className={`font-bold ${theme?.accent || 'text-blue-600'}`}>
                     {performanceMetrics.performanceScore}%
                   </span>
                 </div>
               )}
               {performanceMetrics.totalLoadTime && (
                 <div className="flex items-center space-x-1">
-                  <div className={`w-2 h-2 rounded-full ${theme.accent.replace('text-', 'bg-')} animate-pulse`} />
+                  <div className={`w-2 h-2 rounded-full ${(theme?.accent || 'text-blue-600').replace('text-', 'bg-')} animate-pulse`} />
                   <span className="text-gray-600">時間: </span>
-                  <span className={`font-bold ${theme.accent}`}>
+                  <span className={`font-bold ${theme?.accent || 'text-blue-600'}`}>
                     {performanceMetrics.totalLoadTime}ms
                   </span>
                 </div>
               )}
               {performanceMetrics.cacheHitRate && (
                 <div className="flex items-center space-x-1">
-                  <div className={`w-2 h-2 rounded-full ${theme.accent.replace('text-', 'bg-')} animate-pulse`} />
+                  <div className={`w-2 h-2 rounded-full ${(theme?.accent || 'text-blue-600').replace('text-', 'bg-')} animate-pulse`} />
                   <span className="text-gray-600">キャッシュ: </span>
-                  <span className={`font-bold ${theme.accent}`}>
+                  <span className={`font-bold ${theme?.accent || 'text-blue-600'}`}>
                     {performanceMetrics.cacheHitRate}%
                   </span>
                 </div>
               )}
               {performanceMetrics.optimizationLevel && (
                 <div className="flex items-center space-x-1">
-                  <div className={`w-2 h-2 rounded-full ${theme.accent.replace('text-', 'bg-')} animate-pulse`} />
+                  <div className={`w-2 h-2 rounded-full ${(theme?.accent || 'text-blue-600').replace('text-', 'bg-')} animate-pulse`} />
                   <span className="text-gray-600">最適化: </span>
-                  <span className={`font-bold ${theme.accent}`}>
+                  <span className={`font-bold ${theme?.accent || 'text-blue-600'}`}>
                     {performanceMetrics.optimizationLevel}
                   </span>
                 </div>
@@ -588,7 +592,7 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
 
         {/* 最適化インジケーター */}
         {isOptimizing && (
-          <div className={`mt-4 flex items-center justify-center space-x-2 ${theme.accent}`}>
+          <div className={`mt-4 flex items-center justify-center space-x-2 ${theme?.accent || 'text-blue-600'}`}>
             <div className="animate-pulse">
               <Zap className="w-4 h-4" />
             </div>
@@ -611,4 +615,5 @@ export const ProgressiveLoader: React.FC<ProgressiveLoaderProps> = ({
         </div>
       </div>
     </div>
+  );
 };

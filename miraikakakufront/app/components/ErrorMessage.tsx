@@ -11,7 +11,7 @@ interface ErrorMessageProps {
 }
 
 export default function ErrorMessage({ error, onRetry, className = '' }: ErrorMessageProps) {
-  const { t } = useTranslation('common'
+  const { t } = useTranslation('common');
   return (
     <div className={`bg-red-50 border border-red-200 rounded-lg p-6 ${className}`}>
       <div className="flex items-center justify-center text-center">
@@ -35,21 +35,23 @@ export default function ErrorMessage({ error, onRetry, className = '' }: ErrorMe
         </div>
       </div>
     </div>
+  );
 }
 
 export function NetworkError({ onRetry }: { onRetry?: () => void }) {
-  const { t } = useTranslation('common'
-  return (
-    <ErrorMessage
-      error={t('errors.networkError', 'サーバーに接続できません。インターネット接続を確認して再度お試しください。')}
-      onRetry={onRetry}
-    />
+  const { t } = useTranslation('common');
+  const props = {
+    error: t('errors.networkError', 'サーバーに接続できません。インターネット接続を確認して再度お試しください。'),
+    ...(onRetry && { onRetry })
+  };
+  return <ErrorMessage {...props} />;
 }
 
 export function NotFoundError({ stockSymbol }: { stockSymbol: string }) {
-  const { t } = useTranslation('common'
+  const { t } = useTranslation('common');
   return (
     <ErrorMessage
       error={t('errors.stockNotFound', '株式「{{symbol}}」が見つかりません。シンボルを確認して再度お試しください。', { symbol: stockSymbol })}
     />
+  );
 }

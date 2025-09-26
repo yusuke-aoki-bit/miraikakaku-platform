@@ -20,9 +20,40 @@ import threading
 import time
 from collections import deque, defaultdict
 
-# Import connection pool and notification system
-sys.path.append('/mnt/c/Users/yuuku/cursor/miraikakaku')
-from shared.database.connection_pool import get_database_connection, get_pool_metrics, health_check as db_health_check
+# Database connection functions - self-contained for production
+from contextlib import contextmanager
+
+@contextmanager
+def get_database_connection():
+    conn = None
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv('POSTGRES_HOST', '34.173.9.214'),
+            port=int(os.getenv('POSTGRES_PORT', '5432')),
+            database=os.getenv('POSTGRES_DB', 'miraikakaku'),
+            user=os.getenv('POSTGRES_USER', 'postgres'),
+            password=os.getenv('POSTGRES_PASSWORD', ''),
+            cursor_factory=RealDictCursor
+        )
+        yield conn
+    except Exception as e:
+        logging.error(f"Database connection error: {e}")
+        raise
+    finally:
+        if conn:
+            conn.close()
+
+def get_pool_metrics():
+    return {"status": "direct_connection", "type": "psycopg2"}
+
+def db_health_check():
+    try:
+        with get_database_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "database": "error", "error": str(e)}
 
 # Import notification system - Using minimal fallback due to import issues
 class MinimalNotificationManager:
@@ -173,10 +204,11 @@ except ImportError as e:
 
 # Database configuration
 DB_CONFIG = {
-    'host': '34.173.9.214',
-    'user': 'postgres',
-    'password': 'os.getenv('DB_PASSWORD', '')',
-    'database': 'miraikakaku'
+    'host': os.getenv('POSTGRES_HOST', '34.173.9.214'),
+    'user': os.getenv('POSTGRES_USER', 'postgres'),
+    'password': os.getenv('POSTGRES_PASSWORD', ''),
+    'database': os.getenv('POSTGRES_DB', 'miraikakaku'),
+    'port': int(os.getenv('POSTGRES_PORT', '5432'))
 }
 
 # System metrics storage
@@ -1969,13 +2001,6 @@ async def get_historical_predictions_alt(
 async def get_connection_pool_status():
     """Get connection pool status and metrics - TEST ENDPOINT"""
     try:
-        # Test the pool with current environment
-        from shared.database.connection_pool import get_connection_pool
-        pool = get_connection_pool()
-
-        # Get pool status (this will show why connection fails)
-        pool_status = pool.get_pool_status()
-
         # Attempt database health check using existing DB_CONFIG
         db_test_result = "not_tested"
         try:
@@ -1995,7 +2020,6 @@ async def get_connection_pool_status():
 
         return {
             "status": "diagnostic",
-            "connection_pool_status": pool_status,
             "direct_db_test": db_test_result,
             "current_db_config": {
                 "host": DB_CONFIG.get("host", "not_set"),

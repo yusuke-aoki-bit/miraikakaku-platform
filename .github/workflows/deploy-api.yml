@@ -1,0 +1,55 @@
+name: Deploy API to Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'miraikakakuapi/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy API
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Deploy API to Cloud Run
+      working-directory: ./miraikakakuapi
+      run: |
+        gcloud run deploy miraikakaku-api \
+          --source . \
+          --region us-central1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 8080 \
+          --memory 2Gi \
+          --cpu 2 \
+          --timeout 300 \
+          --concurrency 1000 \
+          --min-instances 1 \
+          --max-instances 10 \
+          --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},ENVIRONMENT=production" \
+          --project pricewise-huqkr \
+          --quiet
+
+    - name: Verify API deployment
+      run: |
+        echo "🎉 API Deployment completed!"
+        echo "API URL: https://api.miraikakaku.com"
+        curl -s -o /dev/null -w "API Status: %{http_code}\n" https://api.miraikakaku.com/health

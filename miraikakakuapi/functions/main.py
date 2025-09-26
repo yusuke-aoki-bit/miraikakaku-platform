@@ -35,8 +35,30 @@ import random
 import time
 import uuid
 
+# Performance cache import
+try:
+    from performance_cache import performance_cache, cached, cache_stock_data, get_cached_stock_data, log_cache_stats
+    PERFORMANCE_CACHE_AVAILABLE = True
+    logging.info("✅ Performance cache enabled")
+except ImportError:
+    PERFORMANCE_CACHE_AVAILABLE = False
+    logging.warning("⚠️ Performance cache not available")
+
+    # Fallback no-op decorators
+    def cached(prefix="", ttl_seconds=3600):
+        def decorator(func):
+            return func
+        return decorator
+
 # Japanese company names
-from japanese_company_names import get_japanese_company_name
+try:
+    from japanese_company_names import get_japanese_company_name
+    JAPANESE_NAMES_AVAILABLE = True
+except ImportError:
+    def get_japanese_company_name(symbol):
+        """Fallback function when japanese_company_names is not available"""
+        return None
+    JAPANESE_NAMES_AVAILABLE = False
 
 # Redis caching
 try:

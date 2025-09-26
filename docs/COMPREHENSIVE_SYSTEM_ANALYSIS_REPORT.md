@@ -129,7 +129,7 @@ MiraiKakaku AIシステムの包括的調査により、**314個のPythonファ�
 ## 6. ビジネス継続性とSPOF分析
 
 ### ⚠️ **単一障害点（SPOF）**
-1. **データベース:** 単一PostgreSQL接続（34.173.9.214）
+1. **データベース:** 単一PostgreSQL接続（[DB_HOST_REDACTED]）
 2. **API エンドポイント:** 単一インスタンス依存
 3. **外部データソース:** yfinance API依存
 

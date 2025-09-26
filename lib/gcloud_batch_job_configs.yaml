@@ -15,11 +15,11 @@ spec:
             - name: BATCH_TYPE
               value: "symbol"  # symbol, enhanced_symbol, price, multi_source_price, prediction
             - name: DB_HOST
-              value: "34.173.9.214"
+              value: "${DB_HOST}"  # Set from environment
             - name: DB_USER
               value: "postgres"
             - name: DB_PASSWORD
-              value: "Miraikakaku2024!"
+              value: "${DB_PASSWORD}"  # Set from Secret Manager
             - name: DB_NAME
               value: "miraikakaku"
             - name: PYTHONUNBUFFERED

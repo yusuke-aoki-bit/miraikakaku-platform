@@ -14,7 +14,7 @@
 #### 1. 統一データベース設定管理
 ```python
 # Before (危険)
-'password': 'Miraikakaku2024!'
+'password': '[REDACTED_PASSWORD]'
 
 # After (安全)
 'password': os.getenv('DB_PASSWORD')
