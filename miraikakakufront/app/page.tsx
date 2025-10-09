@@ -1,301 +1,500 @@
-
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import SearchBar from './components/SearchBar';
-import LoadingSpinner from './components/LoadingSpinner';
-import { ProgressiveLoader } from './components/ProgressiveLoader';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import { SystemStatus, RankingCard, EnhancedStatsCard } from './components/LazyComponents';
-import { TrendingUp } from 'lucide-react';
+import { apiClient } from '@/lib/api';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import ErrorMessage from '@/components/ErrorMessage';
+import SkeletonCard from '@/components/SkeletonCard';
+import RankingCard from '@/components/RankingCard';
 
-// Static translations to avoid i18n dependency
-const translations = {
-  'hero.title': '未来価格',
-  'hero.description': '高度な機械学習モデルに基づくAI株価予測',
-  'search.placeholder': '株式・企業名・ランキングを検索 (例: AAPL, アップル, 値上がり率)',
-  'hero.features.ai.title': 'AI予測',
-  'hero.features.ai.description': 'LSTMニューラルネットワークが2年間のデータを分析し、6ヶ月先を予測',
-  'hero.features.visual.title': 'ビジュアル分析',
-  'hero.features.visual.description': '過去データ、過去の予測、未来予測を表示するインタラクティブチャート',
-  'hero.features.factors.title': '判断要因',
-  'hero.features.factors.description': '詳細な要因分析でAI予測の理由を理解',
-  'hero.rankings.title': 'ランキング',
-  'hero.rankings.bestPredictions7d': '7日間ベスト予測',
-  'hero.rankings.highConfidence': '高信頼度予測',
-  'hero.rankings.bestPredictions30d': '30日間ベスト予測',
-  'hero.rankings.bestPredictions90d': '90日間ベスト予測'
-};
+interface RankingItem {
+  symbol: string;
+  company_name: string;
+  exchange: string;
+  current_price: number;
+  change_percent?: number;
+  volume?: number;
+  predicted_change?: number;
+  confidence_score?: number;
+}
 
-const t = (key: string) => (translations as Record<string, string>)[key] || key;
-
-interface UserData {
-  id: number;
-  email: string;
-  username: string;
-  full_name?: string;
-  is_premium: boolean;
+interface MarketStats {
+  total_symbols: number;
+  symbols_with_prices: number;
+  total_predictions: number;
+  last_update: string | null;
+  avg_confidence: number;
+  coverage_percent: number;
+  db_status?: string;
 }
 
 export default function Home() {
   const router = useRouter();
-  const [isReady, setIsReady] = useState(true);
-  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
-  const [showProgressiveLoader, setShowProgressiveLoader] = useState(false);
-  // Progressive loader disabled for performance and E2E testing
+  const [gainers, setGainers] = useState<RankingItem[]>([]);
+  const [losers, setLosers] = useState<RankingItem[]>([]);
+  const [volumeLeaders, setVolumeLeaders] = useState<RankingItem[]>([]);
+  const [topPredictions, setTopPredictions] = useState<RankingItem[]>([]);
+  const [marketStats, setMarketStats] = useState<MarketStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedExchange, setSelectedExchange] = useState<string>('ALL');
 
-  const handleSelectStock = (symbol: string) => {
-    router.push(`/details/${symbol}`);
+  const filterByExchange = (items: RankingItem[]) => {
+    if (selectedExchange === 'ALL') return items;
+    return items.filter(item => {
+      const exchange = item.exchange?.toUpperCase() || '';
+      const symbol = item.symbol || '';
+
+      if (selectedExchange === 'US') {
+        return ['NASDAQ', 'NYSE', 'AMEX'].includes(exchange);
+      }
+      if (selectedExchange === 'JP') {
+        // 日本株は.Tで終わるか、取引所がTOKYO/TSE/JPX
+        return symbol.endsWith('.T') || exchange.includes('TOKYO') || exchange.includes('TSE') || exchange.includes('JPX');
+      }
+      return exchange.includes(selectedExchange);
+    });
   };
 
-  const handleUserAuthenticated = (user: UserData) => {
-    setCurrentUser(user);
+  const getExchangeLabel = (exchange: string) => {
+    const labels: { [key: string]: string } = {
+      'ALL': '全取引所',
+      'US': '米国市場',
+      'JP': '日本市場',
+      'NASDAQ': 'NASDAQ',
+      'NYSE': 'NYSE',
+      'TSE': '東証',
+    };
+    return labels[exchange] || exchange;
   };
 
-  const handleProgressiveLoadingComplete = () => {
-    // Mark progressive loading as shown today
-    const today = new Date().toDateString();
-    localStorage.setItem('progressive-loader-shown', today);
-    setShowProgressiveLoader(false);
-    setIsReady(true);
+  const filteredGainers = filterByExchange(gainers).slice(0, 5);
+  const filteredLosers = filterByExchange(losers).slice(0, 5);
+  const filteredVolumeLeaders = filterByExchange(volumeLeaders).slice(0, 5);
+  const filteredTopPredictions = filterByExchange(topPredictions).slice(0, 5);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [gainersData, losersData, volumeData, predictionsData, statsData] = await Promise.all([
+          apiClient.getTopGainers(50),
+          apiClient.getTopLosers(50),
+          apiClient.getTopVolume(50),
+          apiClient.getTopPredictions(50),
+          apiClient.getMarketSummaryStats(),
+        ]);
+
+        setGainers(gainersData.gainers);
+        setLosers(losersData.losers);
+        setVolumeLeaders(volumeData.volume_leaders);
+        setTopPredictions(predictionsData.top_predictions);
+        setMarketStats(statsData);
+        setError('');
+      } catch (error) {
+        console.error('データ取得エラー:', error);
+        setError('データの取得に失敗しました。しばらくしてから再度お試しください。');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
   };
 
-  const handleStageUpdate = () => {
-    // Performance tracking disabled
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return 'N/A';
+    const date = new Date(dateStr);
+    return date.toLocaleString('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
-  // Show Progressive Loader
-  if (showProgressiveLoader) {
+  const retryFetch = () => {
+    setLoading(true);
+    setError('');
+    window.location.reload();
+  };
+
+  if (loading) {
     return (
-      <ProgressiveLoader
-        onComplete={handleProgressiveLoadingComplete}
-        onStageUpdate={handleStageUpdate}
-        enablePerformanceMode={true}
-      />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <main className="max-w-7xl mx-auto px-4 py-8">
+          <div className="text-center mb-8">
+            <LoadingSpinner size="lg" className="mb-4" />
+            <p className="text-xl text-gray-700 dark:text-gray-300">データを読み込み中...</p>
+          </div>
+
+          {/* Skeleton Ranking Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
+              <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-40 mb-4"></div>
+              <div className="space-y-2">
+                {[...Array(5)].map((_, idx) => (
+                  <SkeletonCard key={idx} />
+                ))}
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
+              <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-40 mb-4"></div>
+              <div className="space-y-2">
+                {[...Array(5)].map((_, idx) => (
+                  <SkeletonCard key={idx} />
+                ))}
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
+              <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-40 mb-4"></div>
+              <div className="space-y-2">
+                {[...Array(5)].map((_, idx) => (
+                  <SkeletonCard key={idx} />
+                ))}
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
+              <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-40 mb-4"></div>
+              <div className="space-y-2">
+                {[...Array(5)].map((_, idx) => (
+                  <SkeletonCard key={idx} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
     );
   }
 
-  // Show fallback loader for quick subsequent loads
-  if (!isReady) {
+  if (error) {
     return (
-      <div className="theme-page">
-        <div className="flex items-center justify-center min-h-screen">
-          <LoadingSpinner size="lg" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+        <div className="max-w-md w-full">
+          <ErrorMessage message={error} onRetry={retryFetch} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="theme-page">
-      <Header
-        onUserAuthenticated={handleUserAuthenticated}
-        currentUser={currentUser}
-      />
-      <main data-testid="homepage-loaded">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <main className="max-w-7xl mx-auto">
         {/* Hero Section */}
-        <div className="theme-container">
-          <div className="flex flex-col items-center justify-center px-4 py-16 md:py-24">
-            <div className="w-full max-w-4xl text-center">
-          {/* Logo and Title */}
-          <div className="mb-12">
-            <div className="flex items-center justify-center mb-6">
-              <TrendingUp className="w-16 h-16 mr-4 theme-text-primary float" />
-              <h1 className="theme-heading-xl text-4xl md:text-6xl">
-                <span className="gradient-text">{t('hero.title')}</span>
-              </h1>
+        <div className="px-4 py-12 md:py-20 mb-8">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-6">
+              <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">AI駆動の株価予測</span>
             </div>
-            <p className="theme-body text-lg max-w-2xl mx-auto mb-8">
-              {t('hero.description')}
+
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-white">
+              未来の株価を
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"> AI </span>
+              で予測
+            </h1>
+
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+              AIを活用した株価予測プラットフォーム
             </p>
-          </div>
 
-          {/* Search Section */}
-          <div className="mb-16">
-            <SearchBar
-              onSelectStock={handleSelectStock}
-              className="max-w-2xl mx-auto"
-              placeholder={t('search.placeholder')}
-            />
-          </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <button
+                onClick={() => router.push('/search')}
+                className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg shadow-lg hover:shadow-xl"
+              >
+                銘柄を検索
+              </button>
+              <button
+                onClick={() => router.push('/rankings')}
+                className="px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-semibold text-lg shadow-lg"
+              >
+                ランキングを見る
+              </button>
+            </div>
 
-          {/* Popular Stocks Section */}
-          <div className="mb-12" data-testid="popular-stocks">
-            <h3 className="theme-heading-md mb-4">人気銘柄</h3>
-            <div className="flex flex-wrap gap-3 justify-center">
-              {['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX'].map(stock => (
-                <button
-                  key={stock}
-                  onClick={() => handleSelectStock(stock)}
-                  className="theme-btn-secondary px-4 py-2 rounded-lg hover:scale-105 transition-transform"
-                >
-                  {stock}
-                </button>
-              ))}
+            {/* Database Status Indicator */}
+            {marketStats?.db_status && (
+              <div className="mb-4 flex justify-center">
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                  marketStats.db_status === 'postgres'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                    : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
+                }`}>
+                  <span className={`w-2 h-2 rounded-full mr-2 ${
+                    marketStats.db_status === 'postgres' ? 'bg-green-500' : 'bg-yellow-500'
+                  }`}></span>
+                  {marketStats.db_status === 'postgres' ? 'PostgreSQL接続中' : 'SQLiteフォールバック'}
+                </div>
+              </div>
+            )}
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
+              <div className="text-center">
+                <p className="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400">
+                  {marketStats?.total_symbols.toLocaleString() || '0'}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">銘柄数</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl md:text-4xl font-bold text-green-600 dark:text-green-400">
+                  {marketStats?.coverage_percent.toFixed(0) || '0'}%
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">カバレッジ</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl md:text-4xl font-bold text-purple-600 dark:text-purple-400">
+                  {marketStats?.total_predictions.toLocaleString() || '0'}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">予測データ</p>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Category Sections */}
-          <div className="mb-12" data-testid="categories">
-            <h3 className="theme-heading-md mb-4">カテゴリー</h3>
+        <div className="px-4 pb-8">
+
+        {/* 検索バー */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6 mb-6">
+          <form onSubmit={handleSearch}>
+            <div className="flex gap-2 md:gap-4">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="銘柄検索... (例: AAPL, 7203.T)"
+                className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <button
+                type="submit"
+                className="px-4 md:px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              >
+                検索
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* 取引所フィルター */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-3 text-gray-800 dark:text-white">
+            取引所で絞り込み
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {['ALL', 'US', 'JP', 'NASDAQ', 'NYSE', 'TSE'].map((exchange) => (
+              <button
+                key={exchange}
+                onClick={() => setSelectedExchange(exchange)}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  selectedExchange === exchange
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                {getExchangeLabel(exchange)}
+              </button>
+            ))}
+          </div>
+          {selectedExchange !== 'ALL' && (
+            <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+              現在のフィルター: <span className="font-semibold text-blue-600 dark:text-blue-400">{getExchangeLabel(selectedExchange)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* 市場統計 */}
+        {marketStats && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6 mb-6">
+            <h2 className="text-xl md:text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
+              市場統計
+            </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { name: '成長株', icon: '📈' },
-                { name: '高配当株', icon: '💰' },
-                { name: 'バリュー株', icon: '💎' },
-                { name: '小型株', icon: '🚀' },
-                { name: 'テクノロジー', icon: '💻' },
-                { name: 'ヘルスケア', icon: '🏥' },
-                { name: '金融', icon: '🏦' },
-                { name: 'エネルギー', icon: '⚡' }
-              ].map(category => (
-                <button
-                  key={category.name}
-                  className="theme-card p-4 text-center hover:shadow-lg transition-shadow"
-                  onClick={() => {}}
-                >
-                  <div className="text-2xl mb-2">{category.icon}</div>
-                  <div className="theme-text-secondary">{category.name}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Ranking Buttons */}
-          <div className="mb-12" data-testid="ranking-buttons">
-            <h3 className="theme-heading-md mb-4">ランキング</h3>
-            <div className="flex flex-wrap gap-3 justify-center">
-              {['値上がり率ランキング', '値下がり率ランキング', '出来高ランキング'].map(ranking => (
-                <button
-                  key={ranking}
-                  className="theme-btn-primary px-6 py-3 rounded-lg"
-                  onClick={() => {}}
-                >
-                  {ranking}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Company Name Section */}
-          <div className="mb-12" data-testid="company-names">
-            <h3 className="theme-heading-md mb-4">日本企業</h3>
-            <div className="flex flex-wrap gap-3 justify-center">
-              {[
-                { name: 'トヨタ', symbol: '7203.T' },
-                { name: 'ソニー', symbol: '6758.T' },
-                { name: 'ソフトバンク', symbol: '9984.T' },
-                { name: '任天堂', symbol: '7974.T' }
-              ].map(company => (
-                <button
-                  key={company.symbol}
-                  onClick={() => handleSelectStock(company.symbol)}
-                  className="theme-btn-secondary px-4 py-2 rounded-lg"
-                >
-                  {company.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Features Section */}
-          <div className="mb-16">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="theme-card p-8 text-center hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-500/30 transform hover:scale-105">
-                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <span className="text-3xl">🧠</span>
-                </div>
-                <h3 className="theme-heading-sm mb-3 text-xl font-bold">{t('hero.features.ai.title')}</h3>
-                <p className="theme-body-secondary leading-relaxed">{t('hero.features.ai.description')}</p>
+              <div>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">総銘柄数</p>
+                <p className="text-xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  {marketStats.total_symbols.toLocaleString()}
+                </p>
               </div>
-              <div className="theme-card p-8 text-center hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-green-500/30 transform hover:scale-105">
-                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <span className="text-3xl">📊</span>
-                </div>
-                <h3 className="theme-heading-sm mb-3 text-xl font-bold">{t('hero.features.visual.title')}</h3>
-                <p className="theme-body-secondary leading-relaxed">{t('hero.features.visual.description')}</p>
+              <div>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">データあり</p>
+                <p className="text-xl md:text-3xl font-bold text-green-600 dark:text-green-400">
+                  {marketStats.symbols_with_prices.toLocaleString()}
+                </p>
               </div>
-              <div className="theme-card p-8 text-center hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-500/30 transform hover:scale-105">
-                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <span className="text-3xl">🔍</span>
-                </div>
-                <h3 className="theme-heading-sm mb-3 text-xl font-bold">{t('hero.features.factors.title')}</h3>
-                <p className="theme-body-secondary leading-relaxed">{t('hero.features.factors.description')}</p>
+              <div>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">カバレッジ</p>
+                <p className="text-xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">
+                  {marketStats.coverage_percent.toFixed(1)}%
+                </p>
+              </div>
+              <div>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">最終更新</p>
+                <p className="text-sm md:text-base font-medium text-gray-900 dark:text-white">
+                  {formatDate(marketStats.last_update)}
+                </p>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Statistics Section */}
-          <div className="mb-16">
-            <h3 className="theme-heading-lg mb-8 text-center">システム統計</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <EnhancedStatsCard
-                title="予測精度"
-                value="87.3%"
-                subtitle="7日間平均"
-                icon="target"
-                color="green"
-                animationDelay={100}
-              />
-              <EnhancedStatsCard
-                title="分析銘柄数"
-                value="1,247"
-                subtitle="活発追跡中"
-                icon="trending-up"
-                color="blue"
-                animationDelay={200}
-              />
-              <EnhancedStatsCard
-                title="ユーザー数"
-                value="2,834"
-                subtitle="月間アクティブ"
-                icon="users"
-                color="purple"
-                animationDelay={300}
-              />
-              <EnhancedStatsCard
-                title="予測処理時間"
-                value="1.2秒"
-                subtitle="平均レスポンス"
-                icon="clock"
-                color="orange"
-                animationDelay={400}
-              />
+        {/* ランキンググリッド */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* 値上がり率ランキング */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">
+                値上がり率 TOP 5
+              </h2>
+              <button
+                onClick={() => router.push('/rankings')}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                もっと見る
+              </button>
             </div>
-          </div>
-
-          {/* Rankings */}
-          <div className="theme-section" data-testid="rankings">
-            <h3 className="theme-heading-lg mb-6">
-              {t('hero.rankings.title')}
-            </h3>
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 max-w-7xl mx-auto">
-              {[
-                { key: 'bestPredictions', icon: '🎯', timeframe: '7d' as const, type: 'best_predictions' as const, title: t('hero.rankings.bestPredictions7d') },
-                { key: 'highConfidence', icon: '🔥', timeframe: '30d' as const, type: 'highest_confidence' as const, title: t('hero.rankings.highConfidence') },
-                { key: 'monthlyPredictions', icon: '📈', timeframe: '30d' as const, type: 'best_predictions' as const, title: t('hero.rankings.bestPredictions30d') },
-                { key: 'quarterlyPredictions', icon: '⭐', timeframe: '90d' as const, type: 'best_predictions' as const, title: t('hero.rankings.bestPredictions90d') }
-              ].map((ranking) => (
+            <div className="space-y-2">
+              {filteredGainers.map((item, idx) => (
                 <RankingCard
-                  key={ranking.key}
-                  title={ranking.title}
-                  icon={ranking.icon}
-                  timeframe={ranking.timeframe}
-                  type={ranking.type}
-                  onSelectStock={handleSelectStock}
+                  key={item.symbol}
+                  item={item}
+                  index={idx}
+                  onClick={() => router.push(`/stock/${item.symbol}`)}
+                  type="gainer"
                 />
               ))}
             </div>
           </div>
 
+          {/* 値下がり率ランキング */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">
+                値下がり率 TOP 5
+              </h2>
+              <button
+                onClick={() => router.push('/rankings')}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                もっと見る
+              </button>
+            </div>
+            <div className="space-y-2">
+              {filteredLosers.map((item, idx) => (
+                <RankingCard
+                  key={item.symbol}
+                  item={item}
+                  index={idx}
+                  onClick={() => router.push(`/stock/${item.symbol}`)}
+                  type="loser"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* 出来高ランキング */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">
+                出来高 TOP 5
+              </h2>
+              <button
+                onClick={() => router.push('/rankings')}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                もっと見る
+              </button>
+            </div>
+            <div className="space-y-2">
+              {filteredVolumeLeaders.map((item, idx) => (
+                <RankingCard
+                  key={item.symbol}
+                  item={item}
+                  index={idx}
+                  onClick={() => router.push(`/stock/${item.symbol}`)}
+                  type="volume"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* 予測上昇率ランキング */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">
+                AI予測上昇率 TOP 5
+              </h2>
+              <button
+                onClick={() => router.push('/rankings')}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                もっと見る
+              </button>
+            </div>
+            <div className="space-y-2">
+              {filteredTopPredictions.map((item, idx) => (
+                <RankingCard
+                  key={item.symbol}
+                  item={item}
+                  index={idx}
+                  onClick={() => router.push(`/stock/${item.symbol}`)}
+                  type="prediction"
+                />
+              ))}
             </div>
           </div>
         </div>
+
+        {/* クイックリンク */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <button
+            onClick={() => router.push('/rankings')}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 hover:shadow-lg transition-shadow"
+          >
+            <div className="text-center">
+              <p className="font-semibold text-gray-900 dark:text-white">ランキング</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">詳細を見る</p>
+            </div>
+          </button>
+          <button
+            onClick={() => router.push('/search')}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 hover:shadow-lg transition-shadow"
+          >
+            <div className="text-center">
+              <p className="font-semibold text-gray-900 dark:text-white">銘柄検索</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">銘柄を探す</p>
+            </div>
+          </button>
+          <button
+            onClick={() => router.push('/exchange/tse')}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 hover:shadow-lg transition-shadow"
+          >
+            <div className="text-center">
+              <p className="font-semibold text-gray-900 dark:text-white">取引所</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">一覧を見る</p>
+            </div>
+          </button>
+          <button
+            onClick={() => router.push('/mypage')}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 hover:shadow-lg transition-shadow"
+          >
+            <div className="text-center">
+              <p className="font-semibold text-gray-900 dark:text-white">マイページ</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">お気に入り</p>
+            </div>
+          </button>
+        </div>
+        </div>
       </main>
-      <Footer />
-      <SystemStatus />
     </div>
   );
 }

@@ -1,50 +1,78 @@
-
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import ClientLayout from "./components/ClientLayout";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import Providers from "@/components/Providers";
+import { ToastProvider } from "@/components/Toast";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import WebVitals from "@/components/WebVitals";
+import KeyboardShortcutsProvider from "@/components/KeyboardShortcuts";
+import { NotificationProvider } from "@/components/NotificationSystem";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import Script from "next/script";
 
-const inter = Inter({
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  display: 'swap'
-})
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "未来価格 - Miraikakaku 次世代AI株価予測プラットフォーム",
-  description: "最先端の機械学習による株価予測と金融分析プラットフォーム",
-  metadataBase: new URL('https://www.miraikakaku.com'),
-  openGraph: {
-    title: 'Miraikakaku - 次世代AI株価予測プラットフォーム',
-    description: '最先端の機械学習による株価予測と金融分析',
-    url: 'https://www.miraikakaku.com',
-    siteName: 'Miraikakaku',
-    locale: 'ja_JP',
-    type: 'website'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Miraikakaku - 次世代AI株価予測プラットフォーム',
-    description: '最先端の機械学習による株価予測と金融分析'
-  },
-  robots: {
-    index: true,
-    follow: true
-  },
-  icons: {
-    icon: '/favicon.ico'
-  }
+  title: "Miraikakaku - AI株価予測プラットフォーム",
+  description: "AIと機械学習を活用した次世代株価予測システム。日本株、米国株、暗号通貨の予測データを提供します。",
 };
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={inter.className}>
-      <body className="antialiased">
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+    <html lang="ja" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('theme') ||
+                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                  if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <WebVitals />
+        <ErrorBoundary>
+          <ThemeProvider>
+            <NotificationProvider>
+              <ToastProvider>
+                <Providers>
+                  <div className="flex flex-col min-h-screen">
+                    <Header />
+                    <main className="flex-1">
+                      {children}
+                    </main>
+                    <Footer />
+                  </div>
+                  <KeyboardShortcutsProvider />
+                </Providers>
+              </ToastProvider>
+            </NotificationProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
