@@ -343,6 +343,56 @@ def get_top_predictions(limit: int = 50):
         conn.close()
 
 
+@app.get("/api/stocks")
+def get_stocks(limit: int = 100, exchange: str = None):
+    """銘柄一覧取得"""
+    # Validate limit parameter
+    if limit < 1:
+        limit = 100
+    elif limit > 1000:
+        limit = 1000
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        # Build query based on whether exchange filter is provided
+        if exchange:
+            cur.execute("""
+                SELECT symbol, company_name, exchange, is_active
+                FROM stock_master
+                WHERE LOWER(exchange) LIKE LOWER(%s)
+                ORDER BY symbol
+                LIMIT %s
+            """, (f'%{exchange}%', limit))
+        else:
+            cur.execute("""
+                SELECT symbol, company_name, exchange, is_active
+                FROM stock_master
+                ORDER BY symbol
+                LIMIT %s
+            """, (limit,))
+
+        stocks = cur.fetchall()
+
+        return {
+            "stocks": [
+                {
+                    "symbol": row['symbol'],
+                    "company_name": row['company_name'],
+                    "exchange": row['exchange'],
+                    "is_active": row['is_active']
+                }
+                for row in stocks
+            ],
+            "count": len(stocks)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
+
 @app.get("/api/stocks/{symbol}")
 def get_stock_info(symbol: str):
     """銘柄情報取得"""
