@@ -330,6 +330,171 @@ def get_top_predictions(limit: int = 50):
         cur.close()
         conn.close()
 
+
+@app.get("/api/stocks/{symbol}")
+def get_stock_info(symbol: str):
+    """銘柄情報取得"""
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute("""
+            SELECT symbol, company_name, exchange, is_active
+            FROM stock_master
+            WHERE symbol = %s
+        """, (symbol,))
+        stock = cur.fetchone()
+
+        if not stock:
+            raise HTTPException(status_code=404, detail=f"Symbol {symbol} not found")
+
+        # Get recent price history
+        cur.execute("""
+            SELECT date, open_price, high_price, low_price, close_price, volume
+            FROM stock_prices
+            WHERE symbol = %s
+            ORDER BY date DESC
+            LIMIT 30
+        """, (symbol,))
+        price_history = cur.fetchall()
+
+        return {
+            "symbol": stock['symbol'],
+            "company_name": stock['company_name'],
+            "exchange": stock['exchange'],
+            "price_history": [
+                {
+                    "date": str(row['date']),
+                    "open_price": float(row['open_price']) if row['open_price'] else None,
+                    "high_price": float(row['high_price']) if row['high_price'] else None,
+                    "low_price": float(row['low_price']) if row['low_price'] else None,
+                    "close_price": float(row['close_price']) if row['close_price'] else None,
+                    "volume": int(row['volume']) if row['volume'] else None
+                }
+                for row in price_history
+            ]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
+@app.get("/api/stocks/{symbol}/price")
+def get_price_history(symbol: str, days: int = 365):
+    """価格履歴取得"""
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute("""
+            SELECT date, open_price, high_price, low_price, close_price, volume
+            FROM stock_prices
+            WHERE symbol = %s
+            ORDER BY date DESC
+            LIMIT %s
+        """, (symbol, days))
+        prices = cur.fetchall()
+
+        if not prices:
+            raise HTTPException(status_code=404, detail=f"No price data for {symbol}")
+
+        return [
+            {
+                "date": str(row['date']),
+                "open_price": float(row['open_price']) if row['open_price'] else None,
+                "high_price": float(row['high_price']) if row['high_price'] else None,
+                "low_price": float(row['low_price']) if row['low_price'] else None,
+                "close_price": float(row['close_price']) if row['close_price'] else None,
+                "volume": int(row['volume']) if row['volume'] else None
+            }
+            for row in prices
+        ]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
+@app.get("/api/stocks/{symbol}/predictions")
+def get_stock_predictions(symbol: str, days: int = 365, page: int = 1, limit: int = 1000):
+    """予測データ取得"""
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        offset = (page - 1) * limit
+        cur.execute("""
+            SELECT
+                symbol,
+                prediction_date,
+                prediction_days,
+                current_price,
+                lstm_prediction,
+                arima_prediction,
+                ma_prediction,
+                ensemble_prediction,
+                ensemble_confidence
+            FROM ensemble_predictions
+            WHERE symbol = %s
+              AND prediction_date >= CURRENT_DATE - INTERVAL '%s days'
+            ORDER BY prediction_date DESC
+            LIMIT %s OFFSET %s
+        """, (symbol, days, limit, offset))
+        predictions = cur.fetchall()
+
+        if not predictions:
+            return {
+                "symbol": symbol,
+                "pagination": {"page": page, "limit": limit, "total": 0, "total_pages": 0},
+                "predictions": []
+            }
+
+        # Get total count
+        cur.execute("""
+            SELECT COUNT(*) as total
+            FROM ensemble_predictions
+            WHERE symbol = %s
+              AND prediction_date >= CURRENT_DATE - INTERVAL '%s days'
+        """, (symbol, days))
+        total = cur.fetchone()['total']
+
+        return {
+            "symbol": symbol,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "total_pages": (total + limit - 1) // limit
+            },
+            "predictions": [
+                {
+                    "prediction_date": str(row['prediction_date']),
+                    "predicted_price": float(row['ensemble_prediction']),
+                    "current_price": float(row['current_price']) if row['current_price'] else None,
+                    "prediction_days": int(row['prediction_days']) if row['prediction_days'] else None,
+                    "confidence_score": float(row['ensemble_confidence']) if row['ensemble_confidence'] else None,
+                    "model_type": "ensemble"
+                }
+                for row in predictions
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
+@app.get("/api/predictions/accuracy/{symbol}")
+def get_prediction_accuracy(symbol: str, days_back: int = 90):
+    """予測精度取得"""
+    return {
+        "symbol": symbol,
+        "evaluation_available": False,
+        "message": "Prediction accuracy evaluation is not yet implemented"
+    }
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8080))
