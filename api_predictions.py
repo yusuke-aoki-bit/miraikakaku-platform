@@ -170,6 +170,7 @@ def get_top_gainers(limit: int = 50):
             SELECT
                 lp.symbol,
                 sm.company_name,
+                sm.exchange,
                 lp.current_price,
                 pp.prev_price,
                 ROUND(((lp.current_price - pp.prev_price) / NULLIF(pp.prev_price, 0) * 100)::numeric, 2) as change_percent
@@ -186,6 +187,7 @@ def get_top_gainers(limit: int = 50):
             {
                 "symbol": row['symbol'],
                 "name": row['company_name'] or row['symbol'],
+                "exchange": row['exchange'] or '',
                 "price": float(row['current_price']),
                 "change": float(row['change_percent'])
             }
@@ -224,6 +226,7 @@ def get_top_losers(limit: int = 50):
             SELECT
                 lp.symbol,
                 sm.company_name,
+                sm.exchange,
                 lp.current_price,
                 pp.prev_price,
                 ROUND(((lp.current_price - pp.prev_price) / NULLIF(pp.prev_price, 0) * 100)::numeric, 2) as change_percent
@@ -240,6 +243,7 @@ def get_top_losers(limit: int = 50):
             {
                 "symbol": row['symbol'],
                 "name": row['company_name'] or row['symbol'],
+                "exchange": row['exchange'] or '',
                 "price": float(row['current_price']),
                 "change": float(row['change_percent'])
             }
@@ -261,6 +265,7 @@ def get_top_volume(limit: int = 50):
             SELECT DISTINCT ON (sp.symbol)
                 sp.symbol,
                 sm.company_name,
+                sm.exchange,
                 sp.close_price as price,
                 sp.volume,
                 sp.date
@@ -277,6 +282,7 @@ def get_top_volume(limit: int = 50):
             {
                 "symbol": row['symbol'],
                 "name": row['company_name'] or row['symbol'],
+                "exchange": row['exchange'] or '',
                 "price": float(row['price']),
                 "volume": int(row['volume'])
             }
@@ -299,6 +305,7 @@ def get_top_predictions(limit: int = 50):
                 SELECT DISTINCT ON (ep.symbol)
                     ep.symbol,
                     sm.company_name,
+                    sm.exchange,
                     ep.current_price,
                     ep.ensemble_prediction,
                     ep.ensemble_confidence,
@@ -321,6 +328,7 @@ def get_top_predictions(limit: int = 50):
             {
                 "symbol": row['symbol'],
                 "name": row['company_name'] or row['symbol'],
+                "exchange": row['exchange'] or '',
                 "currentPrice": float(row['current_price']),
                 "predictedPrice": float(row['ensemble_prediction']),
                 "confidence": float(row['ensemble_confidence']),
