@@ -295,20 +295,24 @@ def get_top_predictions(limit: int = 50):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     try:
         cur.execute("""
-            SELECT
-                ep.symbol,
-                sm.company_name,
-                ep.current_price,
-                ep.ensemble_prediction,
-                ep.ensemble_confidence,
-                ROUND(((ep.ensemble_prediction - ep.current_price) / NULLIF(ep.current_price, 0) * 100)::numeric, 2) as predicted_change
-            FROM ensemble_predictions ep
-            LEFT JOIN stock_master sm ON ep.symbol = sm.symbol
-            WHERE ep.prediction_date >= CURRENT_DATE
-              AND ep.ensemble_confidence IS NOT NULL
-              AND ep.current_price IS NOT NULL
-              AND ep.current_price > 0
-            ORDER BY ep.ensemble_confidence DESC, predicted_change DESC
+            WITH ranked_predictions AS (
+                SELECT DISTINCT ON (ep.symbol)
+                    ep.symbol,
+                    sm.company_name,
+                    ep.current_price,
+                    ep.ensemble_prediction,
+                    ep.ensemble_confidence,
+                    ROUND(((ep.ensemble_prediction - ep.current_price) / NULLIF(ep.current_price, 0) * 100)::numeric, 2) as predicted_change
+                FROM ensemble_predictions ep
+                LEFT JOIN stock_master sm ON ep.symbol = sm.symbol
+                WHERE ep.prediction_date >= CURRENT_DATE
+                  AND ep.ensemble_confidence IS NOT NULL
+                  AND ep.current_price IS NOT NULL
+                  AND ep.current_price > 0
+                ORDER BY ep.symbol, ep.prediction_date DESC
+            )
+            SELECT * FROM ranked_predictions
+            ORDER BY predicted_change DESC NULLS LAST
             LIMIT %s
         """, (limit,))
 
