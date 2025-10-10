@@ -1,5 +1,5 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/pricewise-huqkr/miraikakaku-predictions-api:latest', '-f', 'Dockerfile.predictions', '.']
+  args: ['build', '-t', 'gcr.io/pricewise-huqkr/miraikakaku-api:latest', '-f', 'Dockerfile.predictions', '.']
 images:
-- 'gcr.io/pricewise-huqkr/miraikakaku-predictions-api:latest'
+- 'gcr.io/pricewise-huqkr/miraikakaku-api:latest'
