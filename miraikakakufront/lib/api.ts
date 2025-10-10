@@ -1,6 +1,6 @@
 // 本番環境では常にproduction APIを使用
 const API_BASE_URL = process.env.NODE_ENV === 'production'
-  ? 'https://api.miraikakaku.com'
+  ? (process.env.NEXT_PUBLIC_API_URL || 'https://miraikakaku-api-465603676610.us-central1.run.app')
   : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080');
 
 export interface StockInfo {
@@ -358,7 +358,7 @@ class APIClient {
       gainers: data.map(item => ({
         symbol: item.symbol,
         company_name: item.name,
-        exchange: '',
+        exchange: (item as any).exchange || '',
         current_price: item.price,
         previous_price: 0,
         change_percent: item.change,
@@ -387,7 +387,7 @@ class APIClient {
       losers: data.map(item => ({
         symbol: item.symbol,
         company_name: item.name,
-        exchange: '',
+        exchange: (item as any).exchange || '',
         current_price: item.price,
         previous_price: 0,
         change_percent: item.change,
@@ -415,7 +415,7 @@ class APIClient {
       volume_leaders: data.map(item => ({
         symbol: item.symbol,
         company_name: item.name,
-        exchange: '',
+        exchange: (item as any).exchange || '',
         current_price: item.price,
         volume: item.volume,
         price_date: new Date().toISOString()
@@ -444,7 +444,7 @@ class APIClient {
       top_predictions: data.map(item => ({
         symbol: item.symbol,
         company_name: item.name,
-        exchange: '',
+        exchange: (item as any).exchange || '',
         current_price: item.currentPrice,
         predicted_price: item.predictedPrice,
         confidence_score: item.confidence,
