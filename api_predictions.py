@@ -557,6 +557,130 @@ def get_prediction_accuracy(symbol: str, days_back: int = 90):
         "message": "Prediction accuracy evaluation is not yet implemented"
     }
 
+@app.get("/api/predictions/rankings")
+def get_prediction_rankings(limit: int = 50):
+    """
+    予測価格変動率ランキング
+    Returns top predictions ranked by predicted price change
+    """
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute("""
+            WITH latest_predictions AS (
+                SELECT DISTINCT ON (ep.symbol)
+                    ep.symbol,
+                    sm.company_name,
+                    sm.exchange,
+                    ep.current_price,
+                    ep.ensemble_prediction,
+                    ep.ensemble_confidence,
+                    ROUND(((ep.ensemble_prediction - ep.current_price) / NULLIF(ep.current_price, 0) * 100)::numeric, 2) as predicted_change_percent,
+                    ep.prediction_date
+                FROM ensemble_predictions ep
+                LEFT JOIN stock_master sm ON ep.symbol = sm.symbol
+                WHERE ep.prediction_date >= CURRENT_DATE
+                  AND ep.ensemble_prediction IS NOT NULL
+                  AND ep.current_price IS NOT NULL
+                  AND ep.current_price > 0
+                  AND ep.ensemble_confidence IS NOT NULL
+                ORDER BY ep.symbol, ep.prediction_date DESC
+            )
+            SELECT
+                symbol,
+                company_name,
+                exchange,
+                current_price,
+                ensemble_prediction as predicted_price,
+                predicted_change_percent,
+                ensemble_confidence as confidence_score
+            FROM latest_predictions
+            ORDER BY predicted_change_percent DESC NULLS LAST
+            LIMIT %s
+        """, (limit,))
+
+        results = cur.fetchall()
+        return [
+            {
+                "symbol": row['symbol'],
+                "company_name": row['company_name'] or row['symbol'],
+                "exchange": row['exchange'] or '',
+                "current_price": float(row['current_price']),
+                "predicted_price": float(row['predicted_price']),
+                "predicted_change_percent": float(row['predicted_change_percent']),
+                "confidence_score": float(row['confidence_score'])
+            }
+            for row in results
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
+@app.get("/api/predictions/accuracy/rankings")
+def get_accuracy_rankings(limit: int = 50):
+    """
+    予測精度ランキング
+    Returns stocks ranked by prediction accuracy (reliability_score)
+    Only includes stocks that have accuracy metrics calculated
+    """
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute("""
+            SELECT
+                sp.symbol,
+                sm.company_name,
+                sm.exchange,
+                COUNT(*) as sample_size,
+                ROUND(AVG(ABS(sp.predicted_price - sp.current_price))::numeric, 2) as mae,
+                ROUND(AVG(ABS(sp.predicted_price - sp.current_price) / NULLIF(sp.current_price, 0) * 100)::numeric, 2) as mape,
+                ROUND((COUNT(CASE WHEN sp.predicted_price > sp.current_price THEN 1 END)::numeric / NULLIF(COUNT(*), 0) * 100), 2) as direction_accuracy,
+                CASE
+                    WHEN AVG(ABS(sp.predicted_price - sp.current_price) / NULLIF(sp.current_price, 0) * 100) <= 2 THEN 'excellent'
+                    WHEN AVG(ABS(sp.predicted_price - sp.current_price) / NULLIF(sp.current_price, 0) * 100) <= 5 THEN 'good'
+                    WHEN AVG(ABS(sp.predicted_price - sp.current_price) / NULLIF(sp.current_price, 0) * 100) <= 10 THEN 'fair'
+                    ELSE 'poor'
+                END as reliability,
+                CASE
+                    WHEN AVG(ABS(sp.predicted_price - sp.current_price) / NULLIF(sp.current_price, 0) * 100) <= 2 THEN 0.95
+                    WHEN AVG(ABS(sp.predicted_price - sp.current_price) / NULLIF(sp.current_price, 0) * 100) <= 5 THEN 0.85
+                    WHEN AVG(ABS(sp.predicted_price - sp.current_price) / NULLIF(sp.current_price, 0) * 100) <= 10 THEN 0.75
+                    ELSE 0.60
+                END as reliability_score
+            FROM stock_predictions sp
+            LEFT JOIN stock_master sm ON sp.symbol = sm.symbol
+            WHERE sp.predicted_price > 0
+              AND sp.current_price > 0
+            GROUP BY sp.symbol, sm.company_name, sm.exchange
+            HAVING COUNT(*) >= 5
+              AND AVG(ABS(sp.predicted_price - sp.current_price) / NULLIF(sp.current_price, 0) * 100) > 0.01
+            ORDER BY reliability_score DESC, mape ASC
+            LIMIT %s
+        """, (limit,))
+
+        results = cur.fetchall()
+        return [
+            {
+                "symbol": row['symbol'],
+                "company_name": row['company_name'] or row['symbol'],
+                "exchange": row['exchange'] or '',
+                "sample_size": int(row['sample_size']),
+                "mae": float(row['mae']),
+                "mape": float(row['mape']),
+                "direction_accuracy": float(row['direction_accuracy']),
+                "reliability": row['reliability'],
+                "reliability_score": float(row['reliability_score'])
+            }
+            for row in results
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8080))
