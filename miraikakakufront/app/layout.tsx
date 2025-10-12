@@ -7,7 +7,7 @@ import Providers from "@/components/Providers";
 import { ToastProvider } from "@/components/Toast";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import WebVitals from "@/components/WebVitals";
-import KeyboardShortcutsProvider from "@/components/KeyboardShortcuts";
+// Removed: import KeyboardShortcutsProvider from "@/components/KeyboardShortcuts";
 import { NotificationProvider } from "@/components/NotificationSystem";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Script from "next/script";
@@ -67,7 +67,6 @@ export default function RootLayout({
                     </main>
                     <Footer />
                   </div>
-                  <KeyboardShortcutsProvider />
                 </Providers>
               </ToastProvider>
             </NotificationProvider>
