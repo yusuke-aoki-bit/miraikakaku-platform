@@ -11,3 +11,10 @@
 ## デプロイ戦略
 
 GitHub Actionsで事前ビルド → 最小Dockerイメージ作成 → Cloud Runデプロイ
+
+## Portfolio System v1.0
+
+完全なポートフォリオ管理機能を実装:
+- リアルタイム評価損益表示
+- 銘柄の追加・削除
+- TypeScript型安全
