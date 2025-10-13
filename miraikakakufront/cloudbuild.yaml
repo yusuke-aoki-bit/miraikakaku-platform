@@ -1,0 +1,20 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_API_URL=https://miraikakaku-api-zbaru5v7za-uc.a.run.app'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/miraikakaku-frontend:latest'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/miraikakaku-frontend:$BUILD_ID'
+      - '.'
+    timeout: 1200s
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/miraikakaku-frontend:latest']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/miraikakaku-frontend:$BUILD_ID']
+images:
+  - 'gcr.io/$PROJECT_ID/miraikakaku-frontend:latest'
+  - 'gcr.io/$PROJECT_ID/miraikakaku-frontend:$BUILD_ID'
+timeout: 1800s

@@ -1,19 +1,38 @@
-FROM node:18-alpine
+FROM node:18-alpine AS base
 
+FROM base AS deps
 WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# 依存関係のコピーとインストール
-COPY package*.json ./
-RUN npm ci --only=production
-
-# アプリケーションファイルのコピー
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# ビルド
+ENV NEXT_PUBLIC_API_URL=https://miraikakaku-api-zbaru5v7za-uc.a.run.app
+ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN npm run build
 
-# ポート公開
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
 EXPOSE 3000
 
-# 起動
-CMD ["npm", "start"]
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]
