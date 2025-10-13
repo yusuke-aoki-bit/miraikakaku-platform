@@ -2,39 +2,31 @@ name: Deploy Frontend to Cloud Run
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
     paths:
       - 'miraikakakufront/**'
   workflow_dispatch:
 
+env:
+  PROJECT_ID: pricewise-huqkr
+  REGION: us-central1
+  SERVICE_NAME: miraikakaku-frontend
+
 jobs:
   deploy:
-    name: Deploy Frontend
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Node.js
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
         cache-dependency-path: miraikakakufront/package-lock.json
-
-    - name: Install dependencies
-      working-directory: ./miraikakakufront
-      run: |
-        npm ci
-        npm install react-is
-
-    - name: Build application
-      working-directory: ./miraikakakufront
-      run: npm run build
-      env:
-        NEXT_PUBLIC_API_URL: https://api.miraikakaku.com
-        NODE_ENV: production
 
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
@@ -44,32 +36,18 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    - name: Configure Docker for GCR
-      run: gcloud auth configure-docker
-
-    - name: Deploy to Cloud Run
+    - name: Build and push Docker image
       working-directory: ./miraikakakufront
       run: |
-        gcloud run deploy miraikakaku-front \
-          --source . \
-          --region us-central1 \
-          --platform managed \
-          --allow-unauthenticated \
-          --port 3000 \
-          --memory 2Gi \
-          --cpu 2 \
-          --timeout 900 \
-          --concurrency 80 \
-          --min-instances 0 \
-          --max-instances 10 \
-          --set-env-vars="NEXT_PUBLIC_API_URL=https://api.miraikakaku.com,NODE_ENV=production" \
-          --set-build-env-vars="NEXT_PUBLIC_API_URL=https://api.miraikakaku.com" \
-          --project pricewise-huqkr \
-          --quiet
+        gcloud builds submit \
+          --config=cloudbuild.yaml \
+          --project=$PROJECT_ID
 
-    - name: Verify deployment
+    - name: Deploy to Cloud Run
       run: |
-        echo "🎉 Deployment completed!"
-        echo "Frontend URL: https://miraikakaku.com"
-        echo "API URL: https://api.miraikakaku.com"
-        curl -s -o /dev/null -w "Frontend Status: %{http_code}\n" https://miraikakaku.com
+        gcloud run deploy $SERVICE_NAME \
+          --image gcr.io/$PROJECT_ID/miraikakaku-frontend:latest \
+          --platform managed \
+          --region $REGION \
+          --allow-unauthenticated \
+          --set-env-vars="NEXT_PUBLIC_API_URL=https://miraikakaku-api-zbaru5v7za-uc.a.run.app,NODE_ENV=production"
