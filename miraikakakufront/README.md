@@ -18,3 +18,7 @@ GitHub Actionsで事前ビルド → 最小Dockerイメージ作成 → Cloud Ru
 - リアルタイム評価損益表示
 - 銘柄の追加・削除
 - TypeScript型安全
+
+## GitHub Secret Updated 20251013-204329
+
+GCP認証設定完了 - CI/CDパイプライン有効化
