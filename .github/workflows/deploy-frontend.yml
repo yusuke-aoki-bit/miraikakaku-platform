@@ -36,12 +36,39 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    - name: Build and push Docker image
+    - name: Install dependencies
+      working-directory: ./miraikakakufront
+      run: npm ci
+
+    - name: Build Next.js application
+      working-directory: ./miraikakakufront
+      env:
+        NEXT_PUBLIC_API_URL: https://miraikakaku-api-zbaru5v7za-uc.a.run.app
+        NODE_ENV: production
+      run: npm run build
+
+    - name: Create minimal Dockerfile for pre-built app
+      working-directory: ./miraikakakufront
+      run: |
+        cat > Dockerfile.deploy << 'EOF'
+        FROM node:18-alpine
+        WORKDIR /app
+        COPY .next/standalone ./
+        COPY .next/static ./.next/static
+        COPY public ./public
+        ENV NODE_ENV=production
+        ENV PORT=8080
+        EXPOSE 8080
+        CMD ["node", "server.js"]
+        EOF
+
+    - name: Build and push Docker image with gcloud
       working-directory: ./miraikakakufront
       run: |
         gcloud builds submit \
-          --config=cloudbuild.yaml \
-          --project=$PROJECT_ID
+          --tag gcr.io/$PROJECT_ID/miraikakaku-frontend:latest \
+          --dockerfile=Dockerfile.deploy \
+          --timeout=20m
 
     - name: Deploy to Cloud Run
       run: |
@@ -50,4 +77,7 @@ jobs:
           --platform managed \
           --region $REGION \
           --allow-unauthenticated \
-          --set-env-vars="NEXT_PUBLIC_API_URL=https://miraikakaku-api-zbaru5v7za-uc.a.run.app,NODE_ENV=production"
+          --set-env-vars="NEXT_PUBLIC_API_URL=https://miraikakaku-api-zbaru5v7za-uc.a.run.app,NODE_ENV=production" \
+          --memory 1Gi \
+          --cpu 1 \
+          --max-instances 10
