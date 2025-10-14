@@ -24,6 +24,7 @@ import {
   getGainLossColor,
 } from '@/app/lib/portfolio-api';
 import type { PortfolioHolding, PortfolioSummary } from '@/app/types/portfolio';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function PortfolioPage() {
   const router = useRouter();
@@ -137,7 +138,8 @@ export default function PortfolioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -298,5 +300,6 @@ export default function PortfolioPage() {
         )}
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

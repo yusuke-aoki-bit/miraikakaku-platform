@@ -11,6 +11,7 @@ import WebVitals from "@/components/WebVitals";
 import { NotificationProvider } from "@/components/NotificationSystem";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Script from "next/script";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,7 +57,8 @@ export default function RootLayout({
       >
         <WebVitals />
         <ErrorBoundary>
-          <ThemeProvider>
+          <AuthProvider>
+            <ThemeProvider>
             <NotificationProvider>
               <ToastProvider>
                 <Providers>
@@ -70,7 +72,8 @@ export default function RootLayout({
                 </Providers>
               </ToastProvider>
             </NotificationProvider>
-          </ThemeProvider>
+            </ThemeProvider>
+          </AuthProvider>
         </ErrorBoundary>
       </body>
     </html>
