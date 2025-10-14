@@ -36,6 +36,7 @@ export default function Header() {
     { name: '銘柄比較', path: '/compare' },
     { name: 'ポートフォリオ', path: '/portfolio', requireAuth: true },
     { name: 'ウォッチリスト', path: '/watchlist', requireAuth: true },
+    { name: 'アラート', path: '/alerts', requireAuth: true },
     { name: '予測精度', path: '/accuracy' },
     { name: 'モニタリング', path: '/monitoring' },
     { name: '取引所', submenu: [
