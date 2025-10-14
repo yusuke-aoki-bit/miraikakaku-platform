@@ -17,10 +17,10 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-# Password hashing - bcrypt with default settings
-# Manual truncation is handled in get_password_hash() and verify_password()
+# Password hashing - using pbkdf2_sha256 instead of bcrypt to avoid 72-byte limit
+# pbkdf2_sha256 is secure, NIST-approved, and has no password length restrictions
 pwd_context = CryptContext(
-    schemes=["bcrypt"],
+    schemes=["pbkdf2_sha256"],
     deprecated="auto"
 )
 
