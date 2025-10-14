@@ -490,6 +490,36 @@ class APIClient {
   }> {
     return this.request(`/api/home/featured/stocks?limit=${limit}`);
   }
+
+  // Phase 4-1: Stock Details endpoint
+  async getStockDetails(symbol: string): Promise<any> {
+    return this.request(`/api/stocks/${symbol}/details`);
+  }
+
+  // Phase 4-2: Sector methods
+  async getSectors(): Promise<{
+    sectors: Array<{
+      name: string;
+      count: number;
+    }>;
+    total_sectors: number;
+  }> {
+    return this.request('/api/rankings/sectors');
+  }
+
+  async getSectorRankings(
+    sector: string,
+    rankingType: 'gainers' | 'losers' | 'volume' | 'predictions' = 'gainers',
+    limit: number = 50
+  ): Promise<{
+    rankings: any[];
+    sector: string;
+    ranking_type: string;
+    count: number;
+  }> {
+    const encodedSector = encodeURIComponent(sector);
+    return this.request(`/api/rankings/sectors/${encodedSector}/${rankingType}?limit=${limit}`);
+  }
 }
 
 export const apiClient = new APIClient();

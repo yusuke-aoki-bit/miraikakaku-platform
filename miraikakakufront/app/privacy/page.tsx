@@ -1,150 +1,149 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-export default function PrivacyPolicyPage() {
+export default function PrivacyPage() {
   const router = useRouter();
+
   return (
-    <div className="min-h-screen bg-content-bg">
-      <div className="max-w-4xl mx-auto p-4 md:p-8">
-        {/* Navigation */}
+    <div className="min-h-screen p-8 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="max-w-4xl mx-auto">
         <button
           onClick={() => router.push('/')}
-          className="flex items-center text-primary hover:text-primary-hover mb-8 transition-colors"
+          className="text-blue-600 dark:text-blue-400 hover:underline mb-4"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          ホームに戻る
+          ← ホームに戻る
         </button>
 
-        {/* Header */}
-        <div className="bg-surface rounded-lg shadow-md p-8 mb-8">
-          <h1 className="text-3xl font-bold text-text-primary mb-4">プライバシーポリシー</h1>
-          <p className="text-text-secondary">
-            最終更新日：2024年1月1日
-          </p>
-        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+            プライバシーポリシー
+          </h1>
 
-        {/* Content */}
-        <div className="bg-surface rounded-lg shadow-md p-8 space-y-8">
-          <section>
-            <h2 className="text-2xl font-semibold text-text-primary mb-4">1. 個人情報の収集</h2>
-            <div className="prose text-content-text space-y-4">
-              <p>
-                未来価格（以下「当サービス」）では、サービスの提供および改善のために、以下の個人情報を収集する場合があります。
+          <div className="prose dark:prose-invert max-w-none">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              最終更新日: 2025年10月3日
+            </p>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                1. 個人情報の収集
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
+                当サービス（Miraikakaku）では、サービス提供のために以下の情報を収集する場合があります：
               </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>メールアドレス</li>
-                <li>ユーザー名</li>
-                <li>サービス利用履歴</li>
-                <li>アクセスログ</li>
-                <li>Cookie情報</li>
+              <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2">
+                <li>アクセスログ情報（IPアドレス、ブラウザ情報、アクセス日時等）</li>
+                <li>Cookie およびWeb ビーコン情報</li>
+                <li>サービス利用状況に関する情報</li>
+                <li>ユーザー登録時に提供いただいた情報（将来的に実装予定）</li>
               </ul>
-            </div>
-          </section>
+            </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold text-text-primary mb-4">2. 個人情報の利用目的</h2>
-            <div className="prose text-content-text space-y-4">
-              <p>収集した個人情報は、以下の目的で利用いたします。</p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>サービスの提供・運営</li>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                2. 個人情報の利用目的
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
+                収集した個人情報は、以下の目的で利用します：
+              </p>
+              <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2">
+                <li>サービスの提供、運営、維持、改善</li>
                 <li>ユーザーサポートの提供</li>
-                <li>サービスの改善・新機能の開発</li>
-                <li>利用状況の分析</li>
-                <li>重要なお知らせの配信</li>
-                <li>不正利用の防止</li>
+                <li>サービスに関する通知、アップデート情報の送信</li>
+                <li>利用状況の分析および統計</li>
+                <li>不正利用の防止およびセキュリティの向上</li>
               </ul>
-            </div>
-          </section>
+            </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold text-text-primary mb-4">3. 個人情報の第三者提供</h2>
-            <div className="prose text-content-text space-y-4">
-              <p>
-                当サービスは、法令に基づく場合を除き、ユーザーの同意なしに個人情報を第三者に提供することはありません。
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                3. 個人情報の第三者提供
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
+                当社は、以下の場合を除き、ユーザーの同意なく個人情報を第三者に提供することはありません：
               </p>
-              <p>ただし、以下の場合は例外とします。</p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>法令に基づく開示要求がある場合</li>
-                <li>ユーザーまたは第三者の生命、身体、財産等を保護するために必要な場合</li>
-                <li>サービス提供のために必要な業務委託先への提供</li>
+              <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2">
+                <li>法令に基づく場合</li>
+                <li>人の生命、身体または財産の保護のために必要がある場合</li>
+                <li>公衆衛生の向上または児童の健全な育成の推進のために特に必要がある場合</li>
+                <li>国の機関もしくは地方公共団体またはその委託を受けた者が法令の定める事務を遂行することに対して協力する必要がある場合</li>
               </ul>
-            </div>
-          </section>
+            </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold text-text-primary mb-4">4. Cookie について</h2>
-            <div className="prose text-content-text space-y-4">
-              <p>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                4. Cookie（クッキー）の使用
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
                 当サービスでは、ユーザーエクスペリエンスの向上のためにCookieを使用しています。
               </p>
-              <p>
-                Cookieの使用を無効にすることも可能ですが、その場合、サービスの一部機能がご利用いただけない場合があります。
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
+                Cookieとは、Webサイトがユーザーのコンピュータに一時的にデータを書き込んで保存させる仕組みです。
+                ユーザーはブラウザの設定でCookieを無効にすることができますが、一部機能が利用できなくなる場合があります。
               </p>
-            </div>
-          </section>
+            </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold text-text-primary mb-4">5. データの保管・セキュリティ</h2>
-            <div className="prose text-content-text space-y-4">
-              <p>
-                当サービスは、収集した個人情報の安全性を確保するため、適切なセキュリティ対策を実施しています。
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                5. アクセス解析ツール
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300">
+                当サービスでは、サービス向上のためにアクセス解析ツールを使用する場合があります。
+                これらのツールはCookieを使用してユーザーの訪問情報を収集しますが、個人を特定する情報は含まれません。
               </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>SSL/TLS暗号化による通信の保護</li>
-                <li>アクセス制限による不正アクセスの防止</li>
-                <li>定期的なセキュリティ監査の実施</li>
-                <li>従業員への個人情報保護教育の実施</li>
-              </ul>
-            </div>
-          </section>
+            </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold text-text-primary mb-4">6. ユーザーの権利</h2>
-            <div className="prose text-content-text space-y-4">
-              <p>ユーザーは、自身の個人情報について以下の権利を有します。</p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>個人情報の開示請求</li>
-                <li>個人情報の訂正・追加・削除</li>
-                <li>個人情報の利用停止・消去</li>
-                <li>個人情報の第三者提供の停止</li>
-              </ul>
-              <p>
-                これらの権利行使をご希望の場合は、お問い合わせフォームからご連絡ください。
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                6. 個人情報の安全管理
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300">
+                当社は、個人情報の漏洩、滅失、毀損等を防止するため、適切な安全管理措置を講じます。
               </p>
-            </div>
-          </section>
+            </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold text-text-primary mb-4">7. 本ポリシーの変更</h2>
-            <div className="prose text-content-text space-y-4">
-              <p>
-                当サービスは、法令の変更や事業内容の変更等により、本プライバシーポリシーを変更する場合があります。
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                7. 個人情報の開示・訂正・削除
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300">
+                ユーザーは、当社が保有する自己の個人情報について、開示、訂正、削除を請求することができます。
+                請求方法については、お問い合わせください。
               </p>
-              <p>
-                重要な変更については、サービス内での通知またはメールにてお知らせいたします。
-              </p>
-            </div>
-          </section>
+            </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold text-text-primary mb-4">8. お問い合わせ</h2>
-            <div className="prose text-content-text space-y-4">
-              <p>
-                本プライバシーポリシーに関するお問い合わせは、以下までご連絡ください。
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                8. プライバシーポリシーの変更
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300">
+                当社は、必要に応じて本プライバシーポリシーを変更することがあります。
+                変更後のプライバシーポリシーは、当サービス上に掲載した時点から効力を生じるものとします。
               </p>
-              <div className="bg-surface-variant p-4 rounded-lg">
-                <p className="font-semibold">未来価格 サポートチーム</p>
-                <p>メール：privacy@miraikakaku.com</p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                9. お問い合わせ
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300">
+                本プライバシーポリシーに関するお問い合わせは、以下までご連絡ください：
+              </p>
+              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p className="text-gray-700 dark:text-gray-300">
+                  Miraikakaku 運営チーム<br />
+                  Email: privacy@miraikakaku.com（準備中）
+                </p>
               </div>
-            </div>
-          </section>
-        </div>
+            </section>
 
-        {/* Footer */}
-        <div className="mt-12 text-center text-content-text-secondary text-sm">
-          <p>© 2024 未来価格. All rights reserved.</p>
+            <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                本プライバシーポリシーは、個人情報保護法に基づいて作成されています。
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

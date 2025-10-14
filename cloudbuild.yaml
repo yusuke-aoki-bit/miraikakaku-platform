@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/pricewise-huqkr/parallel-batch-collector'
+      - '-f'
+      - 'Dockerfile.parallel'
+      - '.'
+images:
+  - 'gcr.io/pricewise-huqkr/parallel-batch-collector'
+timeout: 1200s

@@ -1,0 +1,376 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  LineChart, Line, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell
+} from 'recharts';
+import { RefreshCw, TrendingUp, TrendingDown, Activity, CheckCircle, AlertCircle } from 'lucide-react';
+
+interface SystemMetrics {
+  totalPredictions: number;
+  activePredictions: number;
+  avgAccuracy: number;
+  predictionCoverage: number;
+  lstmCoverage: number;
+  arimaCoverage: number;
+  maCoverage: number;
+  avgConfidence: number;
+  topPerformers: Array<{symbol: string; accuracy: number}>;
+  recentErrors: Array<{symbol: string; error: number}>;
+  dailyStats: Array<{date: string; count: number; accuracy: number}>;
+}
+
+interface ModelPerformance {
+  lstm: { avg: number; count: number; confidence: number };
+  arima: { avg: number; count: number; confidence: number };
+  ma: { avg: number; count: number; confidence: number };
+  ensemble: { avg: number; count: number; confidence: number };
+}
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+export default function MonitoringPage() {
+  const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
+  const [modelPerf, setModelPerf] = useState<ModelPerformance | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+
+  const fetchMetrics = async () => {
+    setLoading(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+      // Fetch system summary
+      const summaryRes = await fetch(`${apiUrl}/api/predictions/summary`);
+      const summaryData = await summaryRes.json();
+
+      // Fetch model performance
+      const modelRes = await fetch(`${apiUrl}/api/monitoring/model-performance`);
+      const modelData = await modelRes.json();
+
+      setMetrics(summaryData);
+      setModelPerf(modelData);
+      setLastUpdate(new Date());
+    } catch (error) {
+      console.error('Failed to fetch metrics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMetrics();
+  }, []);
+
+  useEffect(() => {
+    if (autoRefresh) {
+      const interval = setInterval(fetchMetrics, 30000); // 30秒ごと
+      return () => clearInterval(interval);
+    }
+  }, [autoRefresh]);
+
+  if (loading && !metrics) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="container mx-auto p-6 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <Activity className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-500" />
+            <p className="text-lg text-card-foreground">データを読み込み中...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const modelComparisonData = modelPerf ? [
+    { name: 'LSTM', 精度: modelPerf.lstm.avg, 信頼度: modelPerf.lstm.confidence * 100 },
+    { name: 'ARIMA', 精度: modelPerf.arima.avg, 信頼度: modelPerf.arima.confidence * 100 },
+    { name: 'MA', 精度: modelPerf.ma.avg, 信頼度: modelPerf.ma.confidence * 100 },
+    { name: 'アンサンブル', 精度: modelPerf.ensemble.avg, 信頼度: modelPerf.ensemble.confidence * 100 },
+  ] : [];
+
+  const coverageData = metrics ? [
+    { name: 'LSTM', value: metrics.lstmCoverage },
+    { name: 'ARIMA', value: metrics.arimaCoverage },
+    { name: 'MA', value: metrics.maCoverage },
+  ] : [];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="container mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">システムモニタリング</h1>
+          <p className="text-muted-foreground mt-1">
+            予測システムのリアルタイムパフォーマンス監視
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-muted-foreground">
+            最終更新: {lastUpdate?.toLocaleTimeString('ja-JP')}
+          </div>
+          <Button
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            variant={autoRefresh ? 'default' : 'outline'}
+            size="sm"
+            className={!autoRefresh ? "text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" : ""}
+          >
+            {autoRefresh ? '自動更新ON' : '自動更新OFF'}
+          </Button>
+          <Button onClick={fetchMetrics} disabled={loading} size="sm" className="text-white">
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            更新
+          </Button>
+        </div>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">総予測数</CardTitle>
+            <Activity className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{(metrics?.totalPredictions || 0).toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              アクティブ: {(metrics?.activePredictions || 0).toLocaleString()}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">平均精度</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{(metrics?.avgAccuracy || 0).toFixed(2)}%</div>
+            <div className="flex items-center mt-1">
+              {(metrics?.avgAccuracy || 0) > 95 ? (
+                <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-yellow-500 mr-1" />
+              )}
+              <p className="text-xs text-muted-foreground">
+                {(metrics?.avgAccuracy || 0) > 95 ? '優秀' : '改善の余地あり'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">予測カバレッジ</CardTitle>
+            <Activity className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{(metrics?.predictionCoverage || 0).toFixed(1)}%</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              全銘柄の予測カバー率
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">平均信頼度</CardTitle>
+            <AlertCircle className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{((metrics?.avgConfidence || 0) * 100).toFixed(1)}%</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              予測の信頼性スコア
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Detailed Analysis */}
+      <Tabs defaultValue="models" className="space-y-4">
+        <TabsList className="bg-gray-800 dark:bg-gray-700">
+          <TabsTrigger value="models" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300">モデル比較</TabsTrigger>
+          <TabsTrigger value="coverage" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300">カバレッジ</TabsTrigger>
+          <TabsTrigger value="performance" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300">パフォーマンス</TabsTrigger>
+          <TabsTrigger value="trends" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300">トレンド</TabsTrigger>
+        </TabsList>
+
+        {/* Model Comparison */}
+        <TabsContent value="models" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-card-foreground">モデル精度比較</CardTitle>
+              <CardDescription className="text-muted-foreground">
+                各予測モデルの精度と信頼度スコア
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={modelComparisonData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(156, 163, 175, 0.3)" />
+                  <XAxis dataKey="name" stroke="#9ca3af" />
+                  <YAxis tick={{ fill: "#9ca3af" }} yAxisId="left" orientation="left" stroke="#8884d8" />
+                  <YAxis tick={{ fill: "#9ca3af" }} yAxisId="right" orientation="right" stroke="#82ca9d" />
+                  <Tooltip />
+                  <Legend />
+                  <Bar yAxisId="left" dataKey="精度" fill="#8884d8" />
+                  <Bar yAxisId="right" dataKey="信頼度" fill="#82ca9d" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Coverage */}
+        <TabsContent value="coverage" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-card-foreground">モデル別カバレッジ</CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  各モデルの予測データ保有率
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={coverageData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {coverageData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-card-foreground">カバレッジ詳細</CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  モデル別の詳細統計
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <span className="font-medium text-card-foreground">LSTM</span>
+                    <Badge variant="default">{(metrics?.lstmCoverage || 0).toFixed(1)}%</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <span className="font-medium text-card-foreground">ARIMA</span>
+                    <Badge variant="default">{(metrics?.arimaCoverage || 0).toFixed(1)}%</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                    <span className="font-medium text-card-foreground">移動平均</span>
+                    <Badge variant="default">{(metrics?.maCoverage || 0).toFixed(1)}%</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Performance */}
+        <TabsContent value="performance" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-card-foreground">トップパフォーマー</CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  予測精度が高い上位銘柄
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {metrics?.topPerformers && metrics.topPerformers.length > 0 ? (
+                    metrics.topPerformers.map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2 border-b">
+                        <span className="font-mono text-card-foreground">{item.symbol}</span>
+                        <Badge variant="default" className="bg-green-500">
+                          {(item.accuracy || 0).toFixed(2)}%
+                        </Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">データがありません</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-card-foreground">要改善銘柄</CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  予測誤差が大きい銘柄
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {metrics?.recentErrors && metrics.recentErrors.length > 0 ? (
+                    metrics.recentErrors.map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2 border-b">
+                        <span className="font-mono text-card-foreground">{item.symbol}</span>
+                        <Badge variant="destructive">
+                          誤差 {(item.error || item.accuracy || 0).toFixed(2)}%
+                        </Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">データがありません</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Trends */}
+        <TabsContent value="trends" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-card-foreground">日別予測トレンド</CardTitle>
+              <CardDescription className="text-muted-foreground">
+                過去7日間の予測数と精度の推移
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={metrics?.dailyStats || []}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(156, 163, 175, 0.3)" />
+                  <XAxis dataKey="date" stroke="#9ca3af" />
+                  <YAxis tick={{ fill: "#9ca3af" }} yAxisId="left" />
+                  <YAxis tick={{ fill: "#9ca3af" }} yAxisId="right" orientation="right" />
+                  <Tooltip />
+                  <Legend />
+                  <Line yAxisId="left" type="monotone" dataKey="count" stroke="#8884d8" name="予測数" />
+                  <Line yAxisId="right" type="monotone" dataKey="accuracy" stroke="#82ca9d" name="精度%" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      </div>
+    </div>
+  );
+}

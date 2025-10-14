@@ -1,7 +1,0 @@
-Dockerfile
-.git
-*.pyc
-__pycache__
-*.backup
-*.DISABLED
-.gitignore

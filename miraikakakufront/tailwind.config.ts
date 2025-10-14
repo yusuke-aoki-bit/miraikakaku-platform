@@ -1,82 +1,43 @@
-
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: 'class',
   content: [
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/**/*.{js,ts,jsx,tsx,mdx}"
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        // Map CSS variables to Tailwind colors for consistency
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
         primary: {
-          DEFAULT: 'var(--yt-music-primary)',
-          hover: 'var(--yt-music-primary-hover)'
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
-        secondary: 'var(--yt-music-secondary)',
-        accent: 'var(--yt-music-accent)',
-        success: {
-          DEFAULT: 'var(--yt-music-success)',
-          hover: 'var(--yt-music-success-hover)'
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
-        warning: {
-          DEFAULT: 'var(--yt-music-warning)',
-          hover: 'var(--yt-music-warning-hover)'
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
-        error: {
-          DEFAULT: 'var(--yt-music-error)',
-          hover: 'var(--yt-music-error-hover)'
-        },
-        info: {
-          DEFAULT: 'var(--yt-music-info)',
-          hover: 'var(--yt-music-info-hover)'
-        },
-        surface: {
-          DEFAULT: 'var(--yt-music-surface)',
-          variant: 'var(--yt-music-surface-variant)',
-          hover: 'var(--yt-music-surface-hover)'
-        },
-        text: {
-          primary: 'var(--yt-music-text-primary)',
-          secondary: 'var(--yt-music-text-secondary)',
-          disabled: 'var(--yt-music-text-disabled)'
-        },
-        border: {
-          DEFAULT: 'var(--yt-music-border)'
-        },
-        content: {
-          bg: 'var(--content-bg)',
-          text: 'var(--content-text)',
-          'text-secondary': 'var(--content-text-secondary)',
-          border: 'var(--content-border)'
-        },
-        chart: {
-          blue: 'var(--yt-music-chart-blue)',
-          red: 'var(--yt-music-chart-red)',
-          green: 'var(--yt-music-chart-green)',
-          orange: 'var(--yt-music-chart-orange)',
-          purple: 'var(--yt-music-chart-purple)'
-        }
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
       },
-      animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out'
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' }
-        },
-        slideUp: {
-          '0%': { transform: 'translateY(10px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' }
-        }
-      }
-    }
+    },
   },
-  plugins: []
+  plugins: [],
 };
 export default config;

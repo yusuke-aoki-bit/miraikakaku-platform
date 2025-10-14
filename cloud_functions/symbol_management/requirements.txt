@@ -1,4 +1,0 @@
-functions-framework==3.5.0
-psycopg2-binary==2.9.9
-yfinance==0.2.33
-pandas==2.1.4

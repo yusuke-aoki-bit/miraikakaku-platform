@@ -1,55 +1,44 @@
-# Dependencies
-node_modules/
-*/node_modules/
-*/venv/
-venv_*/
-*/venv_*/
-*/__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
 .Python
 env/
 venv/
-ENV/
-env.bak/
-venv.bak/
+.venv
 
-# Production builds
+# Node.js
+node_modules/
 .next/
 out/
 build/
 dist/
-*.egg-info/
 
-# Environment variables (CRITICAL - NEVER COMMIT)
+# Environment
 .env
-.env.*
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
-*/functions/.env
-*/functions/.env.local
-miraikakakuapi/.env
-miraikakakubatch/.env
-*/.env
+.env.production
 
 # Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 *.log
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Coverage directory used by tools like istanbul
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup
+backup/
+cleanup_backup/
 coverage/
 *.lcov
+archived_*/
 
 # nyc test coverage
 .nyc_output
@@ -161,3 +150,10 @@ coverage/
 # Misc
 *.tgz
 *.tar.gz
+
+# GCP
+gcp-key.json
+service-account.json
+
+# Archives
+archived_*/

@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install PostgreSQL client
+RUN apt-get update && \
+    apt-get install -y postgresql-client && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir psycopg2-binary tenacity yfinance
+
+# Copy migration and data collection scripts
+COPY add_sector_columns.py .
+COPY fetch_sector_industry_data.py .
+
+# Set environment variables for Cloud SQL
+ENV POSTGRES_HOST=/cloudsql/pricewise-huqkr:us-central1:miraikakaku-postgres
+ENV POSTGRES_PORT=5432
+ENV POSTGRES_DB=miraikakaku
+ENV POSTGRES_USER=postgres
+
+# Entry point script
+COPY docker_entrypoint.sh .
+RUN chmod +x docker_entrypoint.sh
+
+ENTRYPOINT ["/app/docker_entrypoint.sh"]
