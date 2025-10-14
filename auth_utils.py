@@ -17,11 +17,11 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-# Password hashing with truncate_error disabled to allow manual truncation
+# Password hashing - bcrypt with default settings
+# Manual truncation is handled in get_password_hash() and verify_password()
 pwd_context = CryptContext(
     schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__truncate_error=False  # Disable bcrypt's built-in truncation error
+    deprecated="auto"
 )
 
 # HTTP Bearer token scheme
