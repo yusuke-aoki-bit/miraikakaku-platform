@@ -1237,6 +1237,13 @@ def get_prediction_accuracy(symbol: str, days_back: int = 90):
         "message": "Prediction accuracy evaluation is not yet implemented"
     }
 
+
+# ============================================
+# Include Authentication Router
+# ============================================
+from auth_endpoints import router as auth_router
+app.include_router(auth_router)
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8080))
@@ -2578,6 +2585,52 @@ def fetch_sector_data(limit: int = 100):
         return {"status": "error", "message": str(e), "traceback": traceback.format_exc()}
 
 # ============================================================
+# ============================================
+# Phase 6: Authentication API Admin Endpoints
+# ============================================
+
+@app.post("/admin/apply-auth-schema")
+def apply_auth_schema():
+    """Phase 6: Apply authentication database schema"""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Read schema file
+        import os
+        schema_path = os.path.join(os.path.dirname(__file__), 'create_auth_schema.sql')
+
+        if not os.path.exists(schema_path):
+            return {"status": "error", "message": f"Schema file not found: {schema_path}"}
+
+        with open(schema_path, 'r', encoding='utf-8') as f:
+            schema_sql = f.read()
+
+        # Execute schema
+        cur.execute(schema_sql)
+        conn.commit()
+
+        # Verify tables created
+        cur.execute("""
+            SELECT table_name FROM information_schema.tables
+            WHERE table_schema = 'public'
+            AND table_name IN ('users', 'user_sessions')
+            ORDER BY table_name
+        """)
+        tables = [row[0] for row in cur.fetchall()]
+
+        cur.close()
+        conn.close()
+
+        return {
+            "status": "success",
+            "message": "Authentication schema applied successfully",
+            "tables_created": tables
+        }
+    except Exception as e:
+        import traceback
+        return {"status": "error", "message": str(e), "traceback": traceback.format_exc()}
+
 # Phase 5-1: Portfolio Management API Endpoints
 # ============================================================
 
