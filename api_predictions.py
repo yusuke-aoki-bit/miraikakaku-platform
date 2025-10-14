@@ -1239,10 +1239,17 @@ def get_prediction_accuracy(symbol: str, days_back: int = 90):
 
 
 # ============================================
-# Include Authentication Router
+# Include Routers
 # ============================================
 from auth_endpoints import router as auth_router
+from watchlist_endpoints import router as watchlist_router
+from portfolio_endpoints import router as portfolio_router
+from alerts_endpoints import router as alerts_router
+
 app.include_router(auth_router)
+app.include_router(watchlist_router)
+app.include_router(portfolio_router)
+app.include_router(alerts_router)
 
 if __name__ == "__main__":
     import uvicorn
