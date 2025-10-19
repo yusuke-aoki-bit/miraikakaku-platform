@@ -1,5 +1,6 @@
 import React from 'react';
 import { SectorBadge } from './SectorBadge';
+import { formatPercentage, getSafeNumber, safeToFixed } from '@/lib/formatters';
 
 interface RankingItem {
   symbol: string;
@@ -22,15 +23,22 @@ interface RankingCardProps {
 
 const RankingCard = React.memo(({ item, index, onClick, type }: RankingCardProps) => {
   const getValueDisplay = () => {
+    // 文字列の場合も考慮して数値に変換
+    const safePrice = getSafeNumber(typeof item.current_price === 'string' ? parseFloat(item.current_price) : item.current_price, 0);
+    const safeChangePercent = getSafeNumber(typeof item.change_percent === 'string' ? parseFloat(item.change_percent) : item.change_percent, 0);
+    const safePredictedChange = getSafeNumber(typeof item.predicted_change === 'string' ? parseFloat(item.predicted_change) : item.predicted_change, 0);
+    const safeConfidence = getSafeNumber(typeof item.confidence_score === 'string' ? parseFloat(item.confidence_score) : item.confidence_score, 0);
+    const safeVolume = getSafeNumber(typeof item.volume === 'string' ? parseFloat(item.volume) : item.volume, 0);
+
     switch (type) {
       case 'gainer':
         return (
           <>
             <p className="text-lg font-bold text-green-600 dark:text-green-400">
-              +{item.change_percent?.toFixed(2)}%
+              +{formatPercentage(safeChangePercent, 2, '0.00%')}
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              ¥{item.current_price.toFixed(2)}
+              ¥{safeToFixed(item.current_price, 2, '0.00')}
             </p>
           </>
         );
@@ -38,10 +46,10 @@ const RankingCard = React.memo(({ item, index, onClick, type }: RankingCardProps
         return (
           <>
             <p className="text-lg font-bold text-red-600 dark:text-red-400">
-              {item.change_percent?.toFixed(2)}%
+              {formatPercentage(safeChangePercent, 2, '0.00%')}
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              ¥{item.current_price.toFixed(2)}
+              ¥{safeToFixed(item.current_price, 2, '0.00')}
             </p>
           </>
         );
@@ -49,10 +57,10 @@ const RankingCard = React.memo(({ item, index, onClick, type }: RankingCardProps
         return (
           <>
             <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
-              {((item.volume || 0) / 1000000).toFixed(1)}M
+              {safeToFixed(safeVolume / 1000000, 1, '0.0')}M
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              ¥{item.current_price.toFixed(2)}
+              ¥{safeToFixed(item.current_price, 2, '0.00')}
             </p>
           </>
         );
@@ -60,10 +68,10 @@ const RankingCard = React.memo(({ item, index, onClick, type }: RankingCardProps
         return (
           <>
             <p className="text-lg font-bold text-green-600 dark:text-green-400">
-              +{item.predicted_change?.toFixed(2)}%
+              +{formatPercentage(safePredictedChange, 2, '0.00%')}
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              信頼度: {((item.confidence_score || 0) * 100).toFixed(0)}%
+              信頼度: {safeToFixed(safeConfidence * 100, 0, '0')}%
             </p>
           </>
         );

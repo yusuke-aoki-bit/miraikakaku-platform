@@ -7,6 +7,8 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
 import SkeletonCard from '@/components/SkeletonCard';
 import RankingCard from '@/components/RankingCard';
+import RealTimeRankings from '@/components/RealTimeRankings';
+import { safeToFixed } from '@/lib/formatters';
 
 interface RankingItem {
   symbol: string;
@@ -130,7 +132,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <main className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center mb-8">
             <LoadingSpinner size="lg" className="mb-4" />
@@ -179,7 +181,7 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
         <div className="max-w-md w-full">
           <ErrorMessage message={error} onRetry={retryFetch} />
         </div>
@@ -188,7 +190,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main className="max-w-7xl mx-auto">
         {/* Hero Section */}
         <div className="px-4 py-12 md:py-20 mb-8">
@@ -242,19 +244,19 @@ export default function Home() {
             <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
               <div className="text-center">
                 <p className="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400">
-                  {marketStats?.total_symbols.toLocaleString() || '0'}
+                  {marketStats?.total_symbols?.toLocaleString() || '0'}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">銘柄数</p>
               </div>
               <div className="text-center">
                 <p className="text-3xl md:text-4xl font-bold text-green-600 dark:text-green-400">
-                  {marketStats?.coverage_percent.toFixed(0) || '0'}%
+                  {safeToFixed(marketStats?.coverage_percent, 0, '0')}%
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">カバレッジ</p>
               </div>
               <div className="text-center">
                 <p className="text-3xl md:text-4xl font-bold text-purple-600 dark:text-purple-400">
-                  {marketStats?.total_predictions.toLocaleString() || '0'}
+                  {marketStats?.total_predictions?.toLocaleString() || '0'}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">予測データ</p>
               </div>
@@ -322,19 +324,19 @@ export default function Home() {
               <div>
                 <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">総銘柄数</p>
                 <p className="text-xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  {marketStats.total_symbols.toLocaleString()}
+                  {marketStats.total_symbols?.toLocaleString() || '0'}
                 </p>
               </div>
               <div>
                 <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">データあり</p>
                 <p className="text-xl md:text-3xl font-bold text-green-600 dark:text-green-400">
-                  {marketStats.symbols_with_prices.toLocaleString()}
+                  {marketStats.symbols_with_prices?.toLocaleString() || '0'}
                 </p>
               </div>
               <div>
                 <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">カバレッジ</p>
                 <p className="text-xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">
-                  {marketStats.coverage_percent.toFixed(1)}%
+                  {safeToFixed(marketStats.coverage_percent, 1, '0.0')}%
                 </p>
               </div>
               <div>
@@ -347,109 +349,89 @@ export default function Home() {
           </div>
         )}
 
-        {/* ランキンググリッド */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* 値上がり率ランキング */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">
-                値上がり率 TOP 5
-              </h2>
-              <button
-                onClick={() => router.push('/rankings')}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                もっと見る
-              </button>
-            </div>
-            <div className="space-y-2">
-              {filteredGainers.map((item, idx) => (
-                <RankingCard
-                  key={item.symbol}
-                  item={item}
-                  index={idx}
-                  onClick={() => router.push(`/stock/${item.symbol}`)}
-                  type="gainer"
-                />
-              ))}
+        {/* Real-Time Rankings Section - NEW */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              リアルタイムランキング
+            </h2>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-green-600 dark:text-green-400">LIVE</span>
             </div>
           </div>
 
-          {/* 値下がり率ランキング */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">
-                値下がり率 TOP 5
-              </h2>
-              <button
-                onClick={() => router.push('/rankings')}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                もっと見る
-              </button>
-            </div>
-            <div className="space-y-2">
-              {filteredLosers.map((item, idx) => (
-                <RankingCard
-                  key={item.symbol}
-                  item={item}
-                  index={idx}
-                  onClick={() => router.push(`/stock/${item.symbol}`)}
-                  type="loser"
-                />
-              ))}
-            </div>
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* 値上がり率ランキング - Real-Time */}
+            <RealTimeRankings
+              type="gainers"
+              limit={10}
+              refreshInterval={30000}
+            />
 
-          {/* 出来高ランキング */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">
-                出来高 TOP 5
-              </h2>
-              <button
-                onClick={() => router.push('/rankings')}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                もっと見る
-              </button>
-            </div>
-            <div className="space-y-2">
-              {filteredVolumeLeaders.map((item, idx) => (
-                <RankingCard
-                  key={item.symbol}
-                  item={item}
-                  index={idx}
-                  onClick={() => router.push(`/stock/${item.symbol}`)}
-                  type="volume"
-                />
-              ))}
-            </div>
-          </div>
+            {/* 値下がり率ランキング - Real-Time */}
+            <RealTimeRankings
+              type="losers"
+              limit={10}
+              refreshInterval={30000}
+            />
 
-          {/* 予測上昇率ランキング */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">
-                AI予測上昇率 TOP 5
-              </h2>
-              <button
-                onClick={() => router.push('/rankings')}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                もっと見る
-              </button>
+            {/* 出来高ランキング - Static */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6 border-2 border-orange-200">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">
+                  出来高 TOP 5
+                </h2>
+                <button
+                  onClick={() => router.push('/rankings')}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  もっと見る
+                </button>
+              </div>
+              <div className="space-y-2">
+                {filteredVolumeLeaders.length > 0 ? (
+                  filteredVolumeLeaders.map((item, idx) => (
+                    <RankingCard
+                      key={item.symbol}
+                      item={item}
+                      index={idx}
+                      onClick={() => router.push(`/stock/${item.symbol}`)}
+                      type="volume"
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <p>データがありません</p>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="space-y-2">
-              {filteredTopPredictions.map((item, idx) => (
-                <RankingCard
-                  key={item.symbol}
-                  item={item}
-                  index={idx}
-                  onClick={() => router.push(`/stock/${item.symbol}`)}
-                  type="prediction"
-                />
-              ))}
+
+            {/* AI予測上昇率ランキング - Static (keep original) */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6 border-2 border-purple-200">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">
+                  AI予測上昇率 TOP 5
+                </h2>
+                <button
+                  onClick={() => router.push('/rankings')}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  もっと見る
+                </button>
+              </div>
+              <div className="space-y-2">
+                {filteredTopPredictions.map((item, idx) => (
+                  <RankingCard
+                    key={item.symbol}
+                    item={item}
+                    index={idx}
+                    onClick={() => router.push(`/stock/${item.symbol}`)}
+                    type="prediction"
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
